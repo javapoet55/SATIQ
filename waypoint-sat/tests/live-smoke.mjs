@@ -1,0 +1,56 @@
+// Explicitly run against a deployed test environment. Uses an isolated anonymous
+// profile, never the user's Chrome cookie or existing student progress.
+import assert from 'node:assert/strict';
+import {randomUUID} from 'node:crypto';
+import {createInterface} from 'node:readline';
+import {emptyState, createSession, resumeSession, finishSession, parseState} from '../src/model.ts';
+import {startPlanTask, checkTutor, completePlanTask, editReflection, confirmAnalysis} from '../src/companion-model.ts';
+const origin = process.argv[2];
+if (!origin?.startsWith('https://')) throw new Error('Pass the deployed HTTPS origin.');
+const first = await fetch(`${origin}/api/progress`);
+assert.equal(first.status,200);
+assert.match(first.headers.get('set-cookie'), /HttpOnly; SameSite=Lax/);
+assert.match(first.headers.get('set-cookie'), /; Secure/);
+const cookie = first.headers.get('set-cookie').split(';')[0];
+const snapshot = await first.json();
+assert.deepEqual(snapshot.state,emptyState());
+const ids = ['wp-math-001','wp-rw-001','wp-math-002','wp-rw-002'];
+const keys = Object.fromEntries(ids.map((id,i) => [id,[1,2,2,0][i]]));
+const now = Date.now();
+const session = resumeSession(createSession(ids,randomUUID()),now - 10000);
+session.answers = {[ids[0]]:1,[ids[1]]:2}; session.flags = [ids[2]];
+let state = finishSession({...emptyState(), sessions:[session], activeSessionId:session.id},session.id,now,keys);
+state.reflections[ids[0]] = {text:'Deployment smoke test: subtract the fixed fee.',updatedAt:now};
+state = startPlanTask(state,'algebra',now+1000);
+state.companion.tutor[ids[0]] = {...state.companion.tutor[ids[0]],selected:0,hintLevel:2,composer:'A saved tutor draft.',messages:[{role:'user',text:'A small hint, please.'},{role:'tutor',text:'Separate the fixed fee from the daily cost.'}]};
+state = checkTutor(state,1,now+2000);
+state = completePlanTask(state,now+3000);
+state = startPlanTask(state,'review',now+4000);
+const analysisId = state.companion.analysisAttemptId;
+state = editReflection(state,analysisId,'I want to check my equation setup.');
+state.companion.analyses[analysisId] = {...state.companion.analyses[analysisId],opened:true,cause:'concept'};
+state = confirmAnalysis(state,analysisId,now+5000);
+state = completePlanTask(state,now+6000);
+const body = {state,revision:snapshot.revision,writeId:randomUUID()};
+assert.deepEqual(parseState(JSON.stringify(state)),state);
+const put = async payload => fetch(`${origin}/api/progress`,{method:'PUT',headers:{cookie,Origin:origin,'Content-Type':'application/json','X-Waypoint-Client':'1'},body:JSON.stringify(payload)});
+const saved = await put(body); assert.equal(saved.status,200); const result = await saved.json();
+const retry = await put(body); assert.equal(retry.status,200); assert.deepEqual(await retry.json(),result);
+assert.equal((await put({...body,writeId:randomUUID()})).status,409);
+const other = await (await fetch(`${origin}/api/progress`)).json();
+assert.notEqual(other.profileId,snapshot.profileId); assert.deepEqual(other.state,emptyState());
+const csrf = await fetch(`${origin}/api/progress`,{method:'PUT',headers:{cookie,Origin:'https://unrelated.example','Content-Type':'application/json','X-Waypoint-Client':'1'},body:JSON.stringify(body)});
+assert.equal(csrf.status,403);
+console.log('Live API baseline passed: original test results plus companion conversations, drafts, plan completion and confirmed reflection; isolated profiles, retries, revision checks and CSRF protection.');
+console.log('Waiting for a redeployment. Send verify on stdin when the new instance is healthy.');
+const lines = createInterface({input:process.stdin});
+for await (const line of lines) {
+  if (line.trim() !== 'verify') continue;
+  const restored = await fetch(`${origin}/api/progress`,{headers:{cookie}}); assert.equal(restored.status,200);
+  const after = await restored.json(); assert.equal(after.profileId,snapshot.profileId); assert.equal(after.revision,result.revision); assert.deepEqual(after.state,state);
+  assert.deepEqual(parseState(JSON.stringify(after.state)),state);
+  const validatedSave = await put({state:after.state,revision:after.revision,writeId:randomUUID()}); assert.equal(validatedSave.status,200);
+  const health = await (await fetch(`${origin}/api/health`)).json(); assert.deepEqual(health,{ok:true,storage:'postgres'});
+  console.log('Live durability passed: the new deployment restored original answers and notes plus companion conversations, draft, daily plan completion and confirmed analysis from PostgreSQL.');
+  lines.close(); break;
+}

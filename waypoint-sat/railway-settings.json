@@ -1,0 +1,11 @@
+{
+  "projectId": "ff7c016b-3e75-4524-b237-0565185ea0f2",
+  "environment": "production",
+  "service": "waypoint-web",
+  "settings": {
+    "deploy.healthcheckPath": "/api/health",
+    "deploy.healthcheckTimeout": 120,
+    "deploy.restartPolicyType": "ON_FAILURE",
+    "deploy.restartPolicyMaxRetries": 5
+  }
+}

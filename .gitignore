@@ -1,0 +1,12 @@
+.DS_Store
+**/.DS_Store
+.env
+.env.*
+*.pem
+*.key
+node_modules/
+dist/
+test-results/
+test-results-hosted/
+playwright-report/
+*.tsbuildinfo
