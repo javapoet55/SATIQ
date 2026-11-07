@@ -21,17 +21,19 @@ async function smoke() {
     await db.failAssistant(owners[0],failedId);
     assert.equal((await db.reserveAssistant(owners[0],failedId,'Retry after provider failure',context)).kind,'reserved');
     await db.failAssistant(owners[0],failedId);
-    // A completed request plus 29 failed calls consumes the 30-request profile allowance.
-    for(let n=0;n<27;n++){
-      const next=randomUUID();assert.equal((await db.reserveAssistant(owners[0],next,'QA limit check',context)).kind,'reserved');await db.failAssistant(owners[0],next);
-    }
+    // Exercise the allowance boundary using only this QA row instead of creating 27 extra records.
+    await db.pool.query('UPDATE waypoint_assistant SET requests=29 WHERE owner_hash=$1 AND request_id=$2',[owners[0],failedId]);
     assert.equal((await db.reserveAssistant(owners[0],randomUUID(),'Over allowance',context)).kind,'limit');
     assert.equal((await db.assistantHistory(owners[0])).length,1);
     const reconnect=new PostgresStore(process.env.DATABASE_URL);
     try{assert.equal((await reconnect.assistantHistory(owners[0]))[0].answer,'QA saved answer — no LLM call.');}finally{await reconnect.close();}
     console.log('PostgreSQL assistant smoke passed: persistence, isolation, idempotency, concurrent request exclusion, failure retry, and daily limits. No LLM calls.');
   } finally {
-    for(const owner of owners)await db.pool.query('DELETE FROM waypoint_progress WHERE owner_hash=$1',[owner]);
+    for(const owner of owners){
+      await db.pool.query('DELETE FROM waypoint_assistant WHERE owner_hash=$1',[owner]);
+      assert.equal((await db.pool.query('SELECT 1 FROM waypoint_assistant WHERE owner_hash=$1',[owner])).rowCount,0);
+      await db.pool.query('DELETE FROM waypoint_progress WHERE owner_hash=$1',[owner]);
+    }
     await db.close();
   }
 }
