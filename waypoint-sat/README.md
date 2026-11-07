@@ -37,6 +37,14 @@ Requests are capped at 2,000 characters and 4,096 output tokens, with a 60-secon
 
 Verification uses mocked OpenAI responses for success, provider errors, missing-key mode, retries, isolation, test blocking, and responsive chat at 1440, 834, 390 and 320px. A real paid GPT answer must be checked after a valid API key is configured.
 
+After configuring the key, an opt-in live check creates a new QA profile with synthetic attempts and makes four paid GPT requests (weekly weaknesses, a worked mistake, concept help, and a 20-minute plan). It also verifies saved chat, idempotent replay, profile isolation, and test blocking. It does not read browser cookies or change an existing student's progress:
+
+```sh
+node --experimental-strip-types tests/live-assistant.mjs https://waypoint-web-production-50a5.up.railway.app --allow-paid-requests
+```
+
+Add `--focused` to make only two GPT requests for the week-to-date and readable-answer-label regression checks. QA profiles remain separate from student profiles.
+
 ### Bring your existing local progress
 
 1. Open the original local app at `http://127.0.0.1:5173/` in the browser where you studied.

@@ -30,6 +30,8 @@ test('weekly evidence is timezone-aware, answer-key based, and ignores retries i
   const c=studyContext(state,'America/Los_Angeles',now);
   assert.equal(c.weekStart,'2026-11-02');assert.equal(c.weeklyAttempts,2);assert.equal(c.weeklyQuestions,1);assert.equal(c.weeklyAccuracy,0);
   assert.equal(c.latestMistake.question.correct,1);assert.equal(c.skills[0].correct,0);
+  assert.equal(c.weekToDateLabel,'2026-11-02 through 2026-11-07 (week to date)');
+  assert.equal(c.latestMistake.selectedAnswer,'A. 4 days');
   assert.equal(studyContext(emptyState(),'UTC',now).weeklyAccuracy,null);
   assert.throws(()=>studyContext(state,'not-a-zone',now),/time zone/);
 });
