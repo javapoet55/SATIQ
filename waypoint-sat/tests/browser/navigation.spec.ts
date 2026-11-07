@@ -9,12 +9,20 @@ test('all fourteen destinations are available from the same desktop left menu',a
  await page.goto('/');const nav=page.getByRole('navigation',{name:'Main navigation'});
  await expect(nav.getByRole('button')).toHaveCount(14);
  for(const [name,title] of pages){await nav.getByRole('button',{name,exact:true}).click();await expect(page.locator('h1')).toHaveText(title);await expect(nav.getByRole('button',{name,exact:true})).toHaveAttribute('aria-current','page');await expect(nav.getByRole('button')).toHaveCount(14)}
+ await nav.getByRole('button',{name:'Similar Questions',exact:true}).click();
+ await expect(page.locator('header').getByRole('button')).toHaveCount(0);
+ await page.locator('header').getByRole('link',{name:'AI Assistant',exact:true}).click();
+ await expect(page.locator('h1')).toHaveText('Ask. Understand. Move forward.');
+ await nav.getByRole('button',{name:'Dashboard',exact:true}).click();
+ await page.locator('.sidebar-bottom').getByRole('link',{name:/AI Assistant/}).click();
+ await expect(page.locator('h1')).toHaveText('Ask. Understand. Move forward.');
 });
 test('mobile Menu exposes every destination, closes on selection and preserves current route',async ({page})=>{
  await page.setViewportSize({width:320,height:844});await page.goto('/');
  const nav=page.getByRole('navigation',{name:'Main navigation'});await expect(nav).toBeHidden();
  for(const [name,title] of pages){await page.getByRole('button',{name:'Open navigation',exact:true}).click();await expect(nav).toBeVisible();await nav.getByRole('button',{name,exact:true}).click();await expect(page.locator('h1')).toHaveText(title);await expect(nav).toBeHidden();expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)}
  await page.reload();await expect(page.locator('h1')).toHaveText('Ask. Understand. Move forward.');
+ await expect(page.locator('header').getByRole('link',{name:'AI Assistant',exact:true})).toBeVisible();
  await page.getByRole('button',{name:'Open navigation',exact:true}).click();await expect(nav.getByRole('button',{name:'AI Assistant',exact:true})).toHaveAttribute('aria-current','page');
  await page.screenshot({path:'test-results/navigation/mobile-menu-320.png',fullPage:false});
 });

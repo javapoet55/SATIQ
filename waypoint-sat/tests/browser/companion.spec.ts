@@ -97,15 +97,15 @@ test('original studio links open contextual tutor and analysis; timed tests bloc
   await page.getByRole('button',{name:'Open guided tutor'}).click();
   await expect(page.getByRole('radio',{name:'A. 4 days',exact:true})).toBeChecked();
   await page.getByRole('button',{name:'Check answer'}).click();
-  await page.getByRole('button',{name:'SAT Studio',exact:false}).click();
+  await page.getByRole('navigation',{name:'Main navigation'}).getByRole('button',{name:'Dashboard',exact:true}).click();
   await page.getByRole('button',{name:'Answer Review',exact:true}).click();
   await page.getByRole('button',{name:'Explore mistake analysis'}).click();
   await expect(page.getByText('Your answer: A · 4 days',{exact:true})).toBeVisible();
-  await page.getByRole('button',{name:'SAT Studio',exact:false}).click();
+  await page.getByRole('navigation',{name:'Main navigation'}).getByRole('button',{name:'Dashboard',exact:true}).click();
   await page.getByRole('button',{name:'Practice Test',exact:true}).click();
   await page.getByRole('button',{name:'Begin demo'}).click();
   await page.getByRole('button',{name:'Pause demo'}).click();
-  await page.getByRole('button',{name:'Learning companion',exact:false}).click();
+  await page.getByRole('navigation',{name:'Main navigation'}).getByRole('button',{name:'Daily Plan',exact:true}).click();
   await page.getByRole('button',{name:'Guided Tutor',exact:true}).click();
   await expect(page.getByText('Give the demo your full focus.')).toBeVisible();
   await expect(page.getByRole('button',{name:'Give me a small hint'})).toHaveCount(0);
