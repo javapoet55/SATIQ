@@ -1,7 +1,7 @@
 import {validateCompanion, type CompanionState} from './companion-types.ts';
 import {validateIntelligence, type IntelligenceState} from './intelligence-types.ts';
 export type Choice = number | null;
-export type Route = 'dashboard' | 'practice' | 'test' | 'review' | 'plan' | 'tutor' | 'analysis' | 'adaptive' | 'work' | 'pacing' | 'similar' | 'weekly' | 'handwriting';
+export type Route = 'dashboard' | 'practice' | 'test' | 'review' | 'plan' | 'tutor' | 'analysis' | 'adaptive' | 'work' | 'pacing' | 'similar' | 'weekly' | 'handwriting' | 'assistant';
 export interface Attempt {
   id: string; questionId: string; selected: Choice; correct: boolean;
   mode: 'practice' | 'test'; sessionId: string | null; flagged: boolean;

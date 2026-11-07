@@ -3,18 +3,19 @@ const pages = [
  ['Dashboard','Small steps. Real progress.'],['Question Practice','One question at a time.'],['Practice Test','Find your focus.'],['Answer Review','Make the next one click.'],
  ['Daily Plan','A plan that meets you here.'],['Guided Tutor','A nudge in the right direction.'],['Mistake Analysis','Find the lesson in the miss.'],
  ['Adaptive Practice','The right next challenge.'],['Explain My Work','Let’s find the turning point.'],['Pacing Coach','Make time work for you.'],['Similar Questions','Same skill. A fresh start.'],['Weekly Summary','Look how far you’ve come.'],['Handwritten Work','Your scratch work has a story.'],
+ ['AI Assistant','Ask. Understand. Move forward.']
 ];
-test('all thirteen destinations are available from the same desktop left menu',async ({page})=>{
+test('all fourteen destinations are available from the same desktop left menu',async ({page})=>{
  await page.goto('/');const nav=page.getByRole('navigation',{name:'Main navigation'});
- await expect(nav.getByRole('button')).toHaveCount(13);
- for(const [name,title] of pages){await nav.getByRole('button',{name,exact:true}).click();await expect(page.locator('h1')).toHaveText(title);await expect(nav.getByRole('button',{name,exact:true})).toHaveAttribute('aria-current','page');await expect(nav.getByRole('button')).toHaveCount(13)}
+ await expect(nav.getByRole('button')).toHaveCount(14);
+ for(const [name,title] of pages){await nav.getByRole('button',{name,exact:true}).click();await expect(page.locator('h1')).toHaveText(title);await expect(nav.getByRole('button',{name,exact:true})).toHaveAttribute('aria-current','page');await expect(nav.getByRole('button')).toHaveCount(14)}
 });
 test('mobile Menu exposes every destination, closes on selection and preserves current route',async ({page})=>{
  await page.setViewportSize({width:320,height:844});await page.goto('/');
  const nav=page.getByRole('navigation',{name:'Main navigation'});await expect(nav).toBeHidden();
  for(const [name,title] of pages){await page.getByRole('button',{name:'Open navigation',exact:true}).click();await expect(nav).toBeVisible();await nav.getByRole('button',{name,exact:true}).click();await expect(page.locator('h1')).toHaveText(title);await expect(nav).toBeHidden();expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)}
- await page.reload();await expect(page.locator('h1')).toHaveText('Your scratch work has a story.');
- await page.getByRole('button',{name:'Open navigation',exact:true}).click();await expect(nav.getByRole('button',{name:'Handwritten Work',exact:true})).toHaveAttribute('aria-current','page');
+ await page.reload();await expect(page.locator('h1')).toHaveText('Ask. Understand. Move forward.');
+ await page.getByRole('button',{name:'Open navigation',exact:true}).click();await expect(nav.getByRole('button',{name:'AI Assistant',exact:true})).toHaveAttribute('aria-current','page');
  await page.screenshot({path:'test-results/navigation/mobile-menu-320.png',fullPage:false});
 });
 test('intelligence screens support checked adaptive routing, work review, similar practice and handwriting confirmation',async ({page})=>{

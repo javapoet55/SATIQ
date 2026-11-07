@@ -16,6 +16,14 @@ export class PostgresStore {
       last_write_id UUID,
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )`);
+    await this.pool.query(`CREATE TABLE IF NOT EXISTS waypoint_assistant (
+      owner_hash TEXT NOT NULL REFERENCES waypoint_progress(owner_hash) ON DELETE CASCADE,
+      request_id UUID NOT NULL, message TEXT NOT NULL, answer TEXT,
+      status TEXT NOT NULL DEFAULT 'pending', requests INTEGER NOT NULL DEFAULT 1, context JSONB NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      PRIMARY KEY (owner_hash, request_id)
+    )`);
+    await this.pool.query('CREATE INDEX IF NOT EXISTS waypoint_assistant_created ON waypoint_assistant(created_at)');
   }
   async health() { await this.pool.query('SELECT 1'); }
   async get(owner, initial) {
@@ -32,4 +40,34 @@ export class PostgresStore {
     return existing.rows[0] ?? null;
   }
   async close() { await this.pool.end(); }
+  async assistantHistory(owner) {
+    const {rows} = await this.pool.query(`SELECT request_id AS id, message, answer, context, created_at AS "createdAt"
+      FROM waypoint_assistant WHERE owner_hash=$1 AND status='completed' ORDER BY created_at DESC LIMIT 20`,[owner]);
+    return rows.reverse();
+  }
+  async reserveAssistant(owner, id, message, context) {
+    const client = await this.pool.connect();
+    try {
+      await client.query('BEGIN');
+      // Serialize reservations across instances, including the global daily allowance.
+      await client.query('SELECT pg_advisory_xact_lock(192837465)');
+      const old = (await client.query('SELECT * FROM waypoint_assistant WHERE owner_hash=$1 AND request_id=$2',[owner,id])).rows[0];
+      if (old && old.message !== message) return {kind:'mismatch'};
+      if (old?.status === 'completed') return {kind:'completed',answer:old.answer,context:old.context};
+      const busy = await client.query(`SELECT 1 FROM waypoint_assistant WHERE owner_hash=$1 AND status='pending' AND updated_at > NOW()-INTERVAL '90 seconds' LIMIT 1`,[owner]);
+      if (busy.rowCount) return {kind:'busy'};
+      const counts = (await client.query(`SELECT COALESCE(SUM(requests),0)::int AS total, COALESCE(SUM(requests) FILTER (WHERE owner_hash=$1),0)::int AS personal FROM waypoint_assistant WHERE updated_at > NOW()-INTERVAL '24 hours'`,[owner])).rows[0];
+      if (counts.total >= 500 || counts.personal >= 30) return {kind:'limit'};
+      await client.query(`INSERT INTO waypoint_assistant(owner_hash,request_id,message,context) VALUES($1,$2,$3,$4::jsonb)
+        ON CONFLICT(owner_hash,request_id) DO UPDATE SET status='pending',requests=waypoint_assistant.requests+1,context=EXCLUDED.context,updated_at=NOW()`,[owner,id,message,JSON.stringify(context)]);
+      await client.query('COMMIT');
+      return {kind:'reserved'};
+    } finally {await client.query('ROLLBACK').catch(()=>{});client.release();}
+  }
+  async completeAssistant(owner,id,answer) {
+    await this.pool.query(`UPDATE waypoint_assistant SET answer=$3,status='completed',updated_at=NOW() WHERE owner_hash=$1 AND request_id=$2`,[owner,id,answer]);
+  }
+  async failAssistant(owner,id) {
+    await this.pool.query(`UPDATE waypoint_assistant SET status='failed',updated_at=NOW() WHERE owner_hash=$1 AND request_id=$2 AND status='pending'`,[owner,id]);
+  }
 }

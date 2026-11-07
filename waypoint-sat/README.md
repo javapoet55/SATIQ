@@ -15,6 +15,28 @@ Live application: **https://waypoint-web-production-50a5.up.railway.app/**
 - Saved data loads before the study screens open. Failed initial loads show a reconnect screen, rather than replacing existing progress with a blank state. Concurrent saves use revisions; a stale tab cannot overwrite newer progress. Export pending work before choosing **Reload server copy**.
 - The hosted version’s clock still follows the device clock; hosting adds persistence, not a calibrated or secure exam system. The demo remains five minutes with four questions and no SAT score estimate.
 
+### AI Assistant: connect GPT
+
+Open **Learning Companion → AI Assistant** (or `/#assistant`). Five editable examples cover weekly weak areas, latest mistakes, a 20-minute study plan, linear equations, and pacing. Choose an example, edit it if desired, then select **Ask Waypoint**. Examples never send a paid API request by themselves.
+
+In the existing Railway project, select **waypoint-web → Variables**:
+
+1. Add `OPENAI_API_KEY` with your OpenAI API key. Keep it on the web service, without a `VITE_` prefix. Do not commit it or paste it into chat.
+2. Optionally add `OPENAI_MODEL`. The default is `gpt-5-mini`; choose a model available to your API project that supports the Responses API. GPT-5 models use low reasoning effort.
+3. Deploy the variable changes. Reload AI Assistant or select **Refresh context**. “GPT connected” means a key is configured; the first successful question verifies that the key, model access, and API billing work.
+
+Without a key, the screen shows actual database context and preserves a draft, but does not generate or simulate AI answers. API failures appear visibly with a retry action. Local-only `npm run dev` does not connect to GPT; use the hosted app or build with `VITE_PERSISTENCE_MODE=server` and run `DATABASE_URL=... OPENAI_API_KEY=... npm start` to use a local Node server backed by PostgreSQL.
+
+The server reads the current browser's PostgreSQL profile on every question and builds a bounded, read-only summary of recent attempts, confirmed mistake reflections, strategy notes, the current question, latest mistake with a verified solution, today's plan, and recent submitted demo sessions. Accuracy is recomputed against the question catalog. Weekly figures use the student's IANA time zone, Monday through today, and first attempt per distinct question within that week. Small samples are explicitly identified. No SAT score is estimated. The model has no SQL tool, database credentials, arbitrary database access, or progress-write capability.
+
+Questions, the six most recent exchanges, and the summary are sent to OpenAI through the server's [Responses API](https://developers.openai.com/api/docs/guides/conversation-state) with `store:false`. This disables response-object storage at OpenAI; it is not a promise of zero retention under OpenAI's other data policies. The browser receives no API key. AI text renders as plain text, never executable HTML. Running and paused tests block requests on the server, including a test started during response generation.
+
+Chat is stored separately in `waypoint_assistant`, scoped by the same private profile cookie. The latest 20 completed exchanges are displayed; older exchanges remain in PostgreSQL. Reload restores completed replies, drafts, and retry IDs. Repeating a completed request ID returns its saved reply without another GPT call. Failed or abandoned requests can be retried; a provider call completed before a database failure may be charged again. Chat is separate from the existing progress export/import and is not transferred by those controls. Browser drafts require localStorage; completed chat remains in PostgreSQL.
+
+Requests are capped at 2,000 characters and 4,096 output tokens, with a 60-second provider timeout, one in-flight request per profile, and rolling 24-hour allowances of 30 provider requests per profile and 500 globally (including failed retries). These limits are shared across app instances through PostgreSQL. Anonymous profiles can be recreated by clearing cookies, so these are modest cost controls, not authenticated abuse prevention. Set an appropriate spending limit in your OpenAI project before sharing broadly.
+
+Verification uses mocked OpenAI responses for success, provider errors, missing-key mode, retries, isolation, test blocking, and responsive chat at 1440, 834, 390 and 320px. A real paid GPT answer must be checked after a valid API key is configured.
+
 ### Bring your existing local progress
 
 1. Open the original local app at `http://127.0.0.1:5173/` in the browser where you studied.

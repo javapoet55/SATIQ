@@ -3,6 +3,7 @@ import {randomBytes, createHash} from 'node:crypto';
 import {readFile, stat} from 'node:fs/promises';
 import {resolve, extname, sep} from 'node:path';
 import {emptyState, parseState} from '../src/model.ts';
+import {createAssistant, studyContext, assistantError} from './assistant.mjs';
 
 const COOKIE = 'waypoint_student';
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -22,7 +23,7 @@ async function readBody(req) {
   try { return JSON.parse(Buffer.concat(chunks).toString('utf8')); }
   catch { const e = new Error('Invalid JSON request.'); e.status = 400; throw e; }
 }
-export function createApp({database, dist = resolve('dist'), production = process.env.NODE_ENV === 'production', appOrigin = process.env.APP_ORIGIN}) {
+export function createApp({database, assistant = createAssistant(), dist = resolve('dist'), production = process.env.NODE_ENV === 'production', appOrigin = process.env.APP_ORIGIN}) {
   return createServer(async (req, res) => {
     for (const [key,value] of Object.entries(headers)) res.setHeader(key, value);
     const json = (status, value) => { res.writeHead(status, {'Content-Type':'application/json; charset=utf-8', 'Cache-Control':'no-store'}); res.end(JSON.stringify(value)); };
@@ -34,16 +35,42 @@ export function createApp({database, dist = resolve('dist'), production = proces
         return;
       }
       if (path.startsWith('/api/')) {
-        if (path !== '/api/progress' || !['GET','PUT'].includes(req.method)) { json(404, {message:'Unknown endpoint.'}); return; }
+        const isAssistant = path === '/api/assistant';
+        if (!(path === '/api/progress' && ['GET','PUT'].includes(req.method)) && !(isAssistant && ['GET','POST'].includes(req.method))) { json(404, {message:'Unknown endpoint.'}); return; }
         const expectedOrigin = appOrigin || `${req.headers['x-forwarded-proto'] === 'https' ? 'https' : 'http'}://${req.headers.host}`;
         if ((req.headers.origin && req.headers.origin !== expectedOrigin) || req.headers['sec-fetch-site'] === 'cross-site') { json(403, {message:'Cross-site requests are not allowed.'}); return; }
-        if (req.method === 'PUT' && (req.headers['x-waypoint-client'] !== '1' || !req.headers['content-type']?.startsWith('application/json'))) { json(403, {message:'A same-origin JSON request is required.'}); return; }
+        if (req.method !== 'GET' && (req.headers['x-waypoint-client'] !== '1' || !req.headers['content-type']?.startsWith('application/json'))) { json(403, {message:'A same-origin JSON request is required.'}); return; }
         const raw = req.headers.cookie?.split(';').map(p => p.trim()).find(p => p.startsWith(`${COOKIE}=`))?.slice(COOKIE.length + 1);
         let token = raw && /^[a-f0-9]{64}$/.test(raw) ? raw : null;
-        if (!token && req.method === 'PUT') { json(401, {message:'Study session expired. Reload to reconnect.'}); return; }
+        if (!token && req.method !== 'GET') { json(401, {message:'Study session expired. Reload to reconnect.'}); return; }
         if (!token) token = randomBytes(32).toString('hex');
         const owner = createHash('sha256').update(token).digest('hex');
         res.setHeader('Set-Cookie', `${COOKIE}=${token}; HttpOnly; SameSite=Lax; Path=/; Max-Age=31536000${production ? '; Secure' : ''}`);
+        if (isAssistant) {
+          const snapshot = await database.get(owner, emptyState());
+          const body = req.method === 'POST' ? await readBody(req) : null;
+          const timezone = body?.timezone ?? new URL(req.url,'http://localhost').searchParams.get('timezone') ?? 'UTC';
+          if (typeof timezone !== 'string' || timezone.length > 100) throw assistantError(400,'Invalid time zone.');
+          const context = studyContext(snapshot.state,timezone);
+          const history = await database.assistantHistory(owner);
+          if (req.method === 'GET') {json(200,{configured:assistant.configured,model:assistant.model,profileId:snapshot.profileId,context,history});return;}
+          if (typeof body?.message !== 'string' || !body.message.trim() || body.message.trim().length > 2000 || !UUID.test(body.requestId)) throw assistantError(400,'Enter a question of 1–2,000 characters with a valid request ID.');
+          if (context.testBlocked) throw assistantError(409,'Finish and submit your practice test before using AI help.');
+          if (!assistant.configured) throw assistantError(503,'GPT is not connected yet. Add OPENAI_API_KEY to the Railway web service and deploy the variable change.');
+          const message = body.message.trim();
+          const reservation = await database.reserveAssistant(owner,body.requestId,message,context);
+          if (reservation.kind === 'completed') {json(200,{id:body.requestId,message,answer:reservation.answer,context:reservation.context});return;}
+          if (reservation.kind === 'mismatch') throw assistantError(409,'This request ID belongs to a different question. Start a new question.');
+          if (reservation.kind === 'busy') throw assistantError(409,'An answer is still being prepared. Wait a moment before retrying.');
+          if (reservation.kind === 'limit') throw assistantError(429,'The daily AI question allowance has been reached. Try again tomorrow.');
+          try {
+            const answer = await assistant.answer(message,context,history);
+            const latest = await database.get(owner,emptyState());
+            if (latest.state.sessions.some(s=>['running','paused'].includes(s.status))) throw assistantError(409,'A practice test started while your answer was being prepared. Submit it before asking again.');
+            await database.completeAssistant(owner,body.requestId,answer);
+            json(200,{id:body.requestId,message,answer,context});return;
+          } catch (error) {await database.failAssistant(owner,body.requestId);throw error;}
+        }
         if (req.method === 'GET') { const snapshot = await database.get(owner, emptyState()); json(200, snapshot); return; }
         const body = await readBody(req);
         if (!Number.isSafeInteger(body?.revision) || body.revision < 0 || !UUID.test(body.writeId)) { json(400, {message:'Invalid save revision or write ID.'}); return; }

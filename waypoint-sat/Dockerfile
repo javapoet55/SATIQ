@@ -14,6 +14,7 @@ RUN npm ci --omit=dev && npm cache clean --force
 COPY --from=build /app/dist ./dist
 COPY server ./server
 COPY src/model.ts src/companion-types.ts src/intelligence-types.ts ./src/
+COPY src/data ./src/data
 USER node
 EXPOSE 3000
 CMD ["node", "--experimental-strip-types", "server/index.mjs"]
