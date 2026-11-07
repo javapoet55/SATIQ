@@ -1,6 +1,8 @@
-# Waypoint SAT Studio
+# PrepOrbit AI SAT Studio
 
-A React + TypeScript application following the supplied Waypoint visual reference and design specification, with both local-only and Railway/PostgreSQL modes. All four original questions, answer choices, hints and worked solutions are included. The reference HTML files are preserved in `references/`.
+A React + TypeScript application following the supplied visual reference and design specification, with both local-only and Railway/PostgreSQL modes. All four original questions, answer choices, hints and worked solutions are included. The reference HTML files are preserved in `references/`.
+
+Existing internal database, cookie, and browser-storage identifiers, question IDs, project paths, and the Railway URL stay compatible so existing profiles and bookmarks keep working. Original design references and historical screenshots are archived unchanged; current product branding is PrepOrbit AI.
 
 ## Railway version
 
@@ -17,7 +19,7 @@ Live application: **https://waypoint-web-production-50a5.up.railway.app/**
 
 ### AI Assistant: connect GPT
 
-Open **Learning Companion → AI Assistant** (or `/#assistant`). Five editable examples cover weekly weak areas, latest mistakes, a 20-minute study plan, linear equations, and pacing. Choose an example, edit it if desired, then select **Ask Waypoint**. Examples never send a paid API request by themselves.
+Open **Learning Companion → AI Assistant** (or `/#assistant`). Five editable examples cover weekly weak areas, latest mistakes, a 20-minute study plan, linear equations, and pacing. Choose an example, edit it if desired, then select **Ask PrepOrbit AI**. Examples never send a paid API request by themselves.
 
 In the existing Railway project, select **waypoint-web → Variables**:
 

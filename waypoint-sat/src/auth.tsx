@@ -1,3 +1,4 @@
+import {Brand} from './Brand';
 import React, {useEffect, useRef, useState} from 'react';
 
 export type AuthMode = 'signin' | 'signup' | 'forgot' | 'reset';
@@ -44,7 +45,7 @@ export function AuthScreen({initialMode = 'signin', resetToken, onSignedIn}: {in
   const heading = useRef<HTMLHeadingElement>(null);
   const firstRender = useRef(true);
   const setMode = (next: AuthMode) => { setModeState(next); setError(''); setMessage(''); setPassword(''); setConfirm(''); setShow(false); };
-  useEffect(() => { document.title = `Waypoint · ${{signin:'Sign in', signup:'Create account', forgot:'Forgot password', reset:'Reset password'}[mode]}`; if (firstRender.current) firstRender.current = false; else heading.current?.focus(); }, [mode]);
+  useEffect(() => { document.title = `PrepOrbit AI · ${{signin:'Sign in', signup:'Create account', forgot:'Forgot password', reset:'Reset password'}[mode]}`; if (firstRender.current) firstRender.current = false; else heading.current?.focus(); }, [mode]);
   const needsConfirm = mode === 'signup' || mode === 'reset';
   const submit = async (event: React.FormEvent) => {
     event.preventDefault(); if (busy) return;
@@ -70,7 +71,7 @@ export function AuthScreen({initialMode = 'signin', resetToken, onSignedIn}: {in
   const button = {signin:'Sign in', signup:'Create account', forgot:'Send reset link', reset:'Save new password'}[mode];
   return <main className="auth-page" id="main-content">
     <div className="auth card">
-      <div className="brand">✳ <span>way</span>point</div>
+      <Brand/>
       <div className="eyebrow">SAT STUDIO</div>
       <h1 ref={heading} tabIndex={-1}>{title}</h1>
       <p className="muted">{lead}</p>

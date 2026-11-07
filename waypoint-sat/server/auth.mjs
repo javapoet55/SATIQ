@@ -64,7 +64,7 @@ export class RateLimiter {
 
 // Railway blocks outbound SMTP on most plans, so email goes through an HTTPS API (Resend).
 // Without RESEND_API_KEY the link is written to the service log, which only project members can read.
-export function createMailer({apiKey = process.env.RESEND_API_KEY, from = process.env.MAIL_FROM || 'Waypoint <onboarding@resend.dev>'} = {}) {
+export function createMailer({apiKey = process.env.RESEND_API_KEY, from = process.env.MAIL_FROM || 'PrepOrbit AI <onboarding@resend.dev>'} = {}) {
   return {
     configured: !!apiKey,
     async sendPasswordReset({to, link}) {
@@ -72,11 +72,11 @@ export function createMailer({apiKey = process.env.RESEND_API_KEY, from = proces
         console.warn(`[password-reset] Email delivery is not configured (set RESEND_API_KEY). Reset link for ${to}: ${link}`);
         return;
       }
-      const text = `Someone asked to reset the password for your Waypoint SAT Studio account.\n\nOpen this link within 60 minutes to choose a new password:\n${link}\n\nIf you did not ask for this, you can ignore this email. Your password will not change.`;
-      const html = `<p>Someone asked to reset the password for your Waypoint SAT Studio account.</p><p><a href="${link}">Choose a new password</a> (the link works for 60 minutes and only once).</p><p>If you did not ask for this, you can ignore this email. Your password will not change.</p>`;
+      const text = `Someone asked to reset the password for your PrepOrbit AI SAT Studio account.\n\nOpen this link within 60 minutes to choose a new password:\n${link}\n\nIf you did not ask for this, you can ignore this email. Your password will not change.`;
+      const html = `<p>Someone asked to reset the password for your PrepOrbit AI SAT Studio account.</p><p><a href="${link}">Choose a new password</a> (the link works for 60 minutes and only once).</p><p>If you did not ask for this, you can ignore this email. Your password will not change.</p>`;
       const response = await fetch('https://api.resend.com/emails', {
         method: 'POST', headers: {Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json'},
-        body: JSON.stringify({from, to: [to], subject: 'Reset your Waypoint password', text, html}), signal: AbortSignal.timeout(15000),
+        body: JSON.stringify({from, to: [to], subject: 'Reset your PrepOrbit AI password', text, html}), signal: AbortSignal.timeout(15000),
       });
       if (!response.ok) throw new Error(`Email provider returned ${response.status}`);
     },

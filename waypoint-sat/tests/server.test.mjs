@@ -117,7 +117,7 @@ test('production cookie is secure and database outage produces a safe failure', 
 test('static app is served with security headers; missing assets are not HTML', async t => {
   const {url} = await start(t);
   const response = await fetch(url);
-  assert.equal(response.status,200); assert.match(await response.text(), /Waypoint/);
+  assert.equal(response.status,200); assert.match(await response.text(), /PrepOrbit AI/);
   assert.equal(response.headers.get('x-frame-options'),'DENY');
   assert.equal((await fetch(`${url}/assets/missing.js`)).status,404);
 });

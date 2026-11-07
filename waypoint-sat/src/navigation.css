@@ -1,6 +1,8 @@
-/* One persistent navigation surface for every Waypoint destination. */
+/* One persistent navigation surface for every PrepOrbit AI destination. */
 .shell>.app-sidebar{position:sticky;top:0;height:100dvh;overflow-y:auto;padding:24px 16px;align-self:start}
 .sidebar-brand-row{display:flex;align-items:center;justify-content:space-between;gap:10px}.menu-toggle{display:none}
+.brand{display:flex;align-items:center;gap:7px;font-size:22px;white-space:nowrap;letter-spacing:-.8px}.brand .brand-symbol{color:#70855d;flex-shrink:0}.brand .brand-name{color:var(--ink)}.brand .brand-ai{color:#70855d;font-size:.65em;letter-spacing:0}
+@media(min-width:701px) and (max-width:1050px){.sidebar-brand-row .brand{font-size:20px}}
 .shell .sidebar-nav{display:grid;grid-template-columns:1fr;gap:22px;margin-top:28px}
 .nav-group{display:grid;gap:4px}.nav-group-title{font:900 10px/1.6 system-ui,sans-serif;color:var(--ink);letter-spacing:1.3px;text-transform:uppercase;margin:0 10px 4px}
 .shell .sidebar-nav button{display:flex;align-items:center;gap:10px;text-align:left;padding:10px;min-height:44px;font-size:13px;line-height:1.4;white-space:normal;width:100%}

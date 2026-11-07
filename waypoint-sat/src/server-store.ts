@@ -14,7 +14,7 @@ export class SignInRequired extends Error {}
 // Removes this browser's copy of hosted progress (used on sign-out so the next person can't read it).
 export function clearServerCache() { try { localStorage.removeItem(CACHE_KEY); } catch { /* Storage denied. */ } }
 interface Cache extends ServerSnapshot {pending: boolean}
-export function exportProgress(value: string, name = 'waypoint-progress.json') {
+export function exportProgress(value: string, name = 'preporbit-ai-progress.json') {
   const url = URL.createObjectURL(new Blob([value], {type: 'application/json'}));
   const a = document.createElement('a'); a.href = url; a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
@@ -93,6 +93,6 @@ export function useServerStore(snapshot: ServerSnapshot): ProgressStore {
     },
     exportData: () => exportProgress(JSON.stringify(current.current, null, 2)),
     reset: () => {if (conflict.current) {setError('Reload the server copy before starting fresh. Export pending work first.'); return;} commit(() => emptyState());},
-    importData: raw => {const imported = parseState(raw); if (conflict.current) throw new Error('Reload the server copy before importing a backup.'); exportProgress(JSON.stringify(current.current,null,2), 'waypoint-before-import.json'); commit(() => imported);},
+    importData: raw => {const imported = parseState(raw); if (conflict.current) throw new Error('Reload the server copy before importing a backup.'); exportProgress(JSON.stringify(current.current,null,2), 'preporbit-ai-before-import.json'); commit(() => imported);},
   };
 }
