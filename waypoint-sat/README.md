@@ -77,11 +77,11 @@ From this project directory, with the Railway CLI signed into the correct worksp
 
 ```sh
 railway link --project ff7c016b-3e75-4524-b237-0565185ea0f2 --service waypoint-web
-railway up . --path-as-root --service waypoint-web --detach
+railway up .. --path-as-root --service waypoint-web --detach
 railway deployment list --service waypoint-web --limit 3
 ```
 
-The project is deployed from local source uploads, not a GitHub repository. Use the commands above to publish later changes. The private database URL stays in Railway variables. Set `APP_ORIGIN` to the exact public HTTPS origin if changing the domain; it enforces same-origin write requests. Use `/api/health` to confirm both the web server and PostgreSQL are reachable.
+Railway is connected to the SATIQ repository with `/waypoint-sat` as the service root. The manual upload above includes the repository root to preserve that layout. The private database URL stays in Railway variables. Set `APP_ORIGIN` to the exact public HTTPS origin if changing the domain; it enforces same-origin write requests. Use `/api/health` to confirm both the web server and PostgreSQL are reachable.
 
 For a locally running server against your own PostgreSQL instance, set `DATABASE_URL` in your shell, run `VITE_PERSISTENCE_MODE=server npm run build`, then `npm start`. Never put database credentials in a `VITE_` variable. The original `npm run dev` flow below stays local-only.
 

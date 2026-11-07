@@ -16,4 +16,4 @@ All fourteen screens are available in a persistent grouped left menu: the origin
 
 Source, tests, original design references, and deployment screenshots are included. Installed dependencies, generated builds, test output, and secrets are excluded from Git.
 
-The Railway service currently uses CLI source uploads. This push does not enable automatic deployment from GitHub. If connecting this repository to Railway later, set the service root directory to `/waypoint-sat` and retain the existing database variables.
+Railway uses `/waypoint-sat` as the service root and is connected to this SATIQ repository. Manual CLI uploads must include the repository root so that folder exists; retain the existing database variables.
