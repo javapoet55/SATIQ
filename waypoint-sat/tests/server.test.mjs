@@ -59,6 +59,7 @@ test('API validates data and rejects cross-site writes or missing sessions', asy
   assert.equal((await put('', body)).status,401);
   assert.equal((await put(cookie,{...body,state:{bad:true}})).status,400);
   assert.equal((await put(cookie,{...body,state:{...emptyState(),companion:{bad:true}}})).status,400);
+  assert.equal((await put(cookie,{...body,state:{...emptyState(),intelligence:{bad:true}}})).status,400);
   assert.equal((await put(cookie,body,{Origin:'https://unrelated.example'})).status,403);
   assert.equal((await put(cookie,body,{'X-Waypoint-Client':''})).status,403);
   assert.equal((await fetch(`${url}/api/progress/other`)).status,404);

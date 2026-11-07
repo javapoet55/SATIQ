@@ -109,3 +109,17 @@ test('companion conversations, plan completion and confirmed causes restore from
   expect(db.state.companion?.tutor['wp-math-001'].hintLevel).toBe(1);
   expect(db.state.attempts).toHaveLength(1);
 });
+
+test('intelligence practice, typed work and pacing goals restore from database',async({page})=>{
+ const db=await mockDatabase(page);await page.goto('/#adaptive');
+ await page.getByRole('radio',{name:'B. 5 hours',exact:true}).check();await page.getByRole('button',{name:'Check answer',exact:false}).click();
+ const nav=page.getByRole('navigation',{name:'Main navigation'});
+ await nav.getByRole('button',{name:'Explain My Work',exact:true}).click();
+ await page.getByRole('textbox',{name:'Your solution, one equation per line'}).fill('18 + 7d = 60\n7d = 42\nd = 6');
+ await nav.getByRole('button',{name:'Pacing Coach',exact:true}).click();await page.getByRole('button',{name:'Explore sample report',exact:true}).click();await page.getByRole('button',{name:'Use this pacing goal',exact:true}).click();
+ await expect(page.locator('footer')).toContainText('Saved to Railway database');
+ await page.evaluate(()=>localStorage.clear());await page.reload();
+ await page.getByRole('button',{name:'Explore sample report',exact:true}).click();await expect(page.getByRole('button',{name:'✓ Pacing goal saved · Clear',exact:true})).toBeVisible();
+ await nav.getByRole('button',{name:'Explain My Work',exact:true}).click();await expect(page.getByRole('textbox',{name:'Your solution, one equation per line'})).toHaveValue('18 + 7d = 60\n7d = 42\nd = 6');
+ expect(db.state.intelligence?.attempts).toHaveLength(1);expect(db.state.intelligence?.pacingGoal).toBe(true);
+});

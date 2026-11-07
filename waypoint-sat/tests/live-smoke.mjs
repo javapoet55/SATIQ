@@ -5,6 +5,7 @@ import {randomUUID} from 'node:crypto';
 import {createInterface} from 'node:readline';
 import {emptyState, createSession, resumeSession, finishSession, parseState} from '../src/model.ts';
 import {startPlanTask, checkTutor, completePlanTask, editReflection, confirmAnalysis} from '../src/companion-model.ts';
+import {emptyIntelligence} from '../src/intelligence-types.ts';
 const origin = process.argv[2];
 if (!origin?.startsWith('https://')) throw new Error('Pass the deployed HTTPS origin.');
 const first = await fetch(`${origin}/api/progress`);
@@ -31,6 +32,10 @@ state = editReflection(state,analysisId,'I want to check my equation setup.');
 state.companion.analyses[analysisId] = {...state.companion.analyses[analysisId],opened:true,cause:'concept'};
 state = confirmAnalysis(state,analysisId,now+5000);
 state = completePlanTask(state,now+6000);
+state.intelligence=emptyIntelligence();
+state.intelligence.attempts=[{id:randomUUID(),questionId:'smart-a1',selected:1,correct:true,hinted:false,elapsedMs:1500,submittedAt:now,level:'Medium'}];
+state.intelligence.workDraft='18 + 7d = 60\n7d = 42\nd = 6';
+state.intelligence.pacingGoal=true;
 const body = {state,revision:snapshot.revision,writeId:randomUUID()};
 assert.deepEqual(parseState(JSON.stringify(state)),state);
 const put = async payload => fetch(`${origin}/api/progress`,{method:'PUT',headers:{cookie,Origin:origin,'Content-Type':'application/json','X-Waypoint-Client':'1'},body:JSON.stringify(payload)});
@@ -51,6 +56,6 @@ for await (const line of lines) {
   assert.deepEqual(parseState(JSON.stringify(after.state)),state);
   const validatedSave = await put({state:after.state,revision:after.revision,writeId:randomUUID()}); assert.equal(validatedSave.status,200);
   const health = await (await fetch(`${origin}/api/health`)).json(); assert.deepEqual(health,{ok:true,storage:'postgres'});
-  console.log('Live durability passed: the new deployment restored original answers and notes plus companion conversations, draft, daily plan completion and confirmed analysis from PostgreSQL.');
+  console.log('Live durability passed: original answers and notes, companion state, intelligent-practice attempts, typed work and pacing goal restored and validated after deployment.');
   lines.close(); break;
 }

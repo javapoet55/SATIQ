@@ -42,6 +42,17 @@ For a locally running server against your own PostgreSQL instance, set `DATABASE
 
 ## Learning Companion
 
+All thirteen screens are available from one persistent left menu, grouped as **SAT Studio**, **Learning Companion**, and **Practice Intelligence**. On phones, tap **Menu**, choose a destination, and the menu closes to show that screen. Existing hash links still work.
+
+The six Practice Intelligence screens from `references/new1.html` are:
+
+- `#adaptive`: three curated algebra questions with a transparent next-question rule based on correctness and hint use. Checked attempts save to the study profile.
+- `#work`: a typed equation verifier for the original tool-rental problem. It identifies the first unsupported or non-equivalent equation using a restricted algebra parser; it does not call AI or execute entered code.
+- `#pacing`: actual submitted demo question timings, filters and a saved pacing goal. An explicitly labeled sample report is also available.
+- `#similar`: nine verified template variants across Foundation, Medium and Stretch levels. No live AI generation is used.
+- `#weekly`: a summary derived from real saved original and intelligent-practice attempts, with student/parent wording and print support. No messages are sent or parent accounts created.
+- `#handwriting`: a session-only local image preview, manual transcription or illustrative sample, confirmation and equation verification. Automatic handwriting recognition is not connected. Typed lines are saved; uploaded images are not sent to the server.
+
 The original four studio screens are preserved. Use **Learning companion** in the header or **Open daily plan** on the dashboard to open the three new screens:
 
 - **`#plan` — Daily Plan:** choose 10, 20 or 30 minutes. The durations and planned question targets follow the handoff. Because the original bank contains four questions, each practice activity explicitly uses one representative original question; a review activity uses one real saved attempt. Only a fresh checked answer or a confirmed review can complete a demo activity. Completed activities survive budget changes and reloads. The week strip uses actual local dates and recorded history. Past/future plans are read-only previews. Accuracy and streaks use saved activity; no mock scores or streaks are shown.

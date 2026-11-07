@@ -12,7 +12,7 @@ npm ci
 npm run dev
 ```
 
-The original Dashboard, Question Practice, Practice Test, and Answer Review screens are included alongside the three Learning Companion screens. Tutor and mistake-analysis guidance is explicitly scripted; no live AI provider is connected. SAT score estimates remain unavailable without a validated scoring method.
+All thirteen screens are available in a persistent grouped left menu: the original four SAT Studio screens, three Learning Companion screens, and six Practice Intelligence screens. On phones, open **Menu** to choose a screen. Tutor and mistake-analysis guidance is explicitly scripted; no live AI provider or handwriting recognition service is connected. SAT score estimates remain unavailable without a validated scoring method.
 
 Source, tests, original design references, and deployment screenshots are included. Installed dependencies, generated builds, test output, and secrets are excluded from Git.
 

@@ -1,6 +1,7 @@
 import {validateCompanion, type CompanionState} from './companion-types.ts';
+import {validateIntelligence, type IntelligenceState} from './intelligence-types.ts';
 export type Choice = number | null;
-export type Route = 'dashboard' | 'practice' | 'test' | 'review' | 'plan' | 'tutor' | 'analysis';
+export type Route = 'dashboard' | 'practice' | 'test' | 'review' | 'plan' | 'tutor' | 'analysis' | 'adaptive' | 'work' | 'pacing' | 'similar' | 'weekly' | 'handwriting';
 export interface Attempt {
   id: string; questionId: string; selected: Choice; correct: boolean;
   mode: 'practice' | 'test'; sessionId: string | null; flagged: boolean;
@@ -18,6 +19,7 @@ export interface State {
   drafts: Record<string, Draft>; reflections: Record<string, {text: string; updatedAt: number}>;
   practiceQuestionId: string; reviewAttemptId: string | null;
   companion?: CompanionState;
+  intelligence?: IntelligenceState;
 }
 export const STORAGE_KEY = 'waypoint-local-v1';
 export const DEMO_MS = 5 * 60 * 1000;
@@ -90,5 +92,6 @@ export function parseState(raw: string): State {
   }
   if (s.activeSessionId !== null && !s.sessions.some((t: Session) => t.id === s.activeSessionId)) throw new Error('Missing active session.');
   if (s.companion !== undefined) validateCompanion(s.companion, s.attempts);
+  if (s.intelligence !== undefined) validateIntelligence(s.intelligence);
   return s as State;
 }
