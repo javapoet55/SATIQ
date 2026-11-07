@@ -1,5 +1,5 @@
-// Explicitly run against a deployed test environment. Uses an isolated anonymous
-// profile, never the user's Chrome cookie or existing student progress.
+// Explicitly run against a deployed test environment. Signs up throwaway QA accounts
+// (qa-<uuid>@example.com); never uses the user's Chrome cookie or existing student progress.
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
 import {createInterface} from 'node:readline';
@@ -8,11 +8,17 @@ import {startPlanTask, checkTutor, completePlanTask, editReflection, confirmAnal
 import {emptyIntelligence} from '../src/intelligence-types.ts';
 const origin = process.argv[2];
 if (!origin?.startsWith('https://')) throw new Error('Pass the deployed HTTPS origin.');
-const first = await fetch(`${origin}/api/progress`);
+assert.equal((await fetch(`${origin}/api/progress`)).status,401);
+const signup = async () => {
+  const response = await fetch(`${origin}/api/auth/signup`,{method:'POST',headers:{Origin:origin,'Content-Type':'application/json','X-Waypoint-Client':'1'},body:JSON.stringify({email:`qa-${randomUUID()}@example.com`,password:`qa ${randomUUID()}`})});
+  assert.equal(response.status,200);
+  const header = response.headers.get('set-cookie');
+  assert.match(header, /waypoint_session=[a-f0-9]{64}; HttpOnly; SameSite=Lax/); assert.match(header, /; Secure/);
+  return header.split(';')[0];
+};
+const cookie = await signup();
+const first = await fetch(`${origin}/api/progress`,{headers:{cookie}});
 assert.equal(first.status,200);
-assert.match(first.headers.get('set-cookie'), /HttpOnly; SameSite=Lax/);
-assert.match(first.headers.get('set-cookie'), /; Secure/);
-const cookie = first.headers.get('set-cookie').split(';')[0];
 const snapshot = await first.json();
 assert.deepEqual(snapshot.state,emptyState());
 const ids = ['wp-math-001','wp-rw-001','wp-math-002','wp-rw-002'];
@@ -42,11 +48,11 @@ const put = async payload => fetch(`${origin}/api/progress`,{method:'PUT',header
 const saved = await put(body); assert.equal(saved.status,200); const result = await saved.json();
 const retry = await put(body); assert.equal(retry.status,200); assert.deepEqual(await retry.json(),result);
 assert.equal((await put({...body,writeId:randomUUID()})).status,409);
-const other = await (await fetch(`${origin}/api/progress`)).json();
+const other = await (await fetch(`${origin}/api/progress`,{headers:{cookie:await signup()}})).json();
 assert.notEqual(other.profileId,snapshot.profileId); assert.deepEqual(other.state,emptyState());
 const csrf = await fetch(`${origin}/api/progress`,{method:'PUT',headers:{cookie,Origin:'https://unrelated.example','Content-Type':'application/json','X-Waypoint-Client':'1'},body:JSON.stringify(body)});
 assert.equal(csrf.status,403);
-console.log('Live API baseline passed: original test results plus companion conversations, drafts, plan completion and confirmed reflection; isolated profiles, retries, revision checks and CSRF protection.');
+console.log('Live API baseline passed: original test results plus companion conversations, drafts, plan completion and confirmed reflection; isolated accounts, retries, revision checks and CSRF protection.');
 console.log('Waiting for a redeployment. Send verify on stdin when the new instance is healthy.');
 const lines = createInterface({input:process.stdin});
 for await (const line of lines) {

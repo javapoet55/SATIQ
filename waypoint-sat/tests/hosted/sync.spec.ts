@@ -3,6 +3,7 @@ import {emptyState, type State} from '../../src/model';
 async function mockDatabase(page: Page) {
   const db = {state:emptyState(), revision:0, failAfterWrite:false};
   const writes = new Map<string,number>();
+  await page.route('**/api/auth/me', route => route.fulfill({json:{user:{email:'student@example.com'}, emailDelivery:true}}));
   await page.route('**/api/progress', async route => {
     if (route.request().method() === 'GET') {await route.fulfill({json:{state:db.state,revision:db.revision,profileId:'test-profile'}}); return;}
     const body = route.request().postDataJSON();

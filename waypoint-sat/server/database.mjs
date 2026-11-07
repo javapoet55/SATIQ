@@ -24,6 +24,28 @@ export class PostgresStore {
       PRIMARY KEY (owner_hash, request_id)
     )`);
     await this.pool.query('CREATE INDEX IF NOT EXISTS waypoint_assistant_created ON waypoint_assistant(created_at)');
+    await this.pool.query(`CREATE TABLE IF NOT EXISTS waypoint_users (
+      id UUID PRIMARY KEY,
+      email TEXT NOT NULL UNIQUE,
+      password_hash TEXT NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      password_changed_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )`);
+    await this.pool.query(`CREATE TABLE IF NOT EXISTS waypoint_sessions (
+      token_hash TEXT PRIMARY KEY,
+      user_id UUID NOT NULL REFERENCES waypoint_users(id) ON DELETE CASCADE,
+      expires_at TIMESTAMPTZ NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )`);
+    await this.pool.query('CREATE INDEX IF NOT EXISTS waypoint_sessions_user ON waypoint_sessions (user_id)');
+    await this.pool.query(`CREATE TABLE IF NOT EXISTS waypoint_password_resets (
+      token_hash TEXT PRIMARY KEY,
+      user_id UUID NOT NULL REFERENCES waypoint_users(id) ON DELETE CASCADE,
+      expires_at TIMESTAMPTZ NOT NULL,
+      used_at TIMESTAMPTZ,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )`);
+    await this.pool.query('CREATE INDEX IF NOT EXISTS waypoint_password_resets_user ON waypoint_password_resets (user_id)');
   }
   async health() { await this.pool.query('SELECT 1'); }
   async get(owner, initial) {
@@ -38,6 +60,68 @@ export class PostgresStore {
     // Retrying a request whose response was lost must not duplicate or overwrite a save.
     const existing = await this.pool.query('SELECT revision FROM waypoint_progress WHERE owner_hash = $1 AND last_write_id = $2', [owner, writeId]);
     return existing.rows[0] ?? null;
+  }
+  // Moves a pre-account (cookie-only) profile and its assistant history onto an account,
+  // only if the account has no progress yet. One transaction, so nothing is half-moved.
+  async claimProgress(fromOwner, toOwner) {
+    const client = await this.pool.connect();
+    try {
+      await client.query('BEGIN');
+      const moved = await client.query(`INSERT INTO waypoint_progress (owner_hash, profile_id, state, revision, last_write_id, updated_at)
+        SELECT $2, gen_random_uuid(), state, revision, last_write_id, NOW() FROM waypoint_progress
+        WHERE owner_hash = $1 AND NOT EXISTS (SELECT 1 FROM waypoint_progress WHERE owner_hash = $2)
+        ON CONFLICT (owner_hash) DO NOTHING RETURNING owner_hash`, [fromOwner, toOwner]);
+      if (!moved.rows[0]) { await client.query('ROLLBACK'); return false; }
+      await client.query('UPDATE waypoint_assistant SET owner_hash = $2 WHERE owner_hash = $1', [fromOwner, toOwner]);
+      const old = await client.query('DELETE FROM waypoint_progress WHERE owner_hash = $1 RETURNING profile_id', [fromOwner]);
+      // Keep the profile ID so a pending browser backup from before sign-up still matches and gets saved.
+      await client.query('UPDATE waypoint_progress SET profile_id = $2 WHERE owner_hash = $1', [toOwner, old.rows[0].profile_id]);
+      await client.query('COMMIT');
+      return true;
+    } catch (error) { await client.query('ROLLBACK').catch(() => {}); throw error; }
+    finally { client.release(); }
+  }
+
+  // Accounts
+  async createUser(email, passwordHash) {
+    const {rows} = await this.pool.query('INSERT INTO waypoint_users (id, email, password_hash) VALUES ($1, $2, $3) ON CONFLICT (email) DO NOTHING RETURNING id, email', [randomUUID(), email, passwordHash]);
+    return rows[0] ?? null;
+  }
+  async findUserByEmail(email) {
+    const {rows} = await this.pool.query('SELECT id, email, password_hash AS "passwordHash" FROM waypoint_users WHERE email = $1', [email]);
+    return rows[0] ?? null;
+  }
+  async createSession(tokenHash, userId, expiresAt) {
+    await this.pool.query('DELETE FROM waypoint_sessions WHERE expires_at < NOW()');
+    await this.pool.query('INSERT INTO waypoint_sessions (token_hash, user_id, expires_at) VALUES ($1, $2, $3)', [tokenHash, userId, new Date(expiresAt)]);
+  }
+  async getSessionUser(tokenHash) {
+    const {rows} = await this.pool.query(`SELECT u.id, u.email FROM waypoint_sessions s JOIN waypoint_users u ON u.id = s.user_id
+      WHERE s.token_hash = $1 AND s.expires_at > NOW()`, [tokenHash]);
+    return rows[0] ?? null;
+  }
+  async deleteSession(tokenHash) { await this.pool.query('DELETE FROM waypoint_sessions WHERE token_hash = $1', [tokenHash]); }
+  async createPasswordReset(tokenHash, userId, expiresAt) {
+    // Only the newest link works.
+    await this.pool.query('DELETE FROM waypoint_password_resets WHERE user_id = $1 OR expires_at < NOW()', [userId]);
+    await this.pool.query('INSERT INTO waypoint_password_resets (token_hash, user_id, expires_at) VALUES ($1, $2, $3)', [tokenHash, userId, new Date(expiresAt)]);
+  }
+  // Atomically spends a reset token, sets the new password and signs out every existing session.
+  async resetPassword(tokenHash, passwordHash) {
+    const client = await this.pool.connect();
+    try {
+      await client.query('BEGIN');
+      const {rows} = await client.query(`UPDATE waypoint_password_resets SET used_at = NOW()
+        WHERE token_hash = $1 AND used_at IS NULL AND expires_at > NOW() RETURNING user_id`, [tokenHash]);
+      if (!rows[0]) { await client.query('ROLLBACK'); return null; }
+      const userId = rows[0].user_id;
+      const user = await client.query('UPDATE waypoint_users SET password_hash = $1, password_changed_at = NOW() WHERE id = $2 RETURNING id, email', [passwordHash, userId]);
+      await client.query('DELETE FROM waypoint_sessions WHERE user_id = $1', [userId]);
+      await client.query('DELETE FROM waypoint_password_resets WHERE user_id = $1 AND token_hash <> $2', [userId, tokenHash]);
+      await client.query('COMMIT');
+      return user.rows[0];
+    } catch (error) { await client.query('ROLLBACK').catch(() => {}); throw error; }
+    finally { client.release(); }
   }
   async close() { await this.pool.end(); }
   async assistantHistory(owner) {

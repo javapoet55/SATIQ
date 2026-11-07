@@ -11,7 +11,9 @@ import {CompanionScreens} from './CompanionScreens';
 import {IntelligenceScreens} from './IntelligenceScreens';
 import {AssistantScreen} from './AssistantScreen';
 import {companionOf, freshTutor, openTutor, testInProgress} from './companion-model';
-import {loadServerSnapshot, useServerStore, type ProgressStore, type ServerSnapshot} from './server-store';
+import {loadServerSnapshot, useServerStore, clearServerCache, SignInRequired, type ProgressStore, type ServerSnapshot} from './server-store';
+import {AuthScreen, fetchAccount, signOutRequest, resetTokenFromHash, type AccountUser} from './auth';
+import './auth.css';
 
 const keys = Object.fromEntries(questions.map(q => [q.id, q.correct]));
 const studioRoutes: Route[] = ['dashboard','practice','test','review'];
@@ -201,19 +203,50 @@ function App({store}: {store: ProgressStore}) {
       {id:'studio',label:'SAT Studio',destinations:studioRoutes,icons:['◫','✎','◷','✓']},
       {id:'companion',label:'Learning Companion',destinations:companionRoutes,icons:['◫','✧','↻','✦']},
       {id:'intelligence',label:'Practice Intelligence',destinations:intelligenceRoutes,icons:['↗','✎','◷','↻','◫','▧']},
-    ].map(group => <section className="nav-group" key={group.id} aria-labelledby={`nav-${group.id}`}><h2 id={`nav-${group.id}`} className="nav-group-title">{group.label}</h2>{group.destinations.map((p,i) => <button key={p} className={route === p ? 'active' : ''} aria-current={route === p ? 'page' : undefined} onClick={() => {setMenuOpen(false); navigate(p);}}><span aria-hidden="true">{group.icons[i]}</span><span>{routeLabels[p]}</span></button>)}</section>)}</nav><div className="sidebar-bottom"><a className="sidebar-assistant" href="#assistant" onClick={() => setMenuOpen(false)}><span className="sidebar-assistant-icon" aria-hidden="true">✦</span><span><strong>AI Assistant</strong><small>Ask a question ↗</small></span></a><div className="profile">YOUR NEXT CHAPTER<br/><strong>Starts with one question.</strong><br/><br/>{store.hosted ? 'Personal study profile' : 'Local student · This device'}<br/>Waypoint · v1.0</div></div></aside><main id="main-content" className={isCompanion || isIntelligence ? 'companion-main' : undefined}><header><span className="eyebrow">{isCompanion ? route === 'assistant' ? 'LEARNING / AI ASSISTANT' : route === 'plan' ? 'YOUR STUDY SPACE' : route === 'tutor' ? 'PRACTICE / GUIDED TUTOR' : 'REVIEW / MISTAKE ANALYSIS' : 'YOUR STUDY SPACE'}</span><div className="header-actions"><a className="header-assistant" href="#assistant" onClick={() => setMenuOpen(false)}><span aria-hidden="true">✦</span> AI Assistant <span aria-hidden="true">↗</span></a><span className="muted header-date">{new Date(now).toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}</span><span className="avatar" aria-label="Personal study profile">W</span></div></header>
-    {store.error && <div className="storage-error" role="alert"><strong>Progress is not saved.</strong><p>{store.error}</p><div className="row spaced"><button onClick={store.retry}>Retry saving</button><button onClick={store.exportData}>Export backup</button>{store.conflict ? <button onClick={() => {if (confirm('Load the server copy? Export any pending changes first.')) store.loadServerCopy?.();}}>Reload server copy</button> : <button onClick={() => {if (confirm('Start fresh? This replaces saved progress for this study profile. Export a backup first.')) store.reset();}}>Start fresh</button>}</div></div>}
+    ].map(group => <section className="nav-group" key={group.id} aria-labelledby={`nav-${group.id}`}><h2 id={`nav-${group.id}`} className="nav-group-title">{group.label}</h2>{group.destinations.map((p,i) => <button key={p} className={route === p ? 'active' : ''} aria-current={route === p ? 'page' : undefined} onClick={() => {setMenuOpen(false); navigate(p);}}><span aria-hidden="true">{group.icons[i]}</span><span>{routeLabels[p]}</span></button>)}</section>)}</nav><div className="sidebar-bottom"><a className="sidebar-assistant" href="#assistant" onClick={() => setMenuOpen(false)}><span className="sidebar-assistant-icon" aria-hidden="true">✦</span><span><strong>AI Assistant</strong><small>Ask a question ↗</small></span></a><div className="profile">YOUR NEXT CHAPTER<br/><strong>Starts with one question.</strong><br/><br/>{store.account ? <>Signed in as<br/><strong className="account-email">{store.account.email}</strong></> : store.hosted ? 'Personal study profile' : 'Local student · This device'}<br/>Waypoint · v1.0</div></div></aside><main id="main-content" className={isCompanion || isIntelligence ? 'companion-main' : undefined}><header><span className="eyebrow">{isCompanion ? route === 'assistant' ? 'LEARNING / AI ASSISTANT' : route === 'plan' ? 'YOUR STUDY SPACE' : route === 'tutor' ? 'PRACTICE / GUIDED TUTOR' : 'REVIEW / MISTAKE ANALYSIS' : 'YOUR STUDY SPACE'}</span><div className="header-actions"><a className="header-assistant" href="#assistant" onClick={() => setMenuOpen(false)}><span aria-hidden="true">✦</span> AI Assistant <span aria-hidden="true">↗</span></a><span className="muted header-date">{new Date(now).toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}</span><span className="avatar" aria-label={store.account ? `Signed in as ${store.account.email}` : 'Personal study profile'}>{store.account ? store.account.email[0].toUpperCase() : 'W'}</span>{store.account && <button className="signout" title={`Signed in as ${store.account.email}`} onClick={store.account.signOut}>Sign out</button>}</div></header>
+    {store.error && <div className="storage-error" role="alert"><strong>Progress is not saved.</strong><p>{store.error}</p><div className="row spaced"><button onClick={store.retry}>Retry saving</button><button onClick={store.exportData}>Export backup</button>{store.sessionEnded ? <button className="primary" onClick={() => location.reload()}>Sign in again</button> : store.conflict ? <button onClick={() => {if (confirm('Load the server copy? Export any pending changes first.')) store.loadServerCopy?.();}}>Reload server copy</button> : <button onClick={() => {if (confirm('Start fresh? This replaces saved progress for this study profile. Export a backup first.')) store.reset();}}>Start fresh</button>}</div></div>}
     {notice && <div className="notice row" role="status"><span>{notice}</span><button aria-label="Dismiss notification" onClick={() => setNotice('')}>×</button></div>}
     {test?.status === 'running' && route !== 'test' && <div className="notice row"><span>Demo is running · {clock(remaining(test, now))} remaining</span><button onClick={() => navigate('test')}>Return to demo</button></div>}
     {route === 'assistant' ? <AssistantScreen store={store}/> : isIntelligence ? <IntelligenceScreens store={store} route={route} now={now} navigate={navigate} notify={setNotice}/> : isCompanion ? <CompanionScreens store={store} route={route as 'plan' | 'tutor' | 'analysis'} now={now} navigate={navigate} notify={setNotice}/> : {dashboard,practice,test:testView,review}[route as 'dashboard' | 'practice' | 'test' | 'review']}
-    <footer>Original practice content · Not affiliated with College Board.<br/>{store.hosted ? <>Personal study profile · {store.syncStatus}.<br/>This browser’s private cookie restores your progress from Railway PostgreSQL.</> : 'Progress is stored in this browser on this device.'} <button className="text-button" onClick={store.exportData}>Export progress backup</button>{store.importData && <><button className="text-button" onClick={() => importInput.current?.click()}>Import progress backup</button><input type="file" ref={importInput} accept=".json,application/json" hidden aria-label="Progress backup file" onChange={async e => {const file = e.target.files?.[0]; e.target.value = ''; if (!file) return; try {if (file.size > 1024 * 1024) throw new Error('Backup exceeds the 1 MB limit.'); const raw = await file.text(); parseState(raw); if (confirm('Replace this study profile with the imported backup? A copy of your current progress will download first.')) {store.importData!(raw); setNotice('Backup imported. Wait for “Saved to Railway database” before closing.');}} catch (error) {setNotice(`Import failed: ${error instanceof Error ? error.message : String(error)}`);}}}/></>}</footer>
+    <footer>Original practice content · Not affiliated with College Board.<br/>{store.hosted ? <>Personal study profile · {store.syncStatus}.<br/>{store.account ? 'Your account restores this progress on any device.' : 'This browser’s private cookie restores your progress from Railway PostgreSQL.'}</> : 'Progress is stored in this browser on this device.'} <button className="text-button" onClick={store.exportData}>Export progress backup</button>{store.importData && <><button className="text-button" onClick={() => importInput.current?.click()}>Import progress backup</button><input type="file" ref={importInput} accept=".json,application/json" hidden aria-label="Progress backup file" onChange={async e => {const file = e.target.files?.[0]; e.target.value = ''; if (!file) return; try {if (file.size > 1024 * 1024) throw new Error('Backup exceeds the 1 MB limit.'); const raw = await file.text(); parseState(raw); if (confirm('Replace this study profile with the imported backup? A copy of your current progress will download first.')) {store.importData!(raw); setNotice('Backup imported. Wait for “Saved to Railway database” before closing.');}} catch (error) {setNotice(`Import failed: ${error instanceof Error ? error.message : String(error)}`);}}}/></>}</footer>
     </main></div><dialog ref={dialog} aria-labelledby="submit-title" onClose={() => submitButton.current?.focus()}><h2 id="submit-title">Finish this demo module?</h2><p>{4 - Object.values(test?.answers ?? {}).filter(a => a !== null).length} unanswered · {test?.flags.length ?? 0} marked. Submitting ends the demo and opens your actual answers.</p><div className="row"><button autoFocus onClick={() => dialog.current?.close()}>Keep working</button><button className="primary" onClick={finish}>Submit & review</button></div></dialog></>;
 }
 function LocalApp() {return <App store={useLocalStore()}/>;}
-function HostedApp({snapshot}: {snapshot: ServerSnapshot}) {return <App store={useServerStore(snapshot)}/>;}
-const root = createRoot(document.getElementById('root')!);
-function startHosted() {
-  root.render(<div className="bootstrap card"><div className="brand">✳ waypoint</div><h1>Opening your study space…</h1><p className="muted" role="status">Restoring your saved progress.</p></div>);
-  loadServerSnapshot().then(snapshot => root.render(<HostedApp snapshot={snapshot}/>)).catch(error => root.render(<div className="bootstrap card"><div className="brand">✳ waypoint</div><h1>Let’s reconnect.</h1><p role="alert">{error.message}</p><p className="muted spaced">Your database progress and pending browser backup have not been replaced.</p><button className="primary spaced" onClick={startHosted}>Retry connection</button></div>));
+function HostedApp({snapshot, user, onSignedOut}: {snapshot: ServerSnapshot; user: AccountUser; onSignedOut: () => void}) {
+  const store = useServerStore(snapshot);
+  const signOut = async () => {
+    if (store.pending?.() && !confirm('Some progress has not reached the database yet. Sign out anyway? Unsaved changes will be lost.')) return;
+    await signOutRequest(); clearServerCache(); onSignedOut();
+  };
+  return <App store={{...store, account:{email:user.email, signOut:() => {void signOut();}}}}/>;
 }
+const root = createRoot(document.getElementById('root')!);
+const loading = (title: string, detail: string) => <div className="bootstrap card"><div className="brand">✳ waypoint</div><h1>{title}</h1><p className="muted" role="status">{detail}</p></div>;
+function showAuth(mode: 'signin' | 'signup' = 'signin') {
+  const resetToken = resetTokenFromHash();
+  root.render(<AuthScreen key={resetToken ?? mode} initialMode={mode} resetToken={resetToken} onSignedIn={user => {
+    if (resetTokenFromHash()) history.replaceState(null, '', location.pathname);
+    void openStudy(user);
+  }}/>);
+}
+async function openStudy(user: AccountUser) {
+  root.render(loading('Opening your study space…', 'Restoring your saved progress.'));
+  try {
+    const snapshot = await loadServerSnapshot();
+    root.render(<HostedApp key={snapshot.profileId} snapshot={snapshot} user={user} onSignedOut={() => {location.hash = ''; showAuth();}}/>);
+  } catch (error) {
+    if (error instanceof SignInRequired) { showAuth(); return; }
+    renderReconnect(error);
+  }
+}
+function renderReconnect(error: unknown) {
+  root.render(<div className="bootstrap card"><div className="brand">✳ waypoint</div><h1>Let’s reconnect.</h1><p role="alert">{error instanceof Error ? error.message : 'The study server is unavailable.'}</p><p className="muted spaced">Your database progress and pending browser backup have not been replaced.</p><button className="primary spaced" onClick={startHosted}>Retry connection</button></div>);
+}
+function startHosted() {
+  // A password-reset link always opens the reset form, even if someone is already signed in here.
+  if (resetTokenFromHash()) { showAuth(); return; }
+  root.render(loading('Opening your study space…', 'Checking your account.'));
+  fetchAccount().then(user => user ? openStudy(user) : showAuth()).catch(renderReconnect);
+}
+window.addEventListener('hashchange', () => { if (import.meta.env.VITE_PERSISTENCE_MODE === 'server' && resetTokenFromHash()) showAuth(); });
 if (import.meta.env.VITE_PERSISTENCE_MODE === 'server') startHosted(); else root.render(<LocalApp/>);

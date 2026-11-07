@@ -10,7 +10,7 @@ Live application: **https://waypoint-web-production-50a5.up.railway.app/**
 
 - `waypoint-web` serves the React production build and Node API in one container. `Postgres` is a separate PostgreSQL service inside the same project with a persistent Railway volume. The web service references `${{Postgres.DATABASE_URL}}`; database credentials are never shipped to the browser or stored in the repository.
 - The app uses the database’s private Railway connection. No database public domain or external database provider is required. See [Railway PostgreSQL documentation](https://docs.railway.com/databases/postgresql).
-- No student accounts are needed. An unguessable HttpOnly, Secure, SameSite cookie identifies each browser’s private study profile. Visitors do not share a global progress record. Keep this cookie to return to the same profile. Clearing cookies or switching browsers creates a new profile; use export/import to transfer progress across devices.
+- Students sign in with an email and password. Each account has its own progress record, so it follows the student to any device. See **Accounts** below.
 - Answers, attempts, running/paused test state, flags and reflections save to PostgreSQL. The footer and reflection editor show the actual database save status. Wait for **“Saved to Railway database”** before closing the tab. Offline or failed saves retain pending work in a browser backup and show retry/export controls.
 - Saved data loads before the study screens open. Failed initial loads show a reconnect screen, rather than replacing existing progress with a blank state. Concurrent saves use revisions; a stale tab cannot overwrite newer progress. Export pending work before choosing **Reload server copy**.
 - The hosted version’s clock still follows the device clock; hosting adds persistence, not a calibrated or secure exam system. The demo remains five minutes with four questions and no SAT score estimate.
@@ -27,13 +27,13 @@ In the existing Railway project, select **waypoint-web → Variables**:
 
 Without a key, the screen shows actual database context and preserves a draft, but does not generate or simulate AI answers. API failures appear visibly with a retry action. Local-only `npm run dev` does not connect to GPT; use the hosted app or build with `VITE_PERSISTENCE_MODE=server` and run `DATABASE_URL=... OPENAI_API_KEY=... npm start` to use a local Node server backed by PostgreSQL.
 
-The server reads the current browser's PostgreSQL profile on every question and builds a bounded, read-only summary of recent attempts, confirmed mistake reflections, strategy notes, the current question, latest mistake with a verified solution, today's plan, and recent submitted demo sessions. Accuracy is recomputed against the question catalog. Weekly figures use the student's IANA time zone, Monday through today, and first attempt per distinct question within that week. Small samples are explicitly identified. No SAT score is estimated. The model has no SQL tool, database credentials, arbitrary database access, or progress-write capability.
+The server reads the signed-in account's PostgreSQL profile on every question and builds a bounded, read-only summary of recent attempts, confirmed mistake reflections, strategy notes, the current question, latest mistake with a verified solution, today's plan, and recent submitted demo sessions. Accuracy is recomputed against the question catalog. Weekly figures use the student's IANA time zone, Monday through today, and first attempt per distinct question within that week. Small samples are explicitly identified. No SAT score is estimated. The model has no SQL tool, database credentials, arbitrary database access, or progress-write capability.
 
 Questions, the six most recent exchanges, and the summary are sent to OpenAI through the server's [Responses API](https://developers.openai.com/api/docs/guides/conversation-state) with `store:false`. This disables response-object storage at OpenAI; it is not a promise of zero retention under OpenAI's other data policies. The browser receives no API key. AI text renders as plain text, never executable HTML. Running and paused tests block requests on the server, including a test started during response generation.
 
-Chat is stored separately in `waypoint_assistant`, scoped by the same private profile cookie. The latest 20 completed exchanges are displayed; older exchanges remain in PostgreSQL. Reload restores completed replies, drafts, and retry IDs. Repeating a completed request ID returns its saved reply without another GPT call. Failed or abandoned requests can be retried; a provider call completed before a database failure may be charged again. Chat is separate from the existing progress export/import and is not transferred by those controls. Browser drafts require localStorage; completed chat remains in PostgreSQL.
+Chat is stored separately in `waypoint_assistant`, scoped to the signed-in account (it moves with the account's progress when a pre-account profile is adopted). The latest 20 completed exchanges are displayed; older exchanges remain in PostgreSQL. Reload restores completed replies, drafts, and retry IDs. Repeating a completed request ID returns its saved reply without another GPT call. Failed or abandoned requests can be retried; a provider call completed before a database failure may be charged again. Chat is separate from the existing progress export/import and is not transferred by those controls. Browser drafts require localStorage; completed chat remains in PostgreSQL.
 
-Requests are capped at 2,000 characters and 4,096 output tokens, with a 60-second provider timeout, one in-flight request per profile, and rolling 24-hour allowances of 30 provider requests per profile and 500 globally (including failed retries). These limits are shared across app instances through PostgreSQL. Anonymous profiles can be recreated by clearing cookies, so these are modest cost controls, not authenticated abuse prevention. Set an appropriate spending limit in your OpenAI project before sharing broadly.
+Requests are capped at 2,000 characters and 4,096 output tokens, with a 60-second provider timeout, one in-flight request per profile, and rolling 24-hour allowances of 30 provider requests per profile and 500 globally (including failed retries). These limits are shared across app instances through PostgreSQL. Sign-up is open, so someone could create several accounts; these remain modest cost controls rather than strong abuse prevention. Set an appropriate spending limit in your OpenAI project before sharing broadly.
 
 Verification uses mocked OpenAI responses for success, provider errors, missing-key mode, retries, isolation, test blocking, and responsive chat at 1440, 834, 390 and 320px. A real paid GPT answer must be checked after a valid API key is configured.
 
@@ -44,6 +44,19 @@ node --experimental-strip-types tests/live-assistant.mjs https://waypoint-web-pr
 ```
 
 Add `--focused` to make only two GPT requests for the week-to-date and readable-answer-label regression checks. QA profiles remain separate from student profiles.
+
+### Accounts: sign in, sign up and forgot password
+
+- **Sign up / sign in.** The hosted app opens on a sign-in screen. Email is case-insensitive. Passwords need 8–128 characters and are stored only as salted scrypt hashes (N=2^15, r=8, p=1; parameters are stored with each hash so they can be raised later). Sign-in gives the same error for an unknown email and a wrong password.
+- **Sessions.** A random 256-bit token sits in an HttpOnly, SameSite=Lax, Secure cookie (`waypoint_session`) for 30 days; only its SHA-256 hash is stored in `waypoint_sessions`. **Sign out** deletes the session on the server and clears this browser's cached copy of the progress.
+- **Students from before accounts existed.** Their progress was tied to the old `waypoint_student` cookie. The first time they sign up (or sign in to an account that has no progress yet) in that same browser, the progress moves into the account automatically. Nothing is deleted.
+- **Forgot password.** The form always gives the same answer, whether or not the email has an account. If it does, a single-use link (`/#reset=<token>`) valid for 60 minutes is emailed. Only the newest link works. Using it sets the new password, signs out every other session and signs the student in. The token stays in the URL fragment, so it never reaches server or proxy logs.
+- **Rate limits** (in memory, one replica): 30 auth requests per IP per 15 minutes, 10 sign-in attempts per email per 15 minutes, 3 reset emails per email per hour.
+- **Email delivery.** Railway blocks outbound SMTP on most plans, so reset emails go through the [Resend](https://resend.com) HTTPS API. Set these variables on `waypoint-web`:
+  - `RESEND_API_KEY` — the Resend API key.
+  - `MAIL_FROM` — for example `Waypoint <no-reply@your-domain.com>`, on a domain verified in Resend. Without it, Resend's test sender only delivers to the Resend account owner's own address.
+  - Until `RESEND_API_KEY` is set, the reset link is written to the `waypoint-web` deploy log (`[password-reset] … Reset link for …`). Only project members can read that log; a project owner can pass the link to the student.
+- **Tables** (created on startup if missing; deploys never drop data): `waypoint_users`, `waypoint_sessions`, `waypoint_password_resets`. Account progress lives in the existing `waypoint_progress` table under `owner_hash = 'user:<account id>'`.
 
 ### Bring your existing local progress
 
@@ -144,6 +157,7 @@ npm run build
 npm test
 npm run test:e2e
 npm run test:hosted
+DATABASE_URL=postgres://… npm run test:auth   # full stack: real server + a disposable PostgreSQL database
 ```
 
 Browser tests use locally installed Google Chrome (`channel: 'chrome'`) via Playwright. They can reuse the server on port 5173 or start it automatically. They run in isolated temporary browser contexts and do not alter your study progress.

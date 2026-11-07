@@ -5,6 +5,7 @@ dist
 .env.*
 test-results
 test-results-hosted
+test-results-auth
 playwright-report
 references
 *.tsbuildinfo

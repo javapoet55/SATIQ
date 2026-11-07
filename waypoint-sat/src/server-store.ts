@@ -5,9 +5,14 @@ export interface ProgressStore {
   state: State; current: {current: State}; commit: (update: (s: State) => State) => void;
   error: string; retry: () => void; exportData: () => void; reset: () => void;
   hosted?: boolean; syncStatus?: string; conflict?: boolean; importData?: (raw: string) => void; loadServerCopy?: () => void;
+  sessionEnded?: boolean; pending?: () => boolean;
+  account?: {email: string; signOut: () => void};
 }
 export interface ServerSnapshot {profileId: string; revision: number; state: State}
 const CACHE_KEY = 'waypoint-server-cache-v1';
+export class SignInRequired extends Error {}
+// Removes this browser's copy of hosted progress (used on sign-out so the next person can't read it).
+export function clearServerCache() { try { localStorage.removeItem(CACHE_KEY); } catch { /* Storage denied. */ } }
 interface Cache extends ServerSnapshot {pending: boolean}
 export function exportProgress(value: string, name = 'waypoint-progress.json') {
   const url = URL.createObjectURL(new Blob([value], {type: 'application/json'}));
@@ -15,6 +20,7 @@ export function exportProgress(value: string, name = 'waypoint-progress.json') {
 }
 export async function loadServerSnapshot(): Promise<ServerSnapshot> {
   const response = await fetch('/api/progress', {credentials:'same-origin', cache:'no-store', signal:AbortSignal.timeout(15000)});
+  if (response.status === 401) throw new SignInRequired('Sign in to open your study space.');
   if (!response.ok) throw new Error('The study database is temporarily unavailable. Retry to reconnect.');
   const data = await response.json();
   if (typeof data.profileId !== 'string' || !Number.isSafeInteger(data.revision) || data.revision < 0) throw new Error('The server returned unreadable progress.');
@@ -35,6 +41,7 @@ export function useServerStore(snapshot: ServerSnapshot): ProgressStore {
   const dirty = useRef(initial.current.pending); const generation = useRef(0);
   const cacheAvailable = useRef(true);
   const conflict = useRef(initial.current.conflict); const busy = useRef(false);
+  const ended = useRef(false); const [sessionEnded, setSessionEnded] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const request = useRef<{state: State; revision: number; writeId: string; generation: number} | null>(null);
   const flushRef = useRef<(keepalive?: boolean) => Promise<void>>(async () => {});
@@ -43,14 +50,16 @@ export function useServerStore(snapshot: ServerSnapshot): ProgressStore {
     catch {cacheAvailable.current = false; /* A server acknowledgement still confirms durability if browser storage is full. */}
   };
   const flush = async (keepalive = false) => {
-    if (!dirty.current || busy.current || conflict.current) return;
+    if (!dirty.current || busy.current || conflict.current || ended.current) return;
     clearTimeout(timer.current); busy.current = true; setSyncStatus('Saving to Railway…');
     request.current ??= {state:current.current, revision:revision.current, writeId:crypto.randomUUID(), generation:generation.current};
     const sent = request.current;
     try {
       const response = await fetch('/api/progress', {method:'PUT', credentials:'same-origin', headers:{'Content-Type':'application/json','X-Waypoint-Client':'1'}, body:JSON.stringify({state:sent.state, revision:sent.revision, writeId:sent.writeId}), signal:AbortSignal.timeout(15000), keepalive});
       const result = await response.json();
-      if (response.status === 409 || response.status === 401) conflict.current = true;
+      if (response.status === 409) conflict.current = true;
+      // Pending work stays in the browser backup; signing back in to the same account restores and saves it.
+      if (response.status === 401) {ended.current = true; setSessionEnded(true);}
       if (!response.ok) throw new Error(result.message || 'The database save failed.');
       if (!Number.isSafeInteger(result.revision) || result.revision <= sent.revision) throw new Error('Unexpected database save response.');
       revision.current = result.revision; request.current = null;
@@ -59,7 +68,7 @@ export function useServerStore(snapshot: ServerSnapshot): ProgressStore {
     } catch (e) {
       cache(); setError(`${e instanceof Error ? e.message : 'Connection lost.'} ${cacheAvailable.current ? 'Pending work is retained in this tab and its browser backup.' : 'Browser backup is unavailable. Pending work is in this tab only; export a backup now.'} Retry saving before closing.`); setSyncStatus('Database save pending');
     } finally {busy.current = false;}
-    if (dirty.current && request.current === null && !conflict.current) timer.current = setTimeout(() => {void flushRef.current();}, 100);
+    if (dirty.current && request.current === null && !conflict.current && !ended.current) timer.current = setTimeout(() => {void flushRef.current();}, 100);
   };
   flushRef.current = flush;
   const commit = (update: (s: State) => State) => {
@@ -76,7 +85,7 @@ export function useServerStore(snapshot: ServerSnapshot): ProgressStore {
     if (dirty.current) void flushRef.current();
     return () => {clearTimeout(timer.current); window.removeEventListener('online', online); document.removeEventListener('visibilitychange', hidden); window.removeEventListener('beforeunload', leave);};
   }, []);
-  return {state, current, commit, error, hosted:true, syncStatus, conflict:conflict.current,
+  return {state, current, commit, error, hosted:true, syncStatus, conflict:conflict.current, sessionEnded, pending: () => dirty.current,
     retry: () => {void flushRef.current();},
     loadServerCopy: () => {
       try {localStorage.removeItem(CACHE_KEY); dirty.current = false; location.reload();}

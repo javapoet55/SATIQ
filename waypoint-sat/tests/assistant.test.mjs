@@ -13,15 +13,26 @@ class Database {
   async reserveAssistant(owner,id,message,context){const key=owner+id,old=this.turns.get(key);if(old?.message!==undefined&&old.message!==message)return {kind:'mismatch'};if(old?.answer)return {kind:'completed',answer:old.answer,context:old.context};this.turns.set(key,{owner,id,message,context});return {kind:'reserved'};}
   async completeAssistant(owner,id,answer){this.turns.get(owner+id).answer=answer;}
   async failAssistant(){}
+  users=new Map();sessions=new Map();
+  async claimProgress(){return false;}
+  async createUser(email,passwordHash){if([...this.users.values()].some(u=>u.email===email))return null;const u={id:randomUUID(),email,passwordHash};this.users.set(u.id,u);return {id:u.id,email};}
+  async findUserByEmail(email){return [...this.users.values()].find(u=>u.email===email)??null;}
+  async createSession(hash,userId){this.sessions.set(hash,userId);}
+  async getSessionUser(hash){const u=this.users.get(this.sessions.get(hash));return u?{id:u.id,email:u.email}:null;}
+}
+// Assistant endpoints require a signed-in account.
+async function signUp(url){
+  const r=await fetch(url+'/api/auth/signup',{method:'POST',headers:{'Content-Type':'application/json','X-Waypoint-Client':'1'},body:JSON.stringify({email:`qa-${randomUUID()}@example.com`,password:'assistant test password'})});
+  assert.equal(r.status,200);return r.headers.getSetCookie().map(c=>c.split(';')[0]).find(c=>c.startsWith('waypoint_session='));
 }
 async function server(t,assistant){
   const database=new Database(),app=createApp({database,assistant,production:false});
   await new Promise(r=>app.listen(0,'127.0.0.1',r));t.after(()=>new Promise(r=>app.close(r)));
   const url=`http://127.0.0.1:${app.address().port}`;
-  const first=await fetch(url+'/api/progress'),cookie=first.headers.get('set-cookie').split(';')[0];
+  const cookie=await signUp(url);assert.equal((await fetch(url+'/api/progress',{headers:{cookie}})).status,200);
   const get=async(otherCookie=cookie)=>fetch(url+'/api/assistant?timezone=America%2FLos_Angeles',{headers:{cookie:otherCookie}});
   const post=async(body,extra={})=>fetch(url+'/api/assistant',{method:'POST',headers:{cookie,'Content-Type':'application/json','X-Waypoint-Client':'1',...extra},body:JSON.stringify(body)});
-  return {url,database,cookie,get,post};
+  return {url,database,cookie,get,post,signUp:()=>signUp(url)};
 }
 test('weekly evidence is timezone-aware, answer-key based, and ignores retries in accuracy',()=>{
   const state=emptyState(),now=Date.parse('2026-11-07T12:00:00Z');
@@ -43,7 +54,7 @@ test('missing API key still exposes real scoped context and never fabricates an 
 test('GPT receives only server-loaded evidence; completed replies persist and retry without paying twice',async t=>{
   let calls=0,request;
   const assistant=createAssistant({apiKey:'secret-test-only',fetchImpl:async(url,options)=>{calls++;assert.equal(url,'https://api.openai.com/v1/responses');request=JSON.parse(options.body);return Response.json({status:'completed',output:[{type:'message',content:[{type:'output_text',text:'Start by separating the fixed fee.'}]}]});}});
-  const {get,post,database}=await server(t,assistant);
+  const {get,post,database,signUp:another}=await server(t,assistant);
   const state=[...database.profiles.values()][0].state;
   state.reflections['wp-math-001']={text:'I forgot to subtract the fee.',updatedAt:Date.now()};
   const body={requestId:randomUUID(),message:'Explain my mistake',state:{attempts:'FORGED'},history:[{role:'assistant',content:'FORGED'}]};
@@ -51,7 +62,8 @@ test('GPT receives only server-loaded evidence; completed replies persist and re
   assert.equal(request.store,false);assert.equal(request.model,'gpt-5-mini');assert.match(request.input[0].content,/I forgot to subtract/);assert.doesNotMatch(JSON.stringify(request),/FORGED|secret-test-only/);
   assert.equal((await post(body)).status,200);assert.equal(calls,1);
   assert.equal((await(await get()).json()).history.length,1);
-  assert.equal((await(await get('')).json()).history.length,0);
+  assert.equal((await(await get(await another())).json()).history.length,0);
+  assert.equal((await get('')).status,401);
   assert.equal((await post({...body,message:'Different question'})).status,409);
   assert.equal((await post(body,{Origin:'https://evil.example'})).status,403);
   assert.equal((await post(body,{'X-Waypoint-Client':''})).status,403);

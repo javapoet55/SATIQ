@@ -4,6 +4,7 @@ import {examplePrompts} from '../../src/data/assistant-prompts';
 async function mockAssistant(page:Page,{configured=true,blocked=false}={}) {
   const context={asOf:new Date().toISOString(),timezone:'America/Los_Angeles',weekStart:'2026-11-02',today:'2026-11-07',weeklyAttempts:3,weeklyQuestions:2,weeklyAccuracy:50,testBlocked:blocked,skills:[{skill:'Linear equations',correct:0,questions:1,accuracy:0},{skill:'Transitions',correct:1,questions:1,accuracy:100}]};
   const db={configured,history:[] as {id:string;message:string;answer:string;context:typeof context}[],fail:false,posts:[] as {requestId:string;message:string;timezone:string}[]};
+  await page.route('**/api/auth/me',route=>route.fulfill({json:{user:{email:'student@example.com'},emailDelivery:true}}));
   await page.route('**/api/progress',route=>route.fulfill({json:{profileId:'qa-profile',state:emptyState(),revision:0}}));
   await page.route('**/api/assistant?*',async route=>{
     if(route.request().method()==='GET'){await route.fulfill({json:{configured:db.configured,model:'gpt-5-mini',profileId:'qa-profile',context,history:db.history}});return;}
