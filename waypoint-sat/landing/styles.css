@@ -29,3 +29,5 @@ header{position:relative;z-index:20}header nav{gap:22px}.nav-login{min-height:44
 
 @media(max-width:700px){.tutor-dialog{padding:25px 20px}.finder-filters{grid-template-columns:1fr}.hero h1{font-size:clamp(34px,11vw,49px)}.hero h1 em{white-space:normal}.workspace-status{white-space:normal}.hero-actions{flex-wrap:wrap}.workspace-title{flex-wrap:wrap}.practice-steps{grid-template-columns:1fr}.record-stats{flex-wrap:wrap}.hero-login a{border-bottom:1px solid #adb5aa}.modal{max-height:calc(100dvh - 40px);overflow:auto}}
 .certificate .sample-label{bottom:auto;top:12px;right:12px;padding:5px 7px;border-radius:5px;background:#eee8f7;color:#65527d;font-size:7px;letter-spacing:.6px}
+
+.plan-title{display:flex;align-items:center;flex-wrap:wrap;gap:10px}.coming-soon-badge{display:inline-block;border:1px solid #d2c6e4;background:#eee7f7;color:#685582;border-radius:20px;padding:6px 10px;font:600 9px Manrope,system-ui,sans-serif;letter-spacing:.2px;white-space:nowrap}
