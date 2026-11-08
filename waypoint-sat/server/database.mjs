@@ -24,6 +24,7 @@ export class PostgresStore {
       PRIMARY KEY (owner_hash, request_id)
     )`);
     await this.pool.query('CREATE INDEX IF NOT EXISTS waypoint_assistant_created ON waypoint_assistant(created_at)');
+    await this.pool.query("ALTER TABLE waypoint_assistant ADD COLUMN IF NOT EXISTS details JSONB NOT NULL DEFAULT '{}'::jsonb");
     await this.pool.query(`CREATE TABLE IF NOT EXISTS waypoint_users (
       id UUID PRIMARY KEY,
       email TEXT NOT NULL UNIQUE,
@@ -125,7 +126,7 @@ export class PostgresStore {
   }
   async close() { await this.pool.end(); }
   async assistantHistory(owner) {
-    const {rows} = await this.pool.query(`SELECT request_id AS id, message, answer, context, created_at AS "createdAt"
+    const {rows} = await this.pool.query(`SELECT request_id AS id, message, answer, context, details, created_at AS "createdAt"
       FROM waypoint_assistant WHERE owner_hash=$1 AND status='completed' ORDER BY created_at DESC LIMIT 20`,[owner]);
     return rows.reverse();
   }
@@ -137,7 +138,7 @@ export class PostgresStore {
       await client.query('SELECT pg_advisory_xact_lock(192837465)');
       const old = (await client.query('SELECT * FROM waypoint_assistant WHERE owner_hash=$1 AND request_id=$2',[owner,id])).rows[0];
       if (old && old.message !== message) return {kind:'mismatch'};
-      if (old?.status === 'completed') return {kind:'completed',answer:old.answer,context:old.context};
+      if (old?.status === 'completed') return {kind:'completed',answer:old.answer,context:old.context,details:old.details};
       const busy = await client.query(`SELECT 1 FROM waypoint_assistant WHERE owner_hash=$1 AND status='pending' AND updated_at > NOW()-INTERVAL '90 seconds' LIMIT 1`,[owner]);
       if (busy.rowCount) return {kind:'busy'};
       const counts = (await client.query(`SELECT COALESCE(SUM(requests),0)::int AS total, COALESCE(SUM(requests) FILTER (WHERE owner_hash=$1),0)::int AS personal FROM waypoint_assistant WHERE updated_at > NOW()-INTERVAL '24 hours'`,[owner])).rows[0];
@@ -148,8 +149,8 @@ export class PostgresStore {
       return {kind:'reserved'};
     } finally {await client.query('ROLLBACK').catch(()=>{});client.release();}
   }
-  async completeAssistant(owner,id,answer) {
-    await this.pool.query(`UPDATE waypoint_assistant SET answer=$3,status='completed',updated_at=NOW() WHERE owner_hash=$1 AND request_id=$2`,[owner,id,answer]);
+  async completeAssistant(owner,id,answer,details={}) {
+    await this.pool.query(`UPDATE waypoint_assistant SET answer=$3,details=$4::jsonb,status='completed',updated_at=NOW() WHERE owner_hash=$1 AND request_id=$2`,[owner,id,answer,JSON.stringify(details)]);
   }
   async failAssistant(owner,id) {
     await this.pool.query(`UPDATE waypoint_assistant SET status='failed',updated_at=NOW() WHERE owner_hash=$1 AND request_id=$2 AND status='pending'`,[owner,id]);

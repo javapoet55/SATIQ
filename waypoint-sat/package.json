@@ -11,7 +11,7 @@
     "start": "node --experimental-strip-types server/index.mjs",
     "build": "tsc -b && vite build",
     "preview": "vite preview --host 127.0.0.1",
-    "test": "node --experimental-strip-types --test tests/intelligence.test.ts tests/model.test.ts tests/companion.test.ts tests/server.test.mjs tests/assistant.test.mjs tests/topic-tests.test.ts",
+    "test": "node --experimental-strip-types --test tests/intelligence.test.ts tests/model.test.ts tests/companion.test.ts tests/server.test.mjs tests/assistant.test.mjs tests/math-tools.test.mjs tests/topic-tests.test.ts",
     "test:e2e": "playwright test",
     "test:hosted": "playwright test --config playwright.hosted.config.ts",
     "test:auth": "playwright test --config playwright.auth.config.ts"

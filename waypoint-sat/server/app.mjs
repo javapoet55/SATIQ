@@ -135,22 +135,26 @@ export function createApp({database, assistant = createAssistant(), dist = resol
           if (typeof timezone !== 'string' || timezone.length > 100) throw assistantError(400,'Invalid time zone.');
           const context = studyContext(snapshot.state,timezone);
           const history = await database.assistantHistory(owner);
-          if (req.method === 'GET') {json(200,{configured:assistant.configured,model:assistant.model,profileId:snapshot.profileId,context,history});return;}
+          if (req.method === 'GET') {json(200,{configured:assistant.configured,mathConfigured:!!assistant.mathConfigured,model:assistant.model,profileId:snapshot.profileId,context,history});return;}
           if (typeof body?.message !== 'string' || !body.message.trim() || body.message.trim().length > 2000 || !UUID.test(body.requestId)) throw assistantError(400,'Enter a question of 1–2,000 characters with a valid request ID.');
           if (context.testBlocked) throw assistantError(409,'Finish and submit your practice test before using AI help.');
           if (!assistant.configured) throw assistantError(503,'GPT is not connected yet. Add OPENAI_API_KEY to the Railway web service and deploy the variable change.');
           const message = body.message.trim();
           const reservation = await database.reserveAssistant(owner,body.requestId,message,context);
-          if (reservation.kind === 'completed') {json(200,{id:body.requestId,message,answer:reservation.answer,context:reservation.context});return;}
+          if (reservation.kind === 'completed') {json(200,{id:body.requestId,message,answer:reservation.answer,details:reservation.details ?? {},context:reservation.context});return;}
           if (reservation.kind === 'mismatch') throw assistantError(409,'This request ID belongs to a different question. Start a new question.');
           if (reservation.kind === 'busy') throw assistantError(409,'An answer is still being prepared. Wait a moment before retrying.');
           if (reservation.kind === 'limit') throw assistantError(429,'The daily AI question allowance has been reached. Try again tomorrow.');
           try {
-            const answer = await assistant.answer(message,context,history);
-            const latest = await database.get(owner,emptyState());
-            if (latest.state.sessions.some(s=>['running','paused'].includes(s.status))) throw assistantError(409,'A practice test started while your answer was being prepared. Submit it before asking again.');
-            await database.completeAssistant(owner,body.requestId,answer);
-            json(200,{id:body.requestId,message,answer,context});return;
+            const assertAllowed = async () => {
+              const latest = await database.get(owner,emptyState());
+              if (latest.state.sessions.some(s=>['running','paused'].includes(s.status))) throw assistantError(409,'A practice test started while your answer was being prepared. Submit it before asking again.');
+            };
+            const result = await assistant.answer(message,context,history,{assertAllowed});
+            await assertAllowed();
+            const {answer,...details} = typeof result==='string' ? {answer:result} : result;
+            await database.completeAssistant(owner,body.requestId,answer,details);
+            json(200,{id:body.requestId,message,answer,details,context});return;
           } catch (error) {await database.failAssistant(owner,body.requestId);throw error;}
         }
         if (req.method === 'GET') { const snapshot = await database.get(owner, emptyState()); json(200, snapshot); return; }

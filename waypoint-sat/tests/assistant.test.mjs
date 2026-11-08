@@ -10,8 +10,8 @@ class Database {
   async get(owner,state){if(!this.profiles.has(owner))this.profiles.set(owner,{profileId:randomUUID(),state,revision:0});return this.profiles.get(owner);}
   async put(owner,revision,state){const row=this.profiles.get(owner);row.state=state;return {revision:++row.revision};}
   async assistantHistory(owner){return [...this.turns.values()].filter(t=>t.owner===owner&&t.answer);}
-  async reserveAssistant(owner,id,message,context){const key=owner+id,old=this.turns.get(key);if(old?.message!==undefined&&old.message!==message)return {kind:'mismatch'};if(old?.answer)return {kind:'completed',answer:old.answer,context:old.context};this.turns.set(key,{owner,id,message,context});return {kind:'reserved'};}
-  async completeAssistant(owner,id,answer){this.turns.get(owner+id).answer=answer;}
+  async reserveAssistant(owner,id,message,context){const key=owner+id,old=this.turns.get(key);if(old?.message!==undefined&&old.message!==message)return {kind:'mismatch'};if(old?.answer)return {kind:'completed',answer:old.answer,context:old.context,details:old.details};this.turns.set(key,{owner,id,message,context});return {kind:'reserved'};}
+  async completeAssistant(owner,id,answer,details){Object.assign(this.turns.get(owner+id),{answer,details});}
   async failAssistant(){}
   users=new Map();sessions=new Map();
   async claimProgress(){return false;}
@@ -85,4 +85,16 @@ test('provider failures and unfinished output never become saved AI answers or e
   }
   const assistant=createAssistant({apiKey:'secret',fetchImpl:async()=>Response.json({status:'incomplete',output:[]})});
   await assert.rejects(()=>assistant.answer('hi',{},[]),/did not finish/);
+});
+test('tool evidence and charts survive history reload and idempotent replay, scoped to one account',async t=>{
+  let calls=0;
+  const details={toolsUsed:[{name:'calc_expression',label:'calc expression',result:'{"result":14}'}],charts:[{title:'A quadratic',src:'data:image/png;base64,iVBORw0KGgo='}],warnings:[]};
+  const assistant={configured:true,mathConfigured:true,model:'fake',answer:async()=>{calls++;return {answer:'The result is 14.',...details};}};
+  const {post,get,signUp:another}=await server(t,assistant);
+  assert.equal((await(await get()).json()).mathConfigured,true);
+  const request={requestId:randomUUID(),message:'Show the calculation'};
+  const first=await(await post(request)).json();assert.deepEqual(first.details,details);
+  assert.deepEqual((await(await post(request)).json()).details,details);assert.equal(calls,1);
+  assert.deepEqual((await(await get()).json()).history[0].details,details);
+  assert.equal((await(await get(await another())).json()).history.length,0);
 });

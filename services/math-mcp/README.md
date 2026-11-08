@@ -7,11 +7,11 @@ Deploys **math-mcp-learning-server 0.12.5** with scientific and plotting extras 
 - Railway service: `preporbit-math-mcp` (`9d9d6569-f1db-41f5-9317-5f21ce2acf42`). Project: `ff7c016b-3e75-4524-b237-0565185ea0f2`, production environment.
 - Private endpoint: `http://preporbit-math-mcp.railway.internal:8080/mcp`. No public domain or TCP proxy is created.
 - Health: `/health` returns only the service name and package version. MCP requests require a short-lived HS256 JWT, issuer `preporbit-ai`, audience `preporbit-math-mcp`, scope `math:tools`.
-- Signing secret: `MATH_MCP_JWT_SECRET`, generated randomly and stored only in this Railway service. Never put it in Git, browser code, tool arguments, logs, or chat. Future backend clients must obtain a short-lived token through trusted server-side configuration.
+- Signing secret: `MATH_MCP_JWT_SECRET`, generated randomly in this Railway service and referenced by the web backend through a Railway variable reference. Never put it in Git, browser code, tool arguments, logs, or chat. The trusted web backend mints short-lived tokens; browser clients never receive them.
 - **No PrepOrbit student database, OpenAI key, or other app credentials are supplied to this service.** There are no LLM calls or email requests in its tests.
 - The shared calculation workspace is administrative test storage, **not isolated per student**. A separate volume mounted at `/data` holds `/data/math-workspace/workspace.json`. Do not put personal student data here or connect these workspace tools directly to student chat.
 - One replica only: the upstream workspace file has process-local locking and is not a distributed datastore. PrepOrbit student records continue to belong in PostgreSQL.
-- Installed and tested as a separate backend service. The existing PrepOrbit AI Assistant and student screens do not call it automatically. Tool selection, student authorization, and rendering chart results require a subsequent app integration.
+- Connected to the hosted PrepOrbit AI Assistant through its authenticated web backend. Only nine allowlisted calculation/chart tools are exposed; administrative workspace tools and resources remain inaccessible. Charts and calculation evidence are stored in each account's existing PostgreSQL chat, never in the shared workspace. See `waypoint-sat/server/math-tools.mjs`, `server/assistant.mjs` and the web README.
 
 ## Deployment
 

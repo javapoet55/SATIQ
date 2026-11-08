@@ -11,9 +11,11 @@ async function smoke() {
     const id=randomUUID(),context={asOf:new Date().toISOString(),weeklyQuestions:0};
     assert.equal((await db.reserveAssistant(owners[0],id,'QA storage check',context)).kind,'reserved');
     assert.equal((await db.reserveAssistant(owners[0],randomUUID(),'Concurrent question',context)).kind,'busy');
-    await db.completeAssistant(owners[0],id,'QA saved answer — no LLM call.');
+    const details={toolsUsed:[{name:'calc_expression',label:'calc expression',result:'{"result":14}'}],charts:[{title:'QA chart fixture',src:'data:image/png;base64,iVBORw0KGgo='}],warnings:[]};
+    await db.completeAssistant(owners[0],id,'QA saved answer — no LLM call.',details);
     const replay=await db.reserveAssistant(owners[0],id,'QA storage check',context);
     assert.equal(replay.kind,'completed');assert.equal(replay.answer,'QA saved answer — no LLM call.');
+    assert.deepEqual(replay.details,details);
     assert.equal((await db.reserveAssistant(owners[0],id,'Changed question',context)).kind,'mismatch');
     assert.equal((await db.assistantHistory(owners[0])).length,1);assert.equal((await db.assistantHistory(owners[1])).length,0);
     const failedId=randomUUID();
@@ -26,7 +28,7 @@ async function smoke() {
     assert.equal((await db.reserveAssistant(owners[0],randomUUID(),'Over allowance',context)).kind,'limit');
     assert.equal((await db.assistantHistory(owners[0])).length,1);
     const reconnect=new PostgresStore(process.env.DATABASE_URL);
-    try{assert.equal((await reconnect.assistantHistory(owners[0]))[0].answer,'QA saved answer — no LLM call.');}finally{await reconnect.close();}
+    try{const restored=(await reconnect.assistantHistory(owners[0]))[0];assert.equal(restored.answer,'QA saved answer — no LLM call.');assert.deepEqual(restored.details,details);}finally{await reconnect.close();}
     console.log('PostgreSQL assistant smoke passed: persistence, isolation, idempotency, concurrent request exclusion, failure retry, and daily limits. No LLM calls.');
   } finally {
     for(const owner of owners){
