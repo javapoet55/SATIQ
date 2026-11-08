@@ -2,10 +2,19 @@ import {useEffect, useState} from 'react';
 import {Intro, AnswerInput, QuestionBody, Solution} from './StudyComponents';
 import {DOMAINS, type Subject} from './data/question-schema';
 import {setGeneratedQuestions} from './data/bank';
+import {AdminUsers} from './AdminUsers';
 import {adminList, adminJobs, adminGenerate, adminDecide, loadGeneratedQuestions, type GeneratedRow, type Job} from './api';
 
 const STATUS_LABEL: Record<string, string> = {pending: 'Verified · awaiting review', flagged: 'Needs a careful look', approved: 'Live for students', rejected: 'Rejected'};
 export function AdminScreen({notify}: {notify: (t: string) => void}) {
+  const [view, setView] = useState<'users' | 'questions'>('users');
+  return <>
+    <Intro tag="ADMIN" title="Run PrepOrbit.">See who has signed up and how active they are, and grow the question bank.</Intro>
+    <div className="tabs" role="group" aria-label="Admin section">{([['users', 'Users'], ['questions', 'Question bank']] as const).map(([id, label]) => <button key={id} className={view === id ? 'active' : ''} aria-pressed={view === id} onClick={() => setView(id)}>{label}</button>)}</div>
+    {view === 'users' ? <AdminUsers notify={notify}/> : <QuestionAdmin notify={notify}/>}
+  </>;
+}
+function QuestionAdmin({notify}: {notify: (t: string) => void}) {
   const [section, setSection] = useState<Subject>('math');
   const [skill, setSkill] = useState(DOMAINS.math[0].skills[0]);
   const [difficulty, setDifficulty] = useState('Medium');
@@ -26,7 +35,7 @@ export function AdminScreen({notify}: {notify: (t: string) => void}) {
     setGeneratedQuestions(await loadGeneratedQuestions().catch(() => [])); refresh();
   }).catch(e => setError(e.message));
   return <>
-    <Intro tag="ADMIN" title="Grow the question bank.">GPT writes questions. A math checker and a second, blind AI solve verify each answer key. Nothing reaches students until you approve it.</Intro>
+    <p className="muted admin-lead">GPT writes questions. A math checker and a second, blind AI solve verify each answer key. Nothing reaches students until you approve it.</p>
     {error && <div className="storage-error" role="alert"><p>{error}</p></div>}
     <div className="card"><h2>Generate questions</h2><div className="admin-form">
       <label>Section<select value={section} onChange={e => { const s = e.target.value as Subject; setSection(s); setSkill(DOMAINS[s][0].skills[0]); }}><option value="math">Math</option><option value="rw">Reading & Writing</option></select></label>

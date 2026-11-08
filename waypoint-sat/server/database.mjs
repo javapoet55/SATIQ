@@ -39,6 +39,18 @@ export class PostgresStore {
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )`);
     await this.pool.query('CREATE INDEX IF NOT EXISTS waypoint_sessions_user ON waypoint_sessions (user_id)');
+    // Account type (student or tutor) and the last time the account used the app.
+    await this.pool.query("ALTER TABLE waypoint_users ADD COLUMN IF NOT EXISTS role TEXT NOT NULL DEFAULT 'student'");
+    await this.pool.query('ALTER TABLE waypoint_users ADD COLUMN IF NOT EXISTS last_active_at TIMESTAMPTZ');
+    await this.pool.query(`DO $$ BEGIN
+      IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'waypoint_users_role_check') THEN
+        ALTER TABLE waypoint_users ADD CONSTRAINT waypoint_users_role_check CHECK (role IN ('student', 'tutor'));
+      END IF; END $$`);
+    // Accounts created before activity tracking get their best known activity: newest session, progress save, or sign-up.
+    await this.pool.query(`UPDATE waypoint_users u SET last_active_at = COALESCE(GREATEST(
+        (SELECT MAX(s.created_at) FROM waypoint_sessions s WHERE s.user_id = u.id),
+        (SELECT p.updated_at FROM waypoint_progress p WHERE p.owner_hash = 'user:' || u.id::text)), u.created_at)
+      WHERE u.last_active_at IS NULL`);
     await this.pool.query(`CREATE TABLE IF NOT EXISTS waypoint_password_resets (
       token_hash TEXT PRIMARY KEY,
       user_id UUID NOT NULL REFERENCES waypoint_users(id) ON DELETE CASCADE,
@@ -110,9 +122,23 @@ export class PostgresStore {
   }
 
   // Accounts
-  async createUser(email, passwordHash) {
-    const {rows} = await this.pool.query('INSERT INTO waypoint_users (id, email, password_hash) VALUES ($1, $2, $3) ON CONFLICT (email) DO NOTHING RETURNING id, email', [randomUUID(), email, passwordHash]);
+  async createUser(email, passwordHash, role = 'student') {
+    const {rows} = await this.pool.query(`INSERT INTO waypoint_users (id, email, password_hash, role, last_active_at) VALUES ($1, $2, $3, $4, NOW())
+      ON CONFLICT (email) DO NOTHING RETURNING id, email, role`, [randomUUID(), email, passwordHash, role]);
     return rows[0] ?? null;
+  }
+  // Records activity at most once every few minutes per account, so ordinary requests do not each write.
+  async touchUser(userId) {
+    await this.pool.query("UPDATE waypoint_users SET last_active_at = NOW() WHERE id = $1 AND (last_active_at IS NULL OR last_active_at < NOW() - INTERVAL '5 minutes')", [userId]);
+  }
+  async listUsers(limit = 10000) {
+    const {rows} = await this.pool.query(`SELECT id, email, role, created_at AS "createdAt", last_active_at AS "lastActiveAt"
+      FROM waypoint_users ORDER BY created_at DESC LIMIT $1`, [limit]);
+    return rows;
+  }
+  async setUserRole(userId, role) {
+    const {rowCount} = await this.pool.query('UPDATE waypoint_users SET role = $2 WHERE id = $1', [userId, role]);
+    return rowCount > 0;
   }
   async findUserByEmail(email) {
     const {rows} = await this.pool.query('SELECT id, email, password_hash AS "passwordHash" FROM waypoint_users WHERE email = $1', [email]);
@@ -123,7 +149,7 @@ export class PostgresStore {
     await this.pool.query('INSERT INTO waypoint_sessions (token_hash, user_id, expires_at) VALUES ($1, $2, $3)', [tokenHash, userId, new Date(expiresAt)]);
   }
   async getSessionUser(tokenHash) {
-    const {rows} = await this.pool.query(`SELECT u.id, u.email FROM waypoint_sessions s JOIN waypoint_users u ON u.id = s.user_id
+    const {rows} = await this.pool.query(`SELECT u.id, u.email, u.role FROM waypoint_sessions s JOIN waypoint_users u ON u.id = s.user_id
       WHERE s.token_hash = $1 AND s.expires_at > NOW()`, [tokenHash]);
     return rows[0] ?? null;
   }

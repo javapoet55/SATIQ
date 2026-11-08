@@ -39,6 +39,7 @@ export function AuthScreen({initialMode = 'signin', resetToken, onSignedIn}: {in
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [show, setShow] = useState(false);
+  const [role, setRole] = useState<'student' | 'tutor'>('student');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
@@ -57,7 +58,7 @@ export function AuthScreen({initialMode = 'signin', resetToken, onSignedIn}: {in
     setBusy(true);
     try {
       const result = mode === 'signin' ? await post('/api/auth/signin', {email, password})
-        : mode === 'signup' ? await post('/api/auth/signup', {email, password})
+        : mode === 'signup' ? await post('/api/auth/signup', {email, password, role})
         : mode === 'forgot' ? await post('/api/auth/forgot', {email})
         : await post('/api/auth/reset', {token: resetToken, password});
       if (!result.ok) { setError(result.data.message || 'Something went wrong. Try again.'); return; }
@@ -77,6 +78,12 @@ export function AuthScreen({initialMode = 'signin', resetToken, onSignedIn}: {in
       <p className="muted">{lead}</p>
       {mode === 'signup' && <p className="small muted auth-note">Already studied in this browser? That progress moves into your new account.</p>}
       <form onSubmit={submit} aria-describedby={error ? 'auth-error' : undefined}>
+        {mode === 'signup' && <fieldset className="auth-role"><legend>I’m signing up as</legend>
+          {(['student', 'tutor'] as const).map(r => <label key={r} className={role === r ? 'selected' : ''}>
+            <input type="radio" name="role" value={r} checked={role === r} onChange={() => setRole(r)}/>
+            <span><strong>{r === 'student' ? 'A student' : 'A tutor'}</strong><small>{r === 'student' ? 'Practice for the SAT' : 'Help students in my community'}</small></span>
+          </label>)}
+        </fieldset>}
         {mode !== 'reset' && <div className="auth-field"><label htmlFor="auth-email">Email</label>
           <input id="auth-email" type="email" name="email" autoComplete="email" inputMode="email" required maxLength={254} value={email} onChange={e => setEmail(e.target.value)}/>
         </div>}
