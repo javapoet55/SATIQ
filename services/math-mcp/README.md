@@ -37,6 +37,8 @@ The math service uses `/` as its source root, independently of the web service's
 
 ## Tests
 
+Railway verification completed on November 8, 2026 for deployment `572eddd1-c6ec-47d9-881f-e4281285659c`: all 33 HTTP MCP checks passed. After restarting the container, all 8 persistence/authentication checks passed, including loading the existing calculation without writing it again. The web container reached the private health endpoint (200), and an anonymous MCP request was rejected (401). The existing app's `/api/health` also returned healthy PostgreSQL storage.
+
 Run inside its Railway container; credentials stay in its environment:
 
 ```sh
