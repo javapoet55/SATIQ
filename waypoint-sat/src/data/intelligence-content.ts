@@ -1,4 +1,5 @@
-import type {Question} from './questions';
+// Legacy adaptive and template items: kept so older saved attempts still show their questions.
+type Question = {id: string; section: 'math'; skill: string; difficulty: string; text: string; choices: string[]; correct: number; steps: string[][]; why: string; hint: string};
 function q(id:string,text:string,choices:string[],correct:number,level:string,equation:string,hint:string):Question{return{id,section:'math',skill:'Linear equations',difficulty:level,text,choices,correct,steps:[['Set up and solve',equation]],why:'Check your answer in the original cost equation.',hint}}
 export const adaptiveQuestions=[
 q('smart-a1','A bike shop charges a $12 booking fee plus $8 per hour. Your bill is $52. For how many hours did you rent the bike?',['4 hours','5 hours','6 hours','8 hours'],1,'Medium','12 + 8h = 52 → h = 5','Remove the booking fee before finding the hourly charges.'),

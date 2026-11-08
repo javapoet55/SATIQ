@@ -1,9 +1,17 @@
 import {validateCompanion, type CompanionState} from './companion-types.ts';
 import {validateIntelligence, type IntelligenceState} from './intelligence-types.ts';
+import {QUESTION_ID, SPR_INPUT} from './data/question-schema.ts';
 import {topicQuestions} from './data/test-questions.ts';
 import {topicById} from './data/test-topics.ts';
-export type Choice = number | null;
-export type Route = 'dashboard' | 'practice' | 'test' | 'review' | 'plan' | 'tutor' | 'analysis' | 'adaptive' | 'work' | 'pacing' | 'similar' | 'weekly' | 'handwriting' | 'assistant';
+export type Choice = number | string | null;
+export type Tier = 'base' | 'easier' | 'harder';
+export interface SessionConfig {kind: 'quick' | 'module'; title: string; section: 'rw' | 'math' | 'mixed'; durationMs: number; runId?: string; module?: number; tier?: Tier}
+export interface TestRun {
+  id: string; kind: 'full' | 'section'; sections: ('rw' | 'math')[]; moduleSessionIds: string[];
+  status: 'active' | 'complete'; startedAt: number; completedAt: number | null;
+}
+export interface PracticeFilter {section: 'math' | 'rw'; skill: string; difficulty: 'Any' | 'Easy' | 'Medium' | 'Hard'; adaptive: boolean}
+export type Route = 'dashboard' | 'practice' | 'test' | 'review' | 'plan' | 'tutor' | 'analysis' | 'adaptive' | 'work' | 'pacing' | 'similar' | 'weekly' | 'handwriting' | 'assistant' | 'admin';
 export interface Attempt {
   id: string; questionId: string; selected: Choice; correct: boolean;
   mode: 'practice' | 'test'; sessionId: string | null; flagged: boolean;
@@ -11,11 +19,13 @@ export interface Attempt {
 }
 export interface Draft { selected: Choice; checkedAttemptId: string | null; elapsedMs: number }
 export interface Session {
-  topicId?:string; durationMs?:number;
   id: string; questionIds: string[]; status: 'ready' | 'running' | 'paused' | 'submitted' | 'expired';
   answers: Record<string, Choice>; flags: string[]; currentIndex: number;
   startedAt: number | null; deadlineAt: number | null; remainingMs: number;
   submittedAt: number | null; questionElapsedMs: Record<string, number>; segmentStartedAt: number | null;
+  config?: SessionConfig;
+  // Topic practice (25 questions from one SAT domain); saved by earlier versions in this exact shape.
+  topicId?: string; durationMs?: number;
 }
 export interface State {
   version: 1; attempts: Attempt[]; sessions: Session[]; activeSessionId: string | null;
@@ -23,24 +33,29 @@ export interface State {
   practiceQuestionId: string; reviewAttemptId: string | null;
   companion?: CompanionState;
   intelligence?: IntelligenceState;
+  runs?: TestRun[];
+  practice?: PracticeFilter;
 }
 export const STORAGE_KEY = 'waypoint-local-v1';
 export const DEMO_MS = 5 * 60 * 1000;
+export const MAX_SESSION_MS = 75 * 60 * 1000;
+export const MAX_SESSION_QUESTIONS = 60;
 export const emptyState = (): State => ({ version: 1, attempts: [], sessions: [], activeSessionId: null, drafts: {}, reflections: {}, practiceQuestionId: 'wp-math-001', reviewAttemptId: null });
 export const uid = () => crypto.randomUUID();
-export function createSession(ids: string[], id = uid()): Session {
-  return {id, questionIds: ids, status: 'ready', answers: {}, flags: [], currentIndex: 0, startedAt: null, deadlineAt: null, remainingMs: DEMO_MS, submittedAt: null, questionElapsedMs: {}, segmentStartedAt: null};
+export function createSession(ids: string[], id = uid(), config?: SessionConfig): Session {
+  return {id, questionIds: ids, status: 'ready', answers: {}, flags: [], currentIndex: 0, startedAt: null, deadlineAt: null, remainingMs: config?.durationMs ?? DEMO_MS, submittedAt: null, questionElapsedMs: {}, segmentStartedAt: null, ...(config ? {config} : {})};
 }
-export function createTopicSession(topicId:string,id=uid()):Session {
-  const topic=topicById(topicId);if(!topic)throw new Error('Unknown practice topic.');
-  const ids=topicQuestions.filter(q=>q.topicId===topicId).map(q=>q.id);
-  let seed=Array.from(id).reduce((n,c)=>(Math.imul(n,31)+c.charCodeAt(0))>>>0,0);
-  for(let i=ids.length-1;i>0;i--){seed=(Math.imul(seed,1664525)+1013904223)>>>0;const j=seed%(i+1);[ids[i],ids[j]]=[ids[j],ids[i]];}
-  const durationMs=topic.minutes*60000;
-  return {...createSession(ids,id),topicId,durationMs,remainingMs:durationMs};
+export function createTopicSession(topicId: string, id = uid()): Session {
+  const topic = topicById(topicId); if (!topic) throw new Error('Unknown practice topic.');
+  const ids = topicQuestions.filter(q => q.topicId === topicId).map(q => q.id);
+  let seed = Array.from(id).reduce((n, c) => (Math.imul(n, 31) + c.charCodeAt(0)) >>> 0, 0);
+  for (let i = ids.length - 1; i > 0; i--) { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; const j = seed % (i + 1); [ids[i], ids[j]] = [ids[j], ids[i]]; }
+  const durationMs = topic.minutes * 60000;
+  return {...createSession(ids, id), topicId, durationMs, remainingMs: durationMs};
 }
+// Never more than what was left when the clock last started, even if the device clock jumps backwards.
 export function remaining(session: Session, now: number): number {
-  return session.status === 'running' ? Math.min(session.remainingMs,Math.max(0, (session.deadlineAt ?? now) - now)) : session.remainingMs;
+  return session.status === 'running' ? Math.min(session.remainingMs, Math.max(0, (session.deadlineAt ?? now) - now)) : session.remainingMs;
 }
 function accrue(session: Session, now: number): Session {
   if (session.status !== 'running' || session.segmentStartedAt === null) return session;
@@ -60,13 +75,14 @@ export function navigateSession(session: Session, index: number, now: number): S
   if (index < 0 || index >= session.questionIds.length) return session;
   return {...accrue(session, now), currentIndex: index};
 }
-export function finishSession(state: State, id: string, now: number, keys: Record<string, number>): State {
+export function finishSession(state: State, id: string, now: number, gradeOrKeys: ((questionId: string, choice: Choice) => boolean) | Record<string, number>): State {
+  const grade = typeof gradeOrKeys === 'function' ? gradeOrKeys : (questionId: string, choice: Choice) => choice === gradeOrKeys[questionId];
   const current = state.sessions.find(s => s.id === id);
   if (!current || !['running', 'paused'].includes(current.status)) return state;
   const expired = current.status === 'running' && remaining(current, now) === 0;
   const submittedAt = expired ? current.deadlineAt! : now;
   const session: Session = {...accrue(current, now), status: expired ? 'expired' : 'submitted', submittedAt, remainingMs: remaining(current, now), deadlineAt: null, segmentStartedAt: null};
-  const attempts: Attempt[] = session.questionIds.map(questionId => ({id: `${id}:${questionId}`, questionId, selected: session.answers[questionId] ?? null, correct: session.answers[questionId] === keys[questionId], mode: 'test', sessionId: id, flagged: session.flags.includes(questionId), elapsedMs: session.questionElapsedMs[questionId] ?? 0, submittedAt}));
+  const attempts: Attempt[] = session.questionIds.map(questionId => ({id: `${id}:${questionId}`, questionId, selected: session.answers[questionId] ?? null, correct: grade(questionId, session.answers[questionId] ?? null), mode: 'test', sessionId: id, flagged: session.flags.includes(questionId), elapsedMs: session.questionElapsedMs[questionId] ?? 0, submittedAt}));
   return {...state, sessions: state.sessions.map(s => s.id === id ? session : s), attempts: [...state.attempts, ...attempts], reviewAttemptId: attempts[0].id};
 }
 export const localDay = (time: number) => {
@@ -89,23 +105,33 @@ export function activityStats(state: State, now: number) {
 // Treat storage as untrusted input: invalid records must never silently become progress.
 export function parseState(raw: string): State {
   const s = JSON.parse(raw);
-  const originalIds = ['wp-math-001', 'wp-rw-001', 'wp-math-002', 'wp-rw-002'];
-  const ids=[...originalIds,...topicQuestions.map(q=>q.id)];
-  const choice = (v: unknown) => v === null || (Number.isInteger(v) && Number(v) >= 0 && Number(v) < 4);
+  const qid = (v: unknown) => typeof v === 'string' && QUESTION_ID.test(v);
+  const choice = (v: unknown) => v === null || (Number.isInteger(v) && Number(v) >= 0 && Number(v) < 4) || (typeof v === 'string' && v.length <= 7 && (v === '' || SPR_INPUT.test(v)));
   const num = (v: unknown) => typeof v === 'number' && Number.isFinite(v) && v >= 0;
   const nullableTime = (v: unknown) => v === null || num(v);
   const record = (v: unknown) => v !== null && typeof v === 'object' && !Array.isArray(v);
-  if (!s || s.version !== 1 || !Array.isArray(s.attempts) || !Array.isArray(s.sessions) || !record(s.drafts) || !record(s.reflections) || !originalIds.includes(s.practiceQuestionId) || !(s.activeSessionId === null || typeof s.activeSessionId === 'string') || !(s.reviewAttemptId === null || typeof s.reviewAttemptId === 'string')) throw new Error('Unsupported or damaged saved data.');
-  for (const a of s.attempts) if (!a || typeof a.id !== 'string' || !ids.includes(a.questionId) || !choice(a.selected) || typeof a.correct !== 'boolean' || !['practice', 'test'].includes(a.mode) || !(a.sessionId === null || typeof a.sessionId === 'string') || typeof a.flagged !== 'boolean' || !num(a.elapsedMs) || !num(a.submittedAt)) throw new Error('Invalid attempt.');
-  for (const d of Object.values(s.drafts) as Draft[]) if (!d || !choice(d.selected) || !(d.checkedAttemptId === null || s.attempts.some((a: Attempt) => a.id === d.checkedAttemptId)) || !num(d.elapsedMs)) throw new Error('Invalid practice draft.');
-  for (const r of Object.values(s.reflections) as {text: string; updatedAt: number}[]) if (!r || typeof r.text !== 'string' || !num(r.updatedAt)) throw new Error('Invalid reflection.');
+  if (!s || s.version !== 1 || !Array.isArray(s.attempts) || !Array.isArray(s.sessions) || !record(s.drafts) || !record(s.reflections) || !qid(s.practiceQuestionId) || !(s.activeSessionId === null || typeof s.activeSessionId === 'string') || !(s.reviewAttemptId === null || typeof s.reviewAttemptId === 'string')) throw new Error('Unsupported or damaged saved data.');
+  if (s.attempts.length > 20000 || s.sessions.length > 2000) throw new Error('Saved history is too large.');
+  for (const a of s.attempts) if (!a || typeof a.id !== 'string' || !qid(a.questionId) || !choice(a.selected) || typeof a.correct !== 'boolean' || !['practice', 'test'].includes(a.mode) || !(a.sessionId === null || typeof a.sessionId === 'string') || typeof a.flagged !== 'boolean' || !num(a.elapsedMs) || !num(a.submittedAt)) throw new Error('Invalid attempt.');
+  for (const [id, d] of Object.entries(s.drafts) as [string, Draft][]) if (!qid(id) || !d || !choice(d.selected) || !(d.checkedAttemptId === null || s.attempts.some((a: Attempt) => a.id === d.checkedAttemptId)) || !num(d.elapsedMs)) throw new Error('Invalid practice draft.');
+  for (const r of Object.values(s.reflections) as {text: string; updatedAt: number}[]) if (!r || typeof r.text !== 'string' || r.text.length > 5000 || !num(r.updatedAt)) throw new Error('Invalid reflection.');
   for (const t of s.sessions as Session[]) {
-    const topic=t?.topicId===undefined?null:topicById(t.topicId);
-    const validIds=topic?topicQuestions.filter(q=>q.topicId===topic.id).map(q=>q.id):originalIds;
-    const duration=topic?topic.minutes*60000:DEMO_MS;
-    if (!t || typeof t.id !== 'string' || (t.topicId!==undefined&&!topic) || (topic&&t.durationMs!==duration) || (!topic&&t.durationMs!==undefined) || !Array.isArray(t.questionIds) || t.questionIds.length !== validIds.length || new Set(t.questionIds).size !== validIds.length || !t.questionIds.every(id => validIds.includes(id)) || !['ready', 'running', 'paused', 'submitted', 'expired'].includes(t.status) || !record(t.answers) || !Object.entries(t.answers).every(([id, v]) => t.questionIds.includes(id) && choice(v)) || !Array.isArray(t.flags) || !t.flags.every(id => t.questionIds.includes(id)) || !Number.isInteger(t.currentIndex) || t.currentIndex < 0 || t.currentIndex >= t.questionIds.length || !num(t.remainingMs) || t.remainingMs > duration || !nullableTime(t.startedAt) || !nullableTime(t.deadlineAt) || !nullableTime(t.segmentStartedAt) || !nullableTime(t.submittedAt) || !record(t.questionElapsedMs) || !Object.entries(t.questionElapsedMs).every(([id,v])=>t.questionIds.includes(id)&&num(v)) || (t.status === 'running' && (t.deadlineAt === null || t.segmentStartedAt === null))) throw new Error('Invalid demo session.');
+    const c = t?.config;
+    if (c !== undefined && (!record(c) || !['quick', 'module'].includes(c.kind) || typeof c.title !== 'string' || c.title.length > 120 || !['rw', 'math', 'mixed'].includes(c.section) || !num(c.durationMs) || c.durationMs > MAX_SESSION_MS || !(c.runId === undefined || typeof c.runId === 'string') || !(c.module === undefined || [1, 2].includes(c.module)) || !(c.tier === undefined || ['base', 'easier', 'harder'].includes(c.tier)))) throw new Error('Invalid test settings.');
+    if (t && (!(t.topicId === undefined || (typeof t.topicId === 'string' && !!topicById(t.topicId))) || !(t.durationMs === undefined || (num(t.durationMs) && t.durationMs <= MAX_SESSION_MS)))) throw new Error('Invalid topic practice.');
+    const limit = c?.durationMs ?? t?.durationMs ?? DEMO_MS;
+    if (t?.topicId !== undefined) { const expected = topicQuestions.filter(q => q.topicId === t.topicId).map(q => q.id); if (!Array.isArray(t.questionIds) || t.questionIds.length !== expected.length || !expected.every(id => t.questionIds.includes(id))) throw new Error('Invalid topic practice.'); }
+    if (!t || typeof t.id !== 'string' || !Array.isArray(t.questionIds) || t.questionIds.length < 1 || t.questionIds.length > MAX_SESSION_QUESTIONS || new Set(t.questionIds).size !== t.questionIds.length || !t.questionIds.every(qid) || !['ready', 'running', 'paused', 'submitted', 'expired'].includes(t.status) || !record(t.answers) || !Object.entries(t.answers).every(([id, v]) => t.questionIds.includes(id) && choice(v)) || !Array.isArray(t.flags) || !t.flags.every(id => t.questionIds.includes(id)) || !Number.isInteger(t.currentIndex) || t.currentIndex < 0 || t.currentIndex >= t.questionIds.length || !num(t.remainingMs) || t.remainingMs > limit || !nullableTime(t.startedAt) || !nullableTime(t.deadlineAt) || !nullableTime(t.segmentStartedAt) || !nullableTime(t.submittedAt) || !record(t.questionElapsedMs) || !Object.values(t.questionElapsedMs).every(num) || (t.status === 'running' && (t.deadlineAt === null || t.segmentStartedAt === null))) throw new Error('Invalid practice test.');
   }
   if (s.activeSessionId !== null && !s.sessions.some((t: Session) => t.id === s.activeSessionId)) throw new Error('Missing active session.');
+  if (s.runs !== undefined) {
+    if (!Array.isArray(s.runs) || s.runs.length > 500) throw new Error('Invalid test runs.');
+    for (const r of s.runs as TestRun[]) if (!record(r) || typeof r.id !== 'string' || !['full', 'section'].includes(r.kind) || !Array.isArray(r.sections) || !r.sections.length || r.sections.length > 2 || !r.sections.every(x => ['rw', 'math'].includes(x)) || !Array.isArray(r.moduleSessionIds) || r.moduleSessionIds.length > 4 || !r.moduleSessionIds.every(id => s.sessions.some((t: Session) => t.id === id)) || !['active', 'complete'].includes(r.status) || !num(r.startedAt) || !nullableTime(r.completedAt)) throw new Error('Invalid test run.');
+  }
+  if (s.practice !== undefined) {
+    const p = s.practice;
+    if (!record(p) || !['math', 'rw'].includes(p.section) || typeof p.skill !== 'string' || p.skill.length > 80 || !['Any', 'Easy', 'Medium', 'Hard'].includes(p.difficulty) || typeof p.adaptive !== 'boolean') throw new Error('Invalid practice settings.');
+  }
   if (s.companion !== undefined) validateCompanion(s.companion, s.attempts);
   if (s.intelligence !== undefined) validateIntelligence(s.intelligence);
   return s as State;

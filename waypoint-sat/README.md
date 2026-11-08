@@ -1,6 +1,6 @@
 # PrepOrbit AI SAT Studio
 
-A React + TypeScript application following the supplied visual reference and design specification, with both local-only and Railway/PostgreSQL modes. All four original questions, answer choices, hints and worked solutions are included. The reference HTML files are preserved in `references/`.
+A React + TypeScript Digital SAT practice app with both local-only and Railway/PostgreSQL modes. It ships a reviewed bank of 79 original questions covering all 29 Digital SAT skills (8 domains), timed adaptive practice tests, and GPT-powered tutoring, explanations, handwriting reading, coach notes, and admin-reviewed question generation. The reference HTML files are preserved in `references/`.
 
 Existing internal database, cookie, and browser-storage identifiers, question IDs, project paths, and the Railway URL stay compatible so existing profiles and bookmarks keep working. Original design references and historical screenshots are archived unchanged; current product branding is PrepOrbit AI.
 
@@ -15,7 +15,33 @@ Live application: **https://waypoint-web-production-50a5.up.railway.app/**
 - Students sign in with an email and password. Each account has its own progress record, so it follows the student to any device. See **Accounts** below.
 - Answers, attempts, running/paused test state, flags and reflections save to PostgreSQL. The footer and reflection editor show the actual database save status. Wait for **“Saved to Railway database”** before closing the tab. Offline or failed saves retain pending work in a browser backup and show retry/export controls.
 - Saved data loads before the study screens open. Failed initial loads show a reconnect screen, rather than replacing existing progress with a blank state. Concurrent saves use revisions; a stale tab cannot overwrite newer progress. Export pending work before choosing **Reload server copy**.
-- The hosted version’s clock still follows the device clock; hosting adds persistence, not a calibrated or secure exam system. The demo remains five minutes with four questions and no SAT score estimate.
+- The hosted version’s clock still follows the device clock; hosting adds persistence, not a calibrated or secure exam system. Practice tests report correct counts, not an SAT score: a reliable scale needs calibration data the app does not have yet.
+
+### What students get
+
+- **Navigation**: Home · Practice · Test · Review · Plan · Ask AI (plus **Admin** for administrators). Pages with related tools show sub-tabs (for example Review → Answer Review, Mistake Reflection, Explain My Work, Handwritten Work). Old links such as `#adaptive` and `#similar` open adaptive practice.
+- **Question bank** (`src/data/sat-bank.json`): 79 original questions (41 Math, 38 Reading and Writing) across every Digital SAT skill at Easy, Medium and Hard, including 9 typed-answer (student-produced response) math questions. Every wrong choice has an explanation of why it is tempting. Correct-answer positions are balanced across A–D. Math uses KaTeX (`\( … \)` inline; `$` stays money).
+- **Answer-key verification**: every math key is checked by `server/question-check.mjs` (mathjs) — the stated answer must equal a computed value or be algebraically equivalent, and no wrong choice may equal it — and was independently re-solved with sympy when authored. `tests/bank.test.mjs` re-runs the machine checks on every build.
+- **Practice**: filter by section, domain or skill and by level, or use **Adaptive** (a correct answer moves up a level, a miss moves down). Typed answers follow SAT rules (equivalent fractions and decimals; decimals need 3+ places if not exact). Desmos calculator and the reference sheet are available for Math.
+- **Practice tests**: Quick check (10 questions, 13 min), Reading & Writing or Math section (2 adaptive modules), or a full-length 4-module test with a break. Module 2 is harder when Module 1 is at least 60% correct, otherwise easier. Timing is real SAT pacing (32 min / 27 RW questions, 35 min / 22 Math questions), scaled to module length; modules grow to full length as the bank grows (each module uses at most half of a section's questions). Expired modules submit automatically. AI help is paused for the whole test; **Stop test** ends it early.
+- **Daily plan**: built from first-attempt accuracy — the weakest Math skill and weakest Reading and Writing skill (or the next untried one), plus a reflection on a missed question. A practice activity completes after its planned number of new answers in that skill.
+
+### AI features (OpenAI)
+
+All AI calls go through `server/ai.mjs` (Responses API, `store: false`). The server rebuilds every fact from PostgreSQL and the answer key; nothing the browser claims is trusted.
+
+| Feature | Endpoint | Daily limit per student |
+| --- | --- | --- |
+| Live guided tutor (Socratic; never states the key before the student has a checked attempt, enforced by instructions **and** a server-side leak filter) | `POST /api/ai/tutor` | 80 |
+| Explain my mistake (the algebra checker marks each line; GPT explains the first wrong one) | `POST /api/ai/explain-work` | 40 |
+| Read handwriting (photo → lines; the student confirms before checking) | `POST /api/ai/handwriting` | 15 |
+| Coach notes on Home, Plan and Weekly Summary (cached per day/week) | `POST /api/ai/insight` | 12 new notes |
+
+Limits are stored atomically in `waypoint_ai_usage` and reset each UTC day. Without `OPENAI_API_KEY`, every screen still works: the tutor falls back to step-by-step hints and handwriting to typed transcription.
+
+**Question generator (admins only).** Set `ADMIN_EMAILS` (comma-separated) on `waypoint-web`. An admin's **Admin** page generates 1–5 questions per job for a chosen skill, difficulty and format. Each draft must pass: a strict JSON schema, structural validation, the machine math check, a duplicate check, and a **blind solve** by a separate call that never sees the key. Failures are rejected; a blind-solve disagreement is flagged. Nothing reaches students until an admin approves it; approved questions join practice and tests immediately and can be retired later. Stored in `waypoint_questions`.
+
+Optional variables: `OPENAI_MODEL` (default `gpt-5-mini`), `OPENAI_GENERATOR_MODEL` and `OPENAI_VERIFIER_MODEL` (default: `OPENAI_MODEL`), `DESMOS_API_KEY` (embeds the Desmos calculator in the page; without it, a button opens Desmos in a new window).
 
 ### Practice Test: choose a topic and take 25 questions
 
@@ -160,12 +186,12 @@ The short demo includes pauses and mixed subjects, and shares content with focus
 
 ## Project layout
 
-- `src/data/original-questions.json`: original question content and solutions, extracted without changing the reference wording.
-- `src/data/questions.ts`: stable question IDs, sections, metadata and hints.
-- `src/model.ts`: session timing, submissions, activity calculations and saved-data validation.
-- `src/main.tsx`: React shell, screens, shared question/solution components and persistence integration.
-- `src/styles.css`: original reference styles.
-- `src/accessibility.css`: native radio controls, visible focus, save states and responsive refinements.
+- `src/data/sat-bank.json`: the reviewed question bank. `src/data/question-schema.ts`: question types, SAT skill taxonomy, grading (including typed answers) and validation, shared by browser and server. `src/data/bank.ts`: browser registry that adds approved generated questions.
+- `src/practice-engine.ts`: question selection, adaptive level, skill statistics, and test/module assembly with adaptive routing.
+- `src/model.ts`: saved-progress model, timing, submissions and validation (accepts the earlier 4-question demo data unchanged).
+- `src/main.tsx`: app shell and navigation. `src/StudioScreens.tsx` (Home, Practice, Test, Review), `src/CompanionScreens.tsx` (Tutor, Mistake Reflection, Daily Plan), `src/IntelligenceScreens.tsx` (Explain My Work, Handwritten Work, Pacing, Weekly), `src/AdminScreen.tsx`.
+- `src/work-check.ts`: line-by-line algebra checker for one-variable linear questions.
+- `server/`: HTTP app, accounts, PostgreSQL, assistant, `ai.mjs`, `study-ai.mjs` (tutor, explanations, handwriting, coach notes), `generator.mjs`, `question-check.mjs`, `bank.mjs`.
 
 ## Verification
 
@@ -179,7 +205,7 @@ DATABASE_URL=postgres://… npm run test:auth   # full stack: real server + a di
 
 Browser tests use locally installed Google Chrome (`channel: 'chrome'`) via Playwright. They can reuse the server on port 5173 or start it automatically. They run in isolated temporary browser contexts and do not alter your study progress.
 
-Tests cover deadline restoration, pause/resume, idempotent submission, actual-answer review including unanswered items, independent flags, first attempts versus retries, local-day streaks, save failures, reflection reloads, keyboard radio controls and no horizontal overflow on all four screens at 1440, 834, 390 and 320px. Browser screenshots are written to `test-results/screenshots/`. A 720px viewport also checks reflow equivalent to a 1440px window at 200% zoom. These checks do not constitute a complete screen-reader or WCAG audit.
+Tests cover the question bank (structure, machine-verified math keys, skill coverage, SAT typed-answer grading), practice and retries, wrong-choice explanations, quick checks and adaptive section tests (module routing, automatic submission when time expires, stopping early), the daily plan, tutor hints, the step checker, loading progress saved by the earlier 4-question demo, the AI endpoints and generator with a fake OpenAI (answer-leak filter, limits, test blocking, verification gates, admin approval), and no horizontal overflow on every page at 1440, 834, 390 and 320px. Browser screenshots are written to `test-results/screenshots/`. A 720px viewport also checks reflow equivalent to a 1440px window at 200% zoom. These checks do not constitute a complete screen-reader or WCAG audit.
 
 Server integration tests also verify private visitor profiles, validation, stale-write rejection, idempotent retry, CSRF checks and database outages. Hosted-mode browser tests verify database restoration, recovery from a lost save response, conflict resolution and local backup import. `tests/live-smoke.mjs` explicitly targets the live HTTPS deployment with a separate QA profile and can verify database durability across a redeployment; it does not use or modify your browser's student profile.
 

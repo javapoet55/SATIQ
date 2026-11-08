@@ -47,6 +47,32 @@ export class PostgresStore {
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )`);
     await this.pool.query('CREATE INDEX IF NOT EXISTS waypoint_password_resets_user ON waypoint_password_resets (user_id)');
+    await this.pool.query(`CREATE TABLE IF NOT EXISTS waypoint_questions (
+      id TEXT PRIMARY KEY,
+      status TEXT NOT NULL,
+      payload JSONB NOT NULL,
+      verification JSONB NOT NULL DEFAULT '{}'::jsonb,
+      created_by TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      decided_by TEXT,
+      decided_at TIMESTAMPTZ
+    )`);
+    await this.pool.query('CREATE INDEX IF NOT EXISTS waypoint_questions_status ON waypoint_questions (status, created_at DESC)');
+    await this.pool.query(`CREATE TABLE IF NOT EXISTS waypoint_ai_usage (
+      owner_hash TEXT NOT NULL,
+      day DATE NOT NULL,
+      feature TEXT NOT NULL,
+      count INTEGER NOT NULL DEFAULT 0,
+      PRIMARY KEY (owner_hash, day, feature)
+    )`);
+    await this.pool.query(`CREATE TABLE IF NOT EXISTS waypoint_insights (
+      owner_hash TEXT NOT NULL,
+      day TEXT NOT NULL,
+      kind TEXT NOT NULL,
+      text TEXT NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      PRIMARY KEY (owner_hash, day, kind)
+    )`);
   }
   async health() { await this.pool.query('SELECT 1'); }
   async get(owner, initial) {
@@ -123,6 +149,40 @@ export class PostgresStore {
       return user.rows[0];
     } catch (error) { await client.query('ROLLBACK').catch(() => {}); throw error; }
     finally { client.release(); }
+  }
+  // AI usage: one atomic counter per student, UTC day, and feature. Returns false once the daily limit is reached.
+  async takeAiUsage(owner, feature, limit) {
+    const {rows} = await this.pool.query(`INSERT INTO waypoint_ai_usage (owner_hash, day, feature, count) VALUES ($1, CURRENT_DATE, $2, 1)
+      ON CONFLICT (owner_hash, day, feature) DO UPDATE SET count = waypoint_ai_usage.count + 1 WHERE waypoint_ai_usage.count < $3
+      RETURNING count`, [owner, feature, limit]);
+    return rows.length > 0;
+  }
+  async getInsight(owner, day, kind) {
+    const {rows} = await this.pool.query('SELECT text, created_at AS "createdAt" FROM waypoint_insights WHERE owner_hash = $1 AND day = $2 AND kind = $3', [owner, day, kind]);
+    return rows[0] ?? null;
+  }
+  async saveInsight(owner, day, kind, text) {
+    await this.pool.query(`INSERT INTO waypoint_insights (owner_hash, day, kind, text) VALUES ($1, $2, $3, $4)
+      ON CONFLICT (owner_hash, day, kind) DO UPDATE SET text = EXCLUDED.text, created_at = NOW()`, [owner, day, kind, text]);
+  }
+  // Generated questions
+  async saveGeneratedQuestion(question, status, verification, createdBy) {
+    await this.pool.query('INSERT INTO waypoint_questions (id, status, payload, verification, created_by) VALUES ($1, $2, $3::jsonb, $4::jsonb, $5)',
+      [question.id, status, JSON.stringify(question), JSON.stringify(verification), createdBy]);
+  }
+  async listGeneratedQuestions(status, limit = 200) {
+    const {rows} = await this.pool.query(`SELECT id, status, payload, verification, created_by AS "createdBy", created_at AS "createdAt", decided_by AS "decidedBy", decided_at AS "decidedAt"
+      FROM waypoint_questions WHERE ($1::text IS NULL OR status = $1) ORDER BY created_at DESC LIMIT $2`, [status, limit]);
+    return rows;
+  }
+  async decideGeneratedQuestion(id, status, decidedBy) {
+    const {rowCount} = await this.pool.query(`UPDATE waypoint_questions SET status = $2, decided_by = $3, decided_at = NOW()
+      WHERE id = $1 AND status IN ('pending', 'flagged', 'approved', 'rejected')`, [id, status, decidedBy]);
+    return rowCount > 0;
+  }
+  async approvedQuestions() {
+    const {rows} = await this.pool.query("SELECT payload FROM waypoint_questions WHERE status = 'approved' ORDER BY created_at");
+    return rows.map(r => r.payload);
   }
   async close() { await this.pool.end(); }
   async assistantHistory(owner) {

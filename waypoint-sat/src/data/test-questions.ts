@@ -1,4 +1,4 @@
-import type {Question} from './questions';
+type Question = {id: string; section: 'math' | 'rw'; skill: string; difficulty: string; text: string; choices: string[]; correct: number; steps: string[][]; why: string; hint: string};
 import {readingQuestions} from './test-reading.ts';
 export interface TopicQuestion extends Question {topicId:string}
 function math(topicId:string,n:number,skill:string,text:string,correctValue:number,options:number[],explanation:string):TopicQuestion{

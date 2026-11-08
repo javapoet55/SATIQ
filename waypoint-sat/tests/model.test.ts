@@ -2,7 +2,8 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {createSession, resumeSession, pauseSession, navigateSession, remaining, finishSession, emptyState, activityStats, parseState, DEMO_MS, localDay, dayOffset} from '../src/model.ts';
 const ids = ['wp-math-001', 'wp-rw-001', 'wp-math-002', 'wp-rw-002'];
-const keys = Object.fromEntries(ids.map((id, i) => [id, [1,2,2,0][i]]));
+const keys: Record<string, number> = Object.fromEntries(ids.map((id, i) => [id, [1,2,2,0][i]]));
+const grade = (id: string, choice: unknown) => choice === keys[id];
 test('deadline survives delayed ticks, reload and pause/resume', () => {
   let session = resumeSession(createSession(ids, 'demo'), 1000);
   assert.equal(remaining(session, 11000), 290000);
@@ -18,7 +19,7 @@ test('submission preserves actual answers, unanswered, flags, timing and is idem
   let session = resumeSession(createSession(ids, 'demo'), 1000);
   session.answers[ids[0]] = 1; session.flags = [ids[0], ids[2]];
   session = navigateSession(session, 1, 5000);
-  const state = finishSession({...emptyState(), activeSessionId:'demo', sessions:[session]}, 'demo', 9000, keys);
+  const state = finishSession({...emptyState(), activeSessionId:'demo', sessions:[session]}, 'demo', 9000, grade);
   assert.equal(state.attempts.length, 4);
   assert.equal(state.attempts[0].selected, 1);
   assert.equal(state.attempts[0].correct, true);
@@ -27,12 +28,12 @@ test('submission preserves actual answers, unanswered, flags, timing and is idem
   assert.equal(state.attempts[0].elapsedMs, 4000);
   assert.equal(state.attempts[1].elapsedMs, 4000);
   assert.equal(state.sessions[0].status, 'submitted');
-  assert.equal(finishSession(state, 'demo', 10000, keys), state);
+  assert.equal(finishSession(state, 'demo', 10000, grade), state);
   assert.deepEqual(parseState(JSON.stringify(state)), state);
 });
 test('expiry is stamped at deadline and cannot gain extra elapsed time', () => {
   const session = resumeSession(createSession(ids, 'demo'), 1000);
-  const state = finishSession({...emptyState(), sessions: [session]}, 'demo', 1000000, keys);
+  const state = finishSession({...emptyState(), sessions: [session]}, 'demo', 1000000, grade);
   assert.equal(state.sessions[0].status, 'expired');
   assert.equal(state.attempts[0].submittedAt, DEMO_MS + 1000);
   assert.equal(state.attempts[0].elapsedMs, DEMO_MS);
@@ -48,7 +49,7 @@ test('first attempts are preserved, empty submissions do not earn streaks', () =
   const stats = activityStats(state, time);
   assert.equal(stats.first[0].id, 'first'); assert.equal(stats.streak, 2);
   assert.equal(stats.todayAttempts.length, 1);
-  state = finishSession({...emptyState(), sessions:[resumeSession(createSession(ids,'empty'), time)]}, 'empty', time+1000, keys);
+  state = finishSession({...emptyState(), sessions:[resumeSession(createSession(ids,'empty'), time)]}, 'empty', time+1000, grade);
   assert.equal(activityStats(state, time+1000).streak, 0);
 });
 test('streak handles local calendar dates and gaps', () => {

@@ -1,0 +1,105 @@
+/* Five-section navigation, sub-pages, question bank UI, test-day tools, and admin review. */
+.shell .simple-nav{gap:4px}
+.shell .simple-nav button{font-size:14px;font-weight:600}
+.shell .simple-nav button>span:first-child{font-size:16px}
+.subnav{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 18px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.subnav a{display:inline-flex;align-items:center;min-height:40px;padding:8px 14px;border-radius:20px;color:var(--ink);text-decoration:none;font-size:13px;border:1px solid transparent}
+.subnav a:hover{background:var(--mint)}
+.subnav a.active{background:var(--green);color:white}
+.subnav a:focus-visible{outline:3px solid #ac632f;outline-offset:2px}
+
+/* Questions */
+.math .katex{font-size:1.06em}
+.passage{background:#fbfaf6;border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin:14px 0 6px;font-size:16px;line-height:1.65;font-family:Georgia,'Times New Roman',serif}
+.passage p{margin:0 0 10px}.passage p:last-child{margin-bottom:0}.passage ul{margin:6px 0 0;padding-left:20px}.passage li{margin:3px 0}
+.questiontext .katex-display{margin:6px 0}
+.spr{display:grid;gap:6px;margin:14px 0 4px;max-width:340px}
+.spr-input{font:600 22px/1.2 ui-monospace,Menlo,monospace;letter-spacing:2px;padding:10px 14px;border:2px solid #84978b;border-radius:10px;width:100%;max-width:220px;background:white;color:var(--ink)}
+.spr-input:focus-visible{outline:3px solid #ac632f;outline-offset:2px}
+.spr-key{margin:4px 0 0}
+.feedback.right{border-left:4px solid #3d7a59}.feedback.miss{border-left:4px solid #ba8658}
+.distractor-note{margin:8px 0;padding:10px 12px;background:#fdf5ec;border:1px solid #ecd6bd;border-radius:9px;font-size:14px}
+.distractor-list{margin:8px 0 0;padding-left:0;list-style:none;display:grid;gap:8px}
+.distractor-list li{padding:8px 10px;border-radius:8px;background:#fbfaf6;font-size:14px}
+.distractor-list li.picked{background:#fdf5ec;border:1px solid #ecd6bd}
+.practice-controls{display:flex;flex-wrap:wrap;align-items:end;gap:12px;margin-bottom:16px}
+.practice-controls .tabs{margin:0}
+.practice-controls label{display:grid;gap:4px;font-size:12px;font-weight:600;color:var(--muted)}
+.practice-controls select{min-height:44px;max-width:100%}
+.practice-actions{flex-wrap:wrap;gap:8px;justify-content:flex-start}
+.review-actions{display:grid;gap:8px;margin-top:14px}
+.error-text{color:#8a3b12}
+
+/* Plan banner and coach */
+.plan-banner{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;margin-bottom:14px;border-radius:10px;background:var(--mint);border:1px solid var(--line);font-size:14px}
+.plan-banner.ready{background:#e3f1e7;border-color:#9cc3a8}
+.coach-note p{line-height:1.6}
+.ai-callout{border-left:4px solid var(--green)}
+
+/* Home */
+.section-scores{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:14px 0 8px}
+.section-scores>div{display:grid;gap:2px}
+.section-scores span{font-size:13px;opacity:.85}
+.section-scores strong{font-size:38px;font-family:Georgia,serif;font-weight:400}
+.section-scores small{font-size:12px;opacity:.8}
+.skill-section{margin-top:14px}
+.skill-section h3{margin:0 0 6px}
+.skill-section .sectionlabel{display:block;margin:10px 0 6px}
+.skill-chips{display:flex;flex-wrap:wrap;gap:6px}
+.skill-chip{display:inline-flex;flex-direction:column;align-items:flex-start;gap:1px;padding:7px 11px;border-radius:10px;border:1px solid var(--line);background:white;font-size:12px;text-align:left;min-height:44px;line-height:1.3;max-width:100%}
+.skill-chip small{font-size:11px;color:var(--muted)}
+.skill-chip.strong{background:#e3f1e7;border-color:#9cc3a8}
+.skill-chip.ok{background:#f6f2e3;border-color:#ddd0a3}
+.skill-chip.weak{background:#fdf0e6;border-color:#e8c4a6}
+.skill-line{padding:6px 0;border-bottom:1px solid var(--line);font-size:14px}
+
+/* Tests */
+.test-options{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.test-option{display:flex;flex-direction:column;gap:8px}
+.test-option button{margin-top:auto;align-self:flex-start}
+.results-card{margin-bottom:16px}
+.module-results{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin:12px 0}
+.module-results>div{display:grid;gap:2px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fbfaf6}
+.module-results span{font-size:12px;color:var(--muted)}
+.module-results strong{font-size:22px}
+.module-results small{font-size:11px;color:#8a3b12}
+.test-rules{margin:0;padding-left:20px;line-height:1.7}
+.navgrid{grid-template-columns:repeat(auto-fill,minmax(42px,1fr))}
+
+/* Math tools */
+.math-tools{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start;position:relative}
+.math-tools>button{min-height:40px;padding:6px 12px;font-size:13px}
+.tool-panel{flex-basis:100%;border:1px solid var(--line);border-radius:12px;padding:12px;background:white;margin-top:4px}
+.tool-panel .row h3{margin:0}
+.tool-panel .row button{min-width:44px}
+.desmos-host{width:100%;height:420px;margin-top:8px}
+.tool-fallback{display:grid;gap:10px;padding-top:6px}
+.reference{display:grid;gap:8px;margin:10px 0}
+.reference>div{display:grid;grid-template-columns:minmax(110px,40%) 1fr;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}
+.reference dt{font-size:13px;font-weight:600}
+.reference dd{margin:0;overflow-x:auto}
+
+/* Admin */
+.admin-form{display:flex;flex-wrap:wrap;gap:12px;align-items:end;margin:12px 0}
+.admin-form label{display:grid;gap:4px;font-size:12px;font-weight:600;color:var(--muted)}
+.admin-form select{min-height:44px;max-width:100%}
+.admin-row .verification{margin:12px 0;padding:10px 12px;border-radius:9px;background:#fbfaf6;border:1px solid var(--line);font-size:14px}
+.admin-row .verification ul{margin:6px 0 0;padding-left:18px}
+
+@media(max-width:700px){
+  .shell .menu-open .simple-nav{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .section-scores strong{font-size:30px}
+  .passage{font-size:15px;padding:12px}
+  .practice-controls{display:grid;grid-template-columns:minmax(0,1fr)}
+  .practice-controls select{width:100%}
+  .reference>div{grid-template-columns:1fr}
+  .desmos-host{height:360px}
+  .subnav{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .subnav a{white-space:nowrap}
+}
+@media print{.subnav,.app-sidebar,header,footer{display:none}}
+.practice-controls select,.review-controls select,.admin-form select,.analysis-selector select{min-height:44px;padding:8px 34px 8px 12px;border:1px solid #84978b;border-radius:9px;background:white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23213c34' stroke-width='1.6' fill='none'/%3E%3C/svg%3E") no-repeat right 12px center;color:var(--ink);font:inherit;font-size:14px;appearance:none;-webkit-appearance:none}
+.practice-controls select:focus-visible,.review-controls select:focus-visible,.admin-form select:focus-visible,.analysis-selector select:focus-visible{outline:3px solid #ac632f;outline-offset:2px}
+.section-heading{margin-top:28px}
+.topic-options .test-option h3{margin:4px 0 0}
+.topic-icon{display:inline-grid;place-items:center;width:40px;height:40px;border-radius:10px;background:var(--mint);font-weight:700}

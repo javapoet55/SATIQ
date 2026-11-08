@@ -1,0 +1,3091 @@
+[
+ {
+  "id": "wp-math-001",
+  "section": "math",
+  "domain": "Algebra",
+  "skill": "Linear equations in one variable",
+  "difficulty": "Medium",
+  "type": "mcq",
+  "text": "A community garden rents a tool kit for a one-time fee of $18 plus $7 per day. The total rental cost was $60. For how many days was the kit rented?",
+  "choices": [
+   "4 days",
+   "6 days",
+   "8 days",
+   "11 days"
+  ],
+  "correct": 1,
+  "steps": [
+   [
+    "Translate the total cost",
+    "Let d be the number of days.",
+    "18 + 7d = 60"
+   ],
+   [
+    "Remove the one-time fee",
+    "Subtract $18 from both sides.",
+    "7d = 42"
+   ],
+   [
+    "Find the number of days",
+    "Divide by 7. Check: 18 + 7(6) = 60.",
+    "d = 6"
+   ]
+  ],
+  "why": "Four days would cost $46. Substituting an answer into the original situation helps catch this error.",
+  "hint": "Separate the fixed fee from the daily cost.",
+  "distractors": [
+   "Four days would cost 18 + 7(4) = $46. This comes from subtracting 60 − 18 incorrectly as 28.",
+   null,
+   "Eight days would cost $74. Check your answer by putting it back into the situation.",
+   "Eleven days would cost 18 + 7(11) = $95. This comes from adding the $18 fee to the total instead of subtracting it."
+  ],
+  "check": {
+   "kind": "value",
+   "expr": "(60-18)/7"
+  },
+  "work": {
+   "variable": "d",
+   "solution": 6
+  },
+  "source": "original"
+ },
+ {
+  "id": "wp-rw-001",
+  "section": "rw",
+  "domain": "Expression of Ideas",
+  "skill": "Transitions",
+  "difficulty": "Medium",
+  "type": "mcq",
+  "passage": "For years, the town’s old station stood empty. Residents restored it last spring; ______, it now hosts a busy weekend market.",
+  "text": "Which choice completes the text with the most logical transition?",
+  "choices": [
+   "nevertheless",
+   "for instance",
+   "as a result",
+   "in contrast"
+  ],
+  "correct": 2,
+  "steps": [
+   [
+    "Identify the relationship",
+    "The restoration made the new use possible."
+   ],
+   [
+    "Choose a result transition",
+    "“As a result” connects the restoration to the opening of the market."
+   ],
+   [
+    "Eliminate the alternatives",
+    "“Nevertheless” and “in contrast” signal opposition. “For instance” introduces an example."
+   ]
+  ],
+  "why": "“Nevertheless” signals an unexpected contrast. The market opening is a natural consequence of the restoration.",
+  "hint": "Look for a cause-and-effect relationship.",
+  "distractors": [
+   "“Nevertheless” signals that something happened despite the first event, but the market was made possible by the restoration.",
+   "“For instance” introduces an example, but the market is a consequence, not an example.",
+   null,
+   "“In contrast” signals a difference, but the two sentences describe connected events."
+  ],
+  "source": "original"
+ },
+ {
+  "id": "wp-math-002",
+  "section": "math",
+  "domain": "Problem-Solving and Data Analysis",
+  "skill": "Percentages",
+  "difficulty": "Medium",
+  "type": "mcq",
+  "text": "A notebook costs $8 before a 25% discount. What is its discounted price, before tax?",
+  "choices": [
+   "$2",
+   "$5",
+   "$6",
+   "$7"
+  ],
+  "correct": 2,
+  "steps": [
+   [
+    "Find the discount",
+    "Multiply the original price by 0.25.",
+    "$8 × 0.25 = $2"
+   ],
+   [
+    "Subtract the discount",
+    "The discount is not the final price.",
+    "$8 − $2 = $6"
+   ]
+  ],
+  "why": "$2 is the discount amount. The question asks for the price after the discount.",
+  "hint": "Find the discount first, then subtract it from the price.",
+  "distractors": [
+   "$2 is the amount of the discount. The question asks for the price after the discount.",
+   "$5 subtracts $3 instead of the correct $2 discount.",
+   null,
+   "$7 subtracts only $1, which would be a 12.5% discount."
+  ],
+  "check": {
+   "kind": "value",
+   "expr": "8*(1-0.25)"
+  },
+  "source": "original"
+ },
+ {
+  "id": "wp-rw-002",
+  "section": "rw",
+  "domain": "Craft and Structure",
+  "skill": "Words in Context",
+  "difficulty": "Medium",
+  "type": "mcq",
+  "passage": "The biologist described the wetland as resilient: after a severe drought, its plants quickly recovered.",
+  "text": "As used in the text, what does the word “resilient” most nearly mean?",
+  "choices": [
+   "able to recover",
+   "difficult to locate",
+   "recently discovered",
+   "unusually colorful"
+  ],
+  "correct": 0,
+  "steps": [
+   [
+    "Use the context",
+    "The words after the colon explain the meaning."
+   ],
+   [
+    "Match the meaning",
+    "“Quickly recovered” supports “able to recover.”"
+   ]
+  ],
+  "why": "The text describes recovery after drought; it gives no evidence about location, age, or color.",
+  "hint": "Look at the explanation after the colon.",
+  "distractors": [
+   null,
+   "The text says nothing about how easy the wetland is to find.",
+   "The text gives no information about when the wetland was discovered.",
+   "Color is never mentioned. The text is about recovery after drought."
+  ],
+  "source": "original"
+ },
+ {
+  "id": "sat-m-001",
+  "section": "math",
+  "domain": "Algebra",
+  "skill": "Linear equations in one variable",
+  "difficulty": "Easy",
+  "type": "mcq",
+  "text": "If \\(4x + 9 = 37\\), what is the value of \\(x\\)?",
+  "choices": [
+   "7",
+   "28",
+   "11.5",
+   "9.25"
+  ],
+  "correct": 0,
+  "steps": [
+   [
+    "Undo the addition",
+    "Subtract 9 from both sides.",
+    "4x = 28"
+   ],
+   [
+    "Undo the multiplication",
+    "Divide both sides by 4.",
+    "x = 7"
+   ]
+  ],
+  "why": "Undo operations in reverse order: remove the added constant first, then divide by the coefficient.",
+  "hint": "What has to happen to the 9 before you can deal with the 4?",
+  "distractors": [
+   null,
+   "28 is the value of 4x, not x. One more step is needed: divide by 4.",
+   "Adding 9 instead of subtracting it moves the constant the wrong way.",
+   "Dividing 37 by 4 skips removing the 9, so the constant is still mixed into the answer."
+  ],
+  "check": {
+   "kind": "value",
+   "expr": "(37-9)/4"
+  },
+  "work": {
+   "variable": "x",
+   "solution": 7
+  },
+  "source": "original"
+ },
+ {
+  "id": "sat-m-002",
+  "section": "math",
+  "domain": "Algebra",
+  "skill": "Linear equations in one variable",
+  "difficulty": "Medium",
+  "type": "spr",
+  "text": "\\(3(2x - 5) = 2x + 9\\). What is the value of \\(x\\)?",
+  "choices": [],
+  "correct": -1,
+  "answers": [
+   "6"
+  ],
+  "steps": [
+   [
+    "Distribute",
+    "Multiply 3 by each term in the parentheses.",
+    "6x - 15 = 2x + 9"
+   ],
+   [
+    "Collect the x-terms",
+    "Subtract 2x from both sides and add 15 to both sides.",
+    "4x = 24"
+   ],
+   [
+    "Solve",
+    "Divide by 4.",
+    "x = 6"
+   ]
+  ],
+  "why": "Distribute to every term inside the parentheses, then move all x-terms to one side.",
+  "hint": "Multiply the 3 by both the 2x and the −5.",
+  "check": {
+   "kind": "value",
+   "expr": "(9+15)/(6-2)"
+  },
+  "work": {
+   "variable": "x",
+   "solution": 6
+  },
+  "source": "original"
+ },
+ {
+  "id": "sat-m-003",
+  "section": "math",
+  "domain": "Algebra",
+  "skill": "Linear functions",
+  "difficulty": "Easy",
+  "type": "mcq",
+  "text": "A phone plan's monthly cost, in dollars, for \\(g\\) gigabytes of data is \\(C(g) = 4.5g + 20\\). What is the monthly cost for 8 gigabytes?",
+  "choices": [
+   "$56",
+   "$32.50",
+   "$36",
+   "$196"
+  ],
+  "correct": 0,
+  "steps": [
+   [
+    "Substitute",
+    "Replace g with 8.",
+    "C(8) = 4.5(8) + 20"
+   ],
+   [
+    "Evaluate",
+    "Multiply first, then add.",
+    "36 + 20 = 56"
+   ]
+  ],
+  "why": "Substitute the input, then follow the order of operations: multiply before adding.",
+  "hint": "Replace g with 8. Which operation comes first?",
+  "distractors": [
+   null,
+   "Adding 4.5, 20 and 8 treats every number as something to add. The 4.5 is a cost per gigabyte, so it must be multiplied by 8.",
+   "$36 is only the data charge. The $20 monthly fee still has to be added.",
+   "Adding 4.5 and 20 before multiplying by 8 breaks the order of operations."
+  ],
+  "check": {
+   "kind": "value",
+   "expr": "4.5*8+20"
+  },
+  "source": "original"
+ },
+ {
+  "id": "sat-m-004",
+  "section": "math",
+  "domain": "Algebra",
+  "skill": "Linear functions",
+  "difficulty": "Hard",
+  "type": "mcq",
+  "text": "The graph of the linear function \\(f\\) passes through the points \\((2, 11)\\) and \\((6, 23)\\). What is the value of \\(f(0)\\)?",
+  "choices": [
+   "11",
+   "8",
+   "3",
+   "5"
+  ],
+  "correct": 3,
+  "steps": [
+   [
+    "Find the slope",
+    "Rise over run between the two points.",
+    "\\frac{23 - 11}{6 - 2} = 3"
+   ],
+   [
+    "Step back to x = 0",
+    "From x = 2 to x = 0 is two steps back, so subtract 2 × 3 = 6.",
+    "f(0) = 11 - 6 = 5"
+   ]
+  ],
+  "why": "f(0) is the y-intercept. Find the slope first, then move from a known point to x = 0.",
+  "hint": "How much does f change each time x goes up by 1?",
+  "distractors": [
+   "11 is f(2), not f(0).",
+   "8 moves back only one step from x = 2. Getting to x = 0 takes two steps.",
+   "3 is the slope. The question asks for the value of the function at x = 0.",
+   null
+  ],
+  "check": {
+   "kind": "value",
+   "expr": "11 - 2*(23-11)/(6-2)"
+  },
+  "source": "original"
+ },
+ {
+  "id": "sat-m-005",
+  "section": "math",
+  "domain": "Algebra",
+  "skill": "Linear equations in two variables",
+  "difficulty": "Easy",
+  "type": "mcq",
+  "text": "At a museum, adult tickets cost $12 and student tickets cost $6. A group spent $96 and bought 3 adult tickets. How many student tickets did the group buy?",
+  "choices": [
+   "13",
+   "10",
+   "16",
+   "5"
+  ],
+  "correct": 1,
+  "steps": [
+   [
+    "Write the equation",
+    "Let s be the number of student tickets.",
+    "12(3) + 6s = 96"
+   ],
+   [
+    "Solve",
+    "Subtract 36, then divide by 6.",
+    "6s = 60 \\Rightarrow s = 10"
+   ]
+  ],
+  "why": "Account for the part you already know (the adult tickets) before solving for the unknown.",
+  "hint": "How much of the $96 went to adult tickets?",
+  "distractors": [
+   "13 subtracts 3 tickets at $6, but the adult tickets cost $12 each.",
+   null,
+   "16 assumes the whole $96 was spent on student tickets.",
+   "5 divides the leftover $60 by the adult price instead of the student price."
+  ],
+  "check": {
+   "kind": "value",
+   "expr": "(96-3*12)/6"
+  },
+  "source": "original",
+  "work": {
+   "variable": "s",
+   "solution": 10
+  }
+ },
+ {
+  "id": "sat-m-006",
+  "section": "math",
+  "domain": "Algebra",
+  "skill": "Linear equations in two variables",
+  "difficulty": "Hard",
+  "type": "spr",
+  "text": "The line \\(5x - 2y = 20\\) crosses the x-axis at \\((a, 0)\\) and the y-axis at \\((0, b)\\). What is the value of \\(a + b\\)?",
+  "choices": [],
+  "correct": -1,
+  "answers": [
+   "-6"
+  ],
+  "steps": [
+   [
+    "x-intercept",
+    "Set y = 0.",
+    "5a = 20 \\Rightarrow a = 4"
+   ],
+   [
+    "y-intercept",
+    "Set x = 0.",
+    "-2b = 20 \\Rightarrow b = -10"
+   ],
+   [
+    "Add",
+    "Combine the intercepts.",
+    "4 + (-10) = -6"
+   ]
+  ],
+  "why": "An intercept is where the other coordinate is zero. Set that coordinate to 0 and solve.",
+  "hint": "On the x-axis, what is the value of y?",
+  "check": {
+   "kind": "value",
+   "expr": "20/5 + 20/(-2)"
+  },
+  "source": "original"
+ },
+ {
+  "id": "sat-m-007",
+  "section": "math",
+  "domain": "Algebra",
+  "skill": "Systems of two linear equations",
+  "difficulty": "Medium",
+  "type": "mcq",
+  "text": "\\(x + y = 14\\) and \\(x - y = 4\\). What is the value of \\(xy\\)?",
+  "choices": [
+   "14",
+   "56",
+   "36",
+   "45"
+  ],
+  "correct": 3,
+  "steps": [
+   [
+    "Add the equations",
+    "The y-terms cancel.",
+    "2x = 18 \\Rightarrow x = 9"
+   ],
+   [
+    "Find y",
+    "Substitute into the first equation.",
+    "y = 14 - 9 = 5"
+   ],
+   [
+    "Multiply",
+    "The question asks for the product.",
+    "xy = 45"
+   ]
+  ],
+  "why": "Adding equations cancels a variable when its coefficients are opposites.",
+  "hint": "What happens to y if you add the two equations?",
+  "distractors": [
+   "14 is x + y, not xy.",
+   "56 multiplies the two constants, 14 and 4, instead of x and y.",
+   "36 multiplies x = 9 by the constant 4 instead of by y.",
+   null
+  ],
+  "check": {
+   "kind": "value",
+   "expr": "((14+4)/2)*((14-4)/2)"
+  },
+  "source": "original"
+ },
+ {
+  "id": "sat-m-008",
+  "section": "math",
+  "domain": "Algebra",
+  "skill": "Systems of two linear equations",
+  "difficulty": "Hard",
+  "type": "mcq",
+  "text": "The system \\(2x + 3y = 12\\) and \\(4x + ky = 7\\) has no solution. What is the value of \\(k\\)?",
+  "choices": [
+   "3",
+   "6",
+   "-6",
+   "1.5"
+  ],
+  "correct": 1,
+  "steps": [
+   [
+    "No solution means parallel lines",
+    "The coefficients must be proportional, but the constants must not be.",
+    "\\frac{4}{2} = \\frac{k}{3}"
+   ],
+   [
+    "Solve for k",
+    "The x-coefficient doubled, so the y-coefficient must double too.",
+    "k = 6"
+   ],
+   [
+    "Confirm",
+    "Doubling 12 gives 24, not 7, so the lines never meet.",
+    "24 \\neq 7"
+   ]
+  ],
+  "why": "A linear system has no solution when the lines have the same slope but different intercepts.",
+  "hint": "The x-coefficient doubled from 2 to 4. What must happen to the y-coefficient?",
+  "distractors": [
+   "3 keeps the y-coefficient the same while the x-coefficient doubles, so the slopes differ.",
+   null,
+   "-6 has the right size but the wrong sign, which gives a different slope.",
+   "1.5 halves the coefficient instead of doubling it."
+  ],
+  "check": {
+   "kind": "value",
+   "expr": "3*4/2"
+  },
+  "source": "original"
+ },
+ {
+  "id": "sat-m-009",
+  "section": "math",
+  "domain": "Algebra",
+  "skill": "Linear inequalities",
+  "difficulty": "Easy",
+  "type": "mcq",
+  "text": "What is the greatest integer value of \\(x\\) that satisfies \\(7 - 2x > 1\\)?",
+  "choices": [
+   "4",
+   "3",
+   "2",
+   "-3"
+  ],
+  "correct": 2,
+  "steps": [
+   [
+    "Isolate the x-term",
+    "Subtract 7 from both sides.",
+    "-2x > -6"
+   ],
+   [
+    "Divide by a negative",
+    "Dividing by −2 flips the inequality sign.",
+    "x < 3"
+   ],
+   [
+    "Pick the integer",
+    "The greatest integer less than 3 is 2.",
+    "x = 2"
+   ]
+  ],
+  "why": "Dividing or multiplying an inequality by a negative number reverses its direction.",
+  "hint": "What happens to the inequality sign when you divide both sides by −2?",
+  "distractors": [
+   "4 comes from forgetting to flip the sign, which gives x > 3.",
+   "3 makes 7 − 2x equal to 1, not greater than 1. The inequality is strict.",
+   null,
+   "−3 does satisfy the inequality, but it is not the greatest integer that does. Larger integers such as 0, 1, and 2 also work."
+  ],
+  "check": {
+   "kind": "value",
+   "expr": "ceil((7-1)/2) - 1"
+  },
+  "source": "original"
+ },
+ {
+  "id": "sat-m-010",
+  "section": "math",
+  "domain": "Algebra",
+  "skill": "Linear inequalities",
+  "difficulty": "Hard",
+  "type": "spr",
+  "text": "A delivery van can carry at most 2,000 pounds. The driver weighs 180 pounds, and each box weighs 35 pounds. What is the greatest number of boxes the van can carry with the driver on board?",
+  "choices": [],
+  "correct": -1,
+  "answers": [
+   "52"
+  ],
+  "steps": [
+   [
+    "Write the inequality",
+    "Let b be the number of boxes.",
+    "180 + 35b \\le 2000"
+   ],
+   [
+    "Solve",
+    "Subtract 180, then divide by 35.",
+    "b \\le 52"
+   ],
+   [
+    "Round down",
+    "Boxes come in whole numbers, and 52 boxes fit within the limit.",
+    "b = 52"
+   ]
+  ],
+  "why": "For \"at most\" limits with whole items, round down. Rounding up would break the limit.",
+  "hint": "Don't forget the driver's weight counts toward the limit.",
+  "check": {
+   "kind": "value",
+   "expr": "floor((2000-180)/35)"
+  },
+  "source": "original"
+ },
+ {
+  "id": "sat-m-011",
+  "section": "math",
+  "domain": "Advanced Math",
+  "skill": "Equivalent expressions",
+  "difficulty": "Easy",
+  "type": "mcq",
+  "text": "Which expression is equivalent to \\(3x(x + 4) - 2x\\)?",
+  "choices": [
+   "\\(3x^2 + 10x\\)",
+   "\\(x^2 + 10x\\)",
+   "\\(3x^2 + 12x - 2\\)",
+   "\\(3x^2 + 14x\\)"
+  ],
+  "correct": 0,
+  "steps": [
+   [
+    "Distribute",
+    "Multiply 3x by each term.",
+    "3x^2 + 12x - 2x"
+   ],
+   [
+    "Combine like terms",
+    "Subtract the x-terms.",
+    "3x^2 + 10x"
+   ]
+  ],
+  "why": "Distribute first, then combine only like terms.",
+  "hint": "Multiply 3x by both x and 4, then deal with the −2x.",
+  "distractors": [
+   null,
+   "This loses the 3 when multiplying 3x by x.",
+   "This drops the x from −2x, treating it as −2.",
+   "This adds 2x instead of subtracting it."
+  ],
+  "check": {
+   "kind": "equivalent",
+   "expr": "3*x*(x+4) - 2*x",
+   "vars": [
+    "x"
+   ]
+  },
+  "source": "original"
+ },
+ {
+  "id": "sat-m-012",
+  "section": "math",
+  "domain": "Advanced Math",
+  "skill": "Equivalent expressions",
+  "difficulty": "Medium",
+  "type": "mcq",
+  "text": "For \\(x \\neq -3\\), which expression is equivalent to \\(\\frac{x^2 - 9}{x + 3}\\)?",
+  "choices": [
+   "\\(x^2 - 3\\)",
+   "\\(x - 9\\)",
+   "\\(x + 3\\)",
+   "\\(x - 3\\)"
+  ],
+  "correct": 3,
+  "steps": [
+   [
+    "Factor the numerator",
+    "It is a difference of squares.",
+    "x^2 - 9 = (x + 3)(x - 3)"
+   ],
+   [
+    "Cancel the common factor",
+    "Divide out x + 3.",
+    "x - 3"
+   ]
+  ],
+  "why": "Look for a difference of squares, then cancel factors, never individual terms.",
+  "hint": "Can \\(x^2 - 9\\) be written as a product?",
+  "distractors": [
+   "\\(x^2 - 3\\) divides only the 9 by 3 and leaves the \\(x^2\\) unchanged.",
+   "x − 9 comes from cancelling terms across the fraction, which is not allowed.",
+   "x + 3 is the factor that cancels out, not the one that remains.",
+   null
+  ],
+  "check": {
+   "kind": "equivalent",
+   "expr": "(x^2-9)/(x+3)",
+   "vars": [
+    "x"
+   ]
+  },
+  "source": "original"
+ },
+ {
+  "id": "sat-m-013",
+  "section": "math",
+  "domain": "Advanced Math",
+  "skill": "Equivalent expressions",
+  "difficulty": "Hard",
+  "type": "mcq",
+  "text": "If \\((2x - 3)^2 = 4x^2 + bx + 9\\) for all values of \\(x\\), what is the value of \\(b\\)?",
+  "choices": [
+   "12",
+   "-6",
+   "-12",
+   "6"
+  ],
+  "correct": 2,
+  "steps": [
+   [
+    "Expand the square",
+    "Use \\((a - c)^2 = a^2 - 2ac + c^2\\).",
+    "(2x)^2 - 2(2x)(3) + 3^2"
+   ],
+   [
+    "Simplify",
+    "Match the middle term.",
+    "4x^2 - 12x + 9 \\Rightarrow b = -12"
+   ]
+  ],
+  "why": "Squaring a binomial produces a middle term of 2ac. Forgetting the factor of 2 is the most common slip.",
+  "hint": "Expand (2x − 3)(2x − 3) term by term.",
+  "distractors": [
+   "12 has the right size but loses the negative sign from −3.",
+   "−6 forgets the factor of 2 in the middle term.",
+   null,
+   "6 forgets both the factor of 2 and the negative sign."
+  ],
+  "check": {
+   "kind": "value",
+   "expr": "-2*2*3"
+  },
+  "source": "original"
+ },
+ {
+  "id": "sat-m-014",
+  "section": "math",
+  "domain": "Advanced Math",
+  "skill": "Equivalent expressions",
+  "difficulty": "Medium",
+  "type": "spr",
+  "text": "If \\(x^2 + y^2 = 50\\) and \\(xy = 7\\), what is the value of \\((x + y)^2\\)?",
+  "choices": [],
+  "correct": -1,
+  "answers": [
+   "64"
+  ],
+  "steps": [
+   [
+    "Expand",
+    "Write out the square of a sum.",
+    "(x + y)^2 = x^2 + 2xy + y^2"
+   ],
+   [
+    "Substitute",
+    "Use the given values.",
+    "50 + 2(7) = 64"
+   ]
+  ],
+  "why": "Expand the target expression and look for pieces you already know. You do not need x and y separately.",
+  "hint": "Expand \\((x + y)^2\\). Which parts are given?",
+  "check": {
+   "kind": "value",
+   "expr": "50 + 2*7"
+  },
+  "source": "original"
+ },
+ {
+  "id": "sat-m-015",
+  "section": "math",
+  "domain": "Advanced Math",
+  "skill": "Nonlinear equations and systems",
+  "difficulty": "Easy",
+  "type": "mcq",
+  "text": "What is the positive solution to \\(x^2 - 2x - 15 = 0\\)?",
+  "choices": [
+   "5",
+   "2",
+   "15",
+   "3"
+  ],
+  "correct": 0,
+  "steps": [
+   [
+    "Factor",
+    "Find two numbers that multiply to −15 and add to −2.",
+    "(x - 5)(x + 3) = 0"
+   ],
+   [
+    "Solve each factor",
+    "Set each factor equal to zero.",
+    "x = 5 \\text{ or } x = -3"
+   ]
+  ],
+  "why": "Factor the quadratic, then use the zero-product property.",
+  "hint": "Which two numbers multiply to −15 and add to −2?",
+  "distractors": [
+   null,
+   "2 is the coefficient of x, not a solution.",
+   "15 is the constant term, not a solution.",
+   "3 is the size of the negative solution, −3, not a solution itself."
+  ],
+  "check": {
+   "kind": "value",
+   "expr": "(2+sqrt(4+60))/2"
+  },
+  "source": "original"
+ },
+ {
+  "id": "sat-m-016",
+  "section": "math",
+  "domain": "Advanced Math",
+  "skill": "Nonlinear equations and systems",
+  "difficulty": "Medium",
+  "type": "mcq",
+  "text": "The system \\(y = x^2 - 4\\) and \\(y = 3x\\) has two solutions \\((x, y)\\). What is the sum of the two x-values?",
+  "choices": [
+   "4",
+   "5",
+   "-3",
+   "3"
+  ],
+  "correct": 3,
+  "steps": [
+   [
+    "Set the equations equal",
+    "Both equal y.",
+    "x^2 - 4 = 3x"
+   ],
+   [
+    "Rearrange and factor",
+    "Move everything to one side.",
+    "x^2 - 3x - 4 = (x - 4)(x + 1) = 0"
+   ],
+   [
+    "Add the x-values",
+    "x = 4 and x = −1.",
+    "4 + (-1) = 3"
+   ]
+  ],
+  "why": "Substitute to get one equation in one variable, then solve.",
+  "hint": "Both equations equal y. What does that tell you?",
+  "distractors": [
+   "4 is only one of the two x-values.",
+   "5 is the difference of the roots, 4 − (−1), not their sum.",
+   "−3 has the right size but the wrong sign. The roots are 4 and −1.",
+   null
+  ],
+  "check": {
+   "kind": "value",
+   "expr": "(3+sqrt(9+16))/2 + (3-sqrt(9+16))/2"
+  },
+  "source": "original"
+ },
+ {
+  "id": "sat-m-017",
+  "section": "math",
+  "domain": "Advanced Math",
+  "skill": "Nonlinear equations and systems",
+  "difficulty": "Hard",
+  "type": "spr",
+  "text": "What is the solution to \\(\\sqrt{2x + 7} = x - 4\\)?",
+  "choices": [],
+  "correct": -1,
+  "answers": [
+   "9"
+  ],
+  "steps": [
+   [
+    "Square both sides",
+    "This removes the square root.",
+    "2x + 7 = x^2 - 8x + 16"
+   ],
+   [
+    "Solve the quadratic",
+    "Rearrange and factor.",
+    "x^2 - 10x + 9 = (x - 9)(x - 1) = 0"
+   ],
+   [
+    "Check for extraneous solutions",
+    "At x = 1 the left side is 3 but the right side is −3, so only x = 9 works.",
+    "\\sqrt{25} = 5 = 9 - 4"
+   ]
+  ],
+  "why": "Squaring both sides can add false solutions. Always check each answer in the original equation.",
+  "hint": "After you square both sides, plug each solution back in.",
+  "check": {
+   "kind": "value",
+   "expr": "(10+sqrt(100-36))/2"
+  },
+  "source": "original"
+ },
+ {
+  "id": "sat-m-018",
+  "section": "math",
+  "domain": "Advanced Math",
+  "skill": "Nonlinear functions",
+  "difficulty": "Easy",
+  "type": "mcq",
+  "text": "If \\(f(x) = 2^x + 3\\), what is the value of \\(f(4)\\)?",
+  "choices": [
+   "35",
+   "16",
+   "19",
+   "11"
+  ],
+  "correct": 2,
+  "steps": [
+   [
+    "Substitute",
+    "Replace x with 4.",
+    "2^4 + 3"
+   ],
+   [
+    "Evaluate the power first",
+    "Exponents come before addition.",
+    "16 + 3 = 19"
+   ]
+  ],
+  "why": "An exponent means repeated multiplication, not multiplication by the exponent.",
+  "hint": "What is \\(2 \\times 2 \\times 2 \\times 2\\)?",
+  "distractors": [
+   "35 raises 2 to the 5th power instead of the 4th.",
+   "16 is the power alone. The +3 still has to be added.",
+   null,
+   "11 treats the exponent as multiplication: 2 × 4 + 3."
+  ],
+  "check": {
+   "kind": "value",
+   "expr": "2^4 + 3"
+  },
+  "source": "original"
+ },
+ {
+  "id": "sat-m-019",
+  "section": "math",
+  "domain": "Advanced Math",
+  "skill": "Nonlinear functions",
+  "difficulty": "Medium",
+  "type": "mcq",
+  "text": "A culture starts with 1,200 bacteria, and the population doubles every 3 hours. Which expression gives the population after \\(t\\) hours?",
+  "choices": [
+   "\\(1200 \\cdot 2^{3t}\\)",
+   "\\(1200 \\cdot 2^{t/3}\\)",
+   "\\(1200 + 2^{t/3}\\)",
+   "\\(1200 \\cdot 1.5^{t}\\)"
+  ],
+  "correct": 1,
+  "steps": [
+   [
+    "Count the doublings",
+    "One doubling happens every 3 hours.",
+    "\\text{doublings} = \\frac{t}{3}"
+   ],
+   [
+    "Build the model",
+    "Multiply the start by 2 once for each doubling.",
+    "P(t) = 1200 \\cdot 2^{t/3}"
+   ]
+  ],
+  "why": "In growth models, the exponent counts how many growth periods have passed.",
+  "hint": "After 3 hours, the population should be 2,400. Which expression gives that?",
+  "distractors": [
+   "This doubles the population three times every hour instead of once every three hours.",
+   null,
+   "Adding a power of 2 ignores that growth multiplies the population.",
+   "This assumes 50% growth every hour, which is not the same as doubling every 3 hours."
+  ],
+  "check": {
+   "kind": "equivalent",
+   "expr": "1200*2^(t/3)",
+   "vars": [
+    "t"
+   ]
+  },
+  "source": "original"
+ },
+ {
+  "id": "sat-m-020",
+  "section": "math",
+  "domain": "Advanced Math",
+  "skill": "Nonlinear functions",
+  "difficulty": "Hard",
+  "type": "mcq",
+  "text": "The function \\(h(x) = x^2 - 6x + c\\) has a minimum value of 5. What is the value of \\(c\\)?",
+  "choices": [
+   "-4",
+   "14",
+   "5",
+   "23"
+  ],
+  "correct": 1,
+  "steps": [
+   [
+    "Find the vertex",
+    "The minimum of \\(x^2 + bx + c\\) occurs at \\(x = -\\frac{b}{2}\\).",
+    "x = 3"
+   ],
+   [
+    "Use the minimum value",
+    "Set h(3) equal to 5.",
+    "9 - 18 + c = 5 \\Rightarrow c = 14"
+   ]
+  ],
+  "why": "The minimum of an upward parabola is at its vertex. Find the x-coordinate first, then solve for c.",
+  "hint": "At what x-value does this parabola reach its lowest point?",
+  "distractors": [
+   "−4 subtracts 9 from 5 but leaves out the −18 from the −6x term.",
+   null,
+   "5 is the minimum value of h, not the constant c.",
+   "23 adds 18 to 5 but leaves out the 9 from the x² term."
+  ],
+  "check": {
+   "kind": "value",
+   "expr": "5 - 9 + 18"
+  },
+  "source": "original"
+ },
+ {
+  "id": "sat-m-021",
+  "section": "math",
+  "domain": "Advanced Math",
+  "skill": "Equivalent expressions",
+  "difficulty": "Hard",
+  "type": "mcq",
+  "text": "Which expression is equivalent to \\(\\frac{6}{x - 2} - \\frac{3}{x}\\) for \\(x > 2\\)?",
+  "choices": [
+   "\\(\\frac{6x - 3}{x^2 - 2x}\\)",
+   "\\(\\frac{3x - 6}{x^2 - 2x}\\)",
+   "\\(\\frac{3x + 6}{x^2 - 2x}\\)",
+   "\\(\\frac{3}{x - 2}\\)"
+  ],
+  "correct": 2,
+  "steps": [
+   [
+    "Common denominator",
+    "Multiply the denominators.",
+    "x(x - 2) = x^2 - 2x"
+   ],
+   [
+    "Rewrite the numerators",
+    "Scale each fraction to the common denominator.",
+    "\\frac{6x - 3(x - 2)}{x^2 - 2x}"
+   ],
+   [
+    "Simplify",
+    "Distribute the −3 carefully.",
+    "\\frac{6x - 3x + 6}{x^2 - 2x} = \\frac{3x + 6}{x^2 - 2x}"
+   ]
+  ],
+  "why": "Subtracting a fraction subtracts its whole numerator, so distribute the negative sign to every term.",
+  "hint": "What do you multiply 3 by when you rewrite it over x(x − 2)?",
+  "distractors": [
+   "This doesn't multiply each numerator by the other fraction's denominator.",
+   "This forgets that −3 × −2 = +6.",
+   null,
+   "This subtracts the numerators and drops one denominator, which only works when the denominators already match."
+  ],
+  "check": {
+   "kind": "equivalent",
+   "expr": "6/(x-2) - 3/x",
+   "vars": [
+    "x"
+   ]
+  },
+  "source": "original"
+ },
+ {
+  "id": "sat-m-022",
+  "section": "math",
+  "domain": "Advanced Math",
+  "skill": "Nonlinear functions",
+  "difficulty": "Medium",
+  "type": "spr",
+  "text": "The function \\(f\\) is defined by \\(f(x) = 3x^2 - 5\\). If \\(f(a) = 43\\) and \\(a > 0\\), what is the value of \\(a\\)?",
+  "choices": [],
+  "correct": -1,
+  "answers": [
+   "4"
+  ],
+  "steps": [
+   [
+    "Set up the equation",
+    "Replace f(a) with its expression.",
+    "3a^2 - 5 = 43"
+   ],
+   [
+    "Isolate the square",
+    "Add 5, then divide by 3.",
+    "a^2 = 16"
+   ],
+   [
+    "Take the positive root",
+    "The question says a > 0.",
+    "a = 4"
+   ]
+  ],
+  "why": "Undo the operations in reverse order, and use the given condition to pick the right square root.",
+  "hint": "Get a² by itself first.",
+  "check": {
+   "kind": "value",
+   "expr": "sqrt((43+5)/3)"
+  },
+  "source": "original"
+ },
+ {
+  "id": "sat-m-023",
+  "section": "math",
+  "domain": "Problem-Solving and Data Analysis",
+  "skill": "Ratios, rates, proportions, and units",
+  "difficulty": "Easy",
+  "type": "mcq",
+  "text": "A recipe uses 3 cups of flour for every 2 cups of sugar. How many cups of flour are needed for 7 cups of sugar?",
+  "choices": [
+   "14",
+   "10.5",
+   "8",
+   "4.67"
+  ],
+  "correct": 1,
+  "steps": [
+   [
+    "Set up the proportion",
+    "Keep flour over sugar on both sides.",
+    "\\frac{3}{2} = \\frac{f}{7}"
+   ],
+   [
+    "Solve",
+    "Multiply both sides by 7.",
+    "f = 10.5"
+   ]
+  ],
+  "why": "Line up the units in a proportion: the same quantity goes on top on both sides.",
+  "hint": "Is the flour amount more or less than the sugar amount in this recipe?",
+  "distractors": [
+   "14 doubles the sugar, but the ratio is 3 to 2, not 2 to 1.",
+   null,
+   "8 adds 1 cup instead of scaling by the ratio.",
+   "4.67 flips the ratio and gives sugar per flour."
+  ],
+  "check": {
+   "kind": "value",
+   "expr": "7*3/2"
+  },
+  "source": "original"
+ },
+ {
+  "id": "sat-m-024",
+  "section": "math",
+  "domain": "Problem-Solving and Data Analysis",
+  "skill": "Ratios, rates, proportions, and units",
+  "difficulty": "Hard",
+  "type": "mcq",
+  "text": "A car travels at 54 kilometers per hour. What is this speed in meters per second? (1 kilometer = 1,000 meters)",
+  "choices": [
+   "194.4",
+   "0.9",
+   "15",
+   "900"
+  ],
+  "correct": 2,
+  "steps": [
+   [
+    "Convert kilometers to meters",
+    "Multiply by 1,000.",
+    "54 \\text{ km/h} = 54{,}000 \\text{ m/h}"
+   ],
+   [
+    "Convert hours to seconds",
+    "One hour has 3,600 seconds.",
+    "\\frac{54{,}000}{3{,}600} = 15 \\text{ m/s}"
+   ]
+  ],
+  "why": "Convert one unit at a time, and check that the unwanted units cancel.",
+  "hint": "How many seconds are in one hour?",
+  "distractors": [
+   "194.4 multiplies by 3.6 when it should divide.",
+   "0.9 divides 54 by 60 and skips the kilometer-to-meter conversion.",
+   null,
+   "900 converts hours only to minutes, not seconds."
+  ],
+  "check": {
+   "kind": "value",
+   "expr": "54*1000/3600"
+  },
+  "source": "original"
+ },
+ {
+  "id": "sat-m-025",
+  "section": "math",
+  "domain": "Problem-Solving and Data Analysis",
+  "skill": "Percentages",
+  "difficulty": "Medium",
+  "type": "mcq",
+  "text": "A jacket's price is increased by 20%, and then the new price is decreased by 20%. The final price is what percent of the original price?",
+  "choices": [
+   "104%",
+   "80%",
+   "96%",
+   "100%"
+  ],
+  "correct": 2,
+  "steps": [
+   [
+    "Apply each change as a multiplier",
+    "An increase of 20% multiplies by 1.2, and a decrease of 20% multiplies by 0.8.",
+    "1.2 \\times 0.8 = 0.96"
+   ],
+   [
+    "Write as a percent",
+    "The final price is 96% of the original.",
+    "0.96 = 96\\%"
+   ]
+  ],
+  "why": "Percent changes multiply. They do not add, because the second change applies to a new amount.",
+  "hint": "Try it with a $100 jacket.",
+  "distractors": [
+   "104% gets the direction of the net change backwards.",
+   "80% applies only the decrease.",
+   null,
+   "100% assumes +20% and −20% cancel. The 20% decrease is taken from a larger price."
+  ],
+  "check": {
+   "kind": "value",
+   "expr": "1.2*0.8*100"
+  },
+  "source": "original"
+ },
+ {
+  "id": "sat-m-026",
+  "section": "math",
+  "domain": "Problem-Solving and Data Analysis",
+  "skill": "Percentages",
+  "difficulty": "Hard",
+  "type": "spr",
+  "text": "A club's membership grew from 250 to 340 members. By what percent did the membership increase? (Enter your answer without the % sign.)",
+  "choices": [],
+  "correct": -1,
+  "answers": [
+   "36"
+  ],
+  "steps": [
+   [
+    "Find the change",
+    "Subtract the original from the new value.",
+    "340 - 250 = 90"
+   ],
+   [
+    "Divide by the original",
+    "Percent change compares the change to the starting amount.",
+    "\\frac{90}{250} = 0.36 = 36\\%"
+   ]
+  ],
+  "why": "Percent change = change ÷ original. Divide by the starting amount, not the ending amount.",
+  "hint": "Which number is the starting amount?",
+  "check": {
+   "kind": "value",
+   "expr": "(340-250)/250*100"
+  },
+  "source": "original"
+ },
+ {
+  "id": "sat-m-027",
+  "section": "math",
+  "domain": "Problem-Solving and Data Analysis",
+  "skill": "One-variable data",
+  "difficulty": "Easy",
+  "type": "mcq",
+  "text": "What is the mean of the data set 4, 8, 8, 10, 15?",
+  "choices": [
+   "11",
+   "45",
+   "9",
+   "8"
+  ],
+  "correct": 2,
+  "steps": [
+   [
+    "Add the values",
+    "Find the total.",
+    "4 + 8 + 8 + 10 + 15 = 45"
+   ],
+   [
+    "Divide by the count",
+    "There are 5 values.",
+    "45 \\div 5 = 9"
+   ]
+  ],
+  "why": "Mean = sum ÷ number of values. Median and mode are different measures.",
+  "hint": "Add all five numbers first.",
+  "distractors": [
+   "11 is the range (15 − 4), not the mean.",
+   "45 is the sum. It still has to be divided by 5.",
+   null,
+   "8 is the median and the mode, not the mean."
+  ],
+  "check": {
+   "kind": "value",
+   "expr": "(4+8+8+10+15)/5"
+  },
+  "source": "original"
+ },
+ {
+  "id": "sat-m-028",
+  "section": "math",
+  "domain": "Problem-Solving and Data Analysis",
+  "skill": "One-variable data",
+  "difficulty": "Medium",
+  "type": "mcq",
+  "text": "A data set of 7 values has a mean of 12. When an eighth value is added, the mean becomes 13. What is the eighth value?",
+  "choices": [
+   "20",
+   "13",
+   "1",
+   "25"
+  ],
+  "correct": 0,
+  "steps": [
+   [
+    "Find the original sum",
+    "Mean × count.",
+    "12 \\times 7 = 84"
+   ],
+   [
+    "Find the new sum",
+    "The new mean times 8.",
+    "13 \\times 8 = 104"
+   ],
+   [
+    "Subtract",
+    "The difference is the added value.",
+    "104 - 84 = 20"
+   ]
+  ],
+  "why": "Work with totals. Means are averages, so convert them back to sums first.",
+  "hint": "What was the total of the first 7 values?",
+  "distractors": [
+   null,
+   "13 is the new mean. Adding a 13 would not raise the mean by a whole point.",
+   "1 is how much the mean changed, not the new value.",
+   "25 adds 13 and 12 instead of comparing the totals."
+  ],
+  "check": {
+   "kind": "value",
+   "expr": "13*8 - 12*7"
+  },
+  "source": "original"
+ },
+ {
+  "id": "sat-m-029",
+  "section": "math",
+  "domain": "Problem-Solving and Data Analysis",
+  "skill": "Two-variable data",
+  "difficulty": "Medium",
+  "type": "mcq",
+  "text": "A line of best fit for a plant's height \\(y\\), in centimeters, after \\(x\\) weeks is \\(y = 2.4x + 15\\). What height does the model predict after 10 weeks?",
+  "choices": [
+   "24 cm",
+   "39 cm",
+   "17.4 cm",
+   "150 cm"
+  ],
+  "correct": 1,
+  "steps": [
+   [
+    "Substitute",
+    "Replace x with 10.",
+    "y = 2.4(10) + 15"
+   ],
+   [
+    "Evaluate",
+    "Multiply, then add.",
+    "24 + 15 = 39"
+   ]
+  ],
+  "why": "In a linear model, the slope is the change per unit and the y-intercept is the starting value. Use both.",
+  "hint": "Replace x with 10.",
+  "distractors": [
+   "24 cm is only the growth. The starting height of 15 cm still has to be added.",
+   null,
+   "17.4 cm adds the slope and the intercept without multiplying by 10 weeks.",
+   "150 cm multiplies the starting height by 10 instead of the growth rate."
+  ],
+  "check": {
+   "kind": "value",
+   "expr": "2.4*10 + 15"
+  },
+  "source": "original"
+ },
+ {
+  "id": "sat-m-030",
+  "section": "math",
+  "domain": "Problem-Solving and Data Analysis",
+  "skill": "Probability",
+  "difficulty": "Easy",
+  "type": "mcq",
+  "text": "A bag contains 5 red, 3 blue, and 2 green marbles. One marble is chosen at random. What is the probability that it is blue?",
+  "choices": [
+   "\\(\\frac{3}{10}\\)",
+   "\\(\\frac{7}{10}\\)",
+   "\\(\\frac{3}{7}\\)",
+   "\\(\\frac{1}{3}\\)"
+  ],
+  "correct": 0,
+  "steps": [
+   [
+    "Count the outcomes",
+    "There are 5 + 3 + 2 marbles in all.",
+    "10"
+   ],
+   [
+    "Divide",
+    "Favorable over total.",
+    "P(\\text{blue}) = \\frac{3}{10}"
+   ]
+  ],
+  "why": "Probability = favorable outcomes ÷ all outcomes. The denominator includes every marble.",
+  "hint": "How many marbles are in the bag altogether?",
+  "distractors": [
+   null,
+   "7/10 is the probability of not choosing blue.",
+   "3/7 compares blue marbles to non-blue marbles, not to all marbles.",
+   "1/3 treats the three colors as equally likely, but the colors have different counts."
+  ],
+  "check": {
+   "kind": "value",
+   "expr": "3/10"
+  },
+  "source": "original"
+ },
+ {
+  "id": "sat-m-031",
+  "section": "math",
+  "domain": "Problem-Solving and Data Analysis",
+  "skill": "Probability",
+  "difficulty": "Hard",
+  "type": "mcq",
+  "text": "In a survey of 200 students, 120 play a sport. Of the students who play a sport, 45 also play an instrument. Of the students who do not play a sport, 35 play an instrument. If a student who plays an instrument is chosen at random, what is the probability that the student plays a sport?",
+  "choices": [
+   "\\(\\frac{9}{16}\\)",
+   "\\(\\frac{9}{40}\\)",
+   "\\(\\frac{2}{5}\\)",
+   "\\(\\frac{3}{8}\\)"
+  ],
+  "correct": 0,
+  "steps": [
+   [
+    "Find the group you choose from",
+    "Everyone who plays an instrument.",
+    "45 + 35 = 80"
+   ],
+   [
+    "Count the favorable students",
+    "Instrument players who also play a sport.",
+    "45"
+   ],
+   [
+    "Divide",
+    "Favorable over the restricted group.",
+    "\\frac{45}{80} = \\frac{9}{16}"
+   ]
+  ],
+  "why": "For conditional probability, the \"given\" group is the whole denominator.",
+  "hint": "The student is chosen only from instrument players. How many are there?",
+  "distractors": [
+   null,
+   "9/40 divides by all 200 students instead of only the instrument players.",
+   "2/5 is the share of all students who play an instrument.",
+   "3/8 divides by all 120 athletes, which is the probability of playing an instrument given that the student plays a sport."
+  ],
+  "check": {
+   "kind": "value",
+   "expr": "45/(45+35)"
+  },
+  "source": "original"
+ },
+ {
+  "id": "sat-m-032",
+  "section": "math",
+  "domain": "Problem-Solving and Data Analysis",
+  "skill": "Inference from samples",
+  "difficulty": "Medium",
+  "type": "mcq",
+  "text": "A random sample of 400 voters in a town of 25,000 voters found that 60% favor building a new park. Based on the sample, about how many voters in the town favor the park?",
+  "choices": [
+   "240",
+   "25,000",
+   "10,000",
+   "15,000"
+  ],
+  "correct": 3,
+  "steps": [
+   [
+    "Use the sample proportion",
+    "A random sample estimates the share for the whole population.",
+    "60\\% \\text{ of the town}"
+   ],
+   [
+    "Apply it to the town",
+    "Multiply by the total number of voters.",
+    "0.6 \\times 25{,}000 = 15{,}000"
+   ]
+  ],
+  "why": "A well-chosen random sample lets you apply its percentage to the whole population as an estimate.",
+  "hint": "Apply the sample percentage to the town, not to the sample.",
+  "distractors": [
+   "240 is 60% of the sample, not of the town.",
+   "25,000 is the whole town, so it ignores the 60%.",
+   "10,000 estimates the voters who do not favor the park.",
+   null
+  ],
+  "check": {
+   "kind": "value",
+   "expr": "0.6*25000"
+  },
+  "source": "original"
+ },
+ {
+  "id": "sat-m-033",
+  "section": "math",
+  "domain": "Geometry and Trigonometry",
+  "skill": "Area and volume",
+  "difficulty": "Easy",
+  "type": "mcq",
+  "text": "A rectangular box measures 4 inches by 5 inches by 6 inches. What is its volume, in cubic inches?",
+  "choices": [
+   "120",
+   "148",
+   "15",
+   "74"
+  ],
+  "correct": 0,
+  "steps": [
+   [
+    "Use the volume formula",
+    "Volume = length × width × height.",
+    "4 \\times 5 \\times 6 = 120"
+   ]
+  ],
+  "why": "Volume multiplies all three dimensions. Surface area adds up the areas of the faces.",
+  "hint": "Multiply the three dimensions.",
+  "distractors": [
+   null,
+   "148 is the surface area, which measures the outside of the box, not the space inside.",
+   "15 adds the dimensions instead of multiplying them.",
+   "74 is half of the surface area."
+  ],
+  "check": {
+   "kind": "value",
+   "expr": "4*5*6"
+  },
+  "source": "original"
+ },
+ {
+  "id": "sat-m-034",
+  "section": "math",
+  "domain": "Geometry and Trigonometry",
+  "skill": "Area and volume",
+  "difficulty": "Hard",
+  "type": "spr",
+  "text": "A right circular cylinder has a radius of 3 and a volume of \\(72\\pi\\). What is the height of the cylinder?",
+  "choices": [],
+  "correct": -1,
+  "answers": [
+   "8"
+  ],
+  "steps": [
+   [
+    "Write the formula",
+    "Volume of a cylinder.",
+    "V = \\pi r^2 h"
+   ],
+   [
+    "Substitute",
+    "Use r = 3 and V = 72π.",
+    "72\\pi = 9\\pi h"
+   ],
+   [
+    "Solve",
+    "Divide both sides by 9π.",
+    "h = 8"
+   ]
+  ],
+  "why": "Square the radius before multiplying, and the π on both sides cancels.",
+  "hint": "What is r² when r = 3?",
+  "check": {
+   "kind": "value",
+   "expr": "72*pi/(pi*3^2)"
+  },
+  "source": "original"
+ },
+ {
+  "id": "sat-m-035",
+  "section": "math",
+  "domain": "Geometry and Trigonometry",
+  "skill": "Lines, angles, and triangles",
+  "difficulty": "Easy",
+  "type": "mcq",
+  "text": "Two parallel lines are cut by a transversal. One of the angles formed measures \\(65^\\circ\\). What is the measure of the same-side interior angle paired with it?",
+  "choices": [
+   "\\(295^\\circ\\)",
+   "\\(115^\\circ\\)",
+   "\\(25^\\circ\\)",
+   "\\(65^\\circ\\)"
+  ],
+  "correct": 1,
+  "steps": [
+   [
+    "Recall the angle relationship",
+    "Same-side interior angles between parallel lines are supplementary.",
+    "x + 65 = 180"
+   ],
+   [
+    "Solve",
+    "Subtract from 180.",
+    "x = 115"
+   ]
+  ],
+  "why": "Between parallel lines, same-side interior angles add to 180°, while alternate interior angles are equal.",
+  "hint": "Do same-side interior angles match or add up to something?",
+  "distractors": [
+   "295° subtracts from 360° instead of 180°.",
+   null,
+   "25° is the complement (adding to 90°), not the supplement.",
+   "65° would be correct for alternate interior angles, which are equal."
+  ],
+  "check": {
+   "kind": "value",
+   "expr": "180-65"
+  },
+  "source": "original"
+ },
+ {
+  "id": "sat-m-036",
+  "section": "math",
+  "domain": "Geometry and Trigonometry",
+  "skill": "Lines, angles, and triangles",
+  "difficulty": "Medium",
+  "type": "mcq",
+  "text": "In triangle \\(ABC\\), angle \\(A\\) measures \\(40^\\circ\\) and angle \\(B\\) is 3 times as large as angle \\(C\\). What is the measure of angle \\(B\\)?",
+  "choices": [
+   "\\(120^\\circ\\)",
+   "\\(35^\\circ\\)",
+   "\\(70^\\circ\\)",
+   "\\(105^\\circ\\)"
+  ],
+  "correct": 3,
+  "steps": [
+   [
+    "Use the angle sum",
+    "The angles of a triangle add to 180°.",
+    "40 + 3C + C = 180"
+   ],
+   [
+    "Solve for C",
+    "Combine like terms.",
+    "4C = 140 \\Rightarrow C = 35"
+   ],
+   [
+    "Find B",
+    "B is three times C.",
+    "B = 105"
+   ]
+  ],
+  "why": "Use the 180° rule, and answer the angle the question asks for.",
+  "hint": "Write B in terms of C, then use the 180° rule.",
+  "distractors": [
+   "120° multiplies angle A by 3, but B is 3 times angle C.",
+   "35° is angle C. The question asks for angle B.",
+   "70° splits the remaining 140° evenly between B and C.",
+   null
+  ],
+  "check": {
+   "kind": "value",
+   "expr": "3*(180-40)/4"
+  },
+  "source": "original"
+ },
+ {
+  "id": "sat-m-037",
+  "section": "math",
+  "domain": "Geometry and Trigonometry",
+  "skill": "Right triangles and trigonometry",
+  "difficulty": "Medium",
+  "type": "mcq",
+  "text": "The legs of a right triangle have lengths 9 and 12. What is the length of the hypotenuse?",
+  "choices": [
+   "21",
+   "\\(\\sqrt{63}\\)",
+   "10.5",
+   "15"
+  ],
+  "correct": 3,
+  "steps": [
+   [
+    "Use the Pythagorean theorem",
+    "\\(a^2 + b^2 = c^2\\).",
+    "81 + 144 = c^2"
+   ],
+   [
+    "Solve",
+    "Take the square root.",
+    "c = \\sqrt{225} = 15"
+   ]
+  ],
+  "why": "Square each leg, add, then take the square root. Watch for the 3-4-5 pattern (9-12-15).",
+  "hint": "Square both legs and add them.",
+  "distractors": [
+   "21 adds the legs directly. The sides of a right triangle do not add that way.",
+   "√63 subtracts the squares, which is how you find a missing leg, not the hypotenuse.",
+   "10.5 averages the legs, but the hypotenuse is always the longest side.",
+   null
+  ],
+  "check": {
+   "kind": "value",
+   "expr": "sqrt(9^2+12^2)"
+  },
+  "source": "original"
+ },
+ {
+  "id": "sat-m-038",
+  "section": "math",
+  "domain": "Geometry and Trigonometry",
+  "skill": "Right triangles and trigonometry",
+  "difficulty": "Hard",
+  "type": "mcq",
+  "text": "In right triangle \\(ABC\\), angle \\(C\\) is the right angle and \\(\\sin A = \\frac{5}{13}\\). What is the value of \\(\\tan A\\)?",
+  "choices": [
+   "\\(\\frac{12}{13}\\)",
+   "\\(\\frac{5}{12}\\)",
+   "\\(\\frac{12}{5}\\)",
+   "\\(\\frac{13}{5}\\)"
+  ],
+  "correct": 1,
+  "steps": [
+   [
+    "Label the sides",
+    "sin A = opposite ÷ hypotenuse.",
+    "\\text{opposite} = 5,\\ \\text{hypotenuse} = 13"
+   ],
+   [
+    "Find the adjacent side",
+    "Use the Pythagorean theorem.",
+    "\\sqrt{13^2 - 5^2} = 12"
+   ],
+   [
+    "Compute tangent",
+    "tan A = opposite ÷ adjacent.",
+    "\\tan A = \\frac{5}{12}"
+   ]
+  ],
+  "why": "Draw the triangle from the ratio you are given, find the missing side, then build the ratio you need.",
+  "hint": "If sin A = 5/13, which sides are 5 and 13?",
+  "distractors": [
+   "12/13 is cos A, which is adjacent over hypotenuse.",
+   null,
+   "12/5 is tan B, the tangent of the other acute angle.",
+   "13/5 is the reciprocal of sin A, not tan A."
+  ],
+  "check": {
+   "kind": "value",
+   "expr": "5/12"
+  },
+  "source": "original"
+ },
+ {
+  "id": "sat-m-039",
+  "section": "math",
+  "domain": "Geometry and Trigonometry",
+  "skill": "Circles",
+  "difficulty": "Hard",
+  "type": "spr",
+  "text": "The equation of a circle in the xy-plane is \\(x^2 + y^2 - 6x + 8y = 0\\). What is the radius of the circle?",
+  "choices": [],
+  "correct": -1,
+  "answers": [
+   "5"
+  ],
+  "steps": [
+   [
+    "Group the terms",
+    "Collect x-terms and y-terms.",
+    "(x^2 - 6x) + (y^2 + 8y) = 0"
+   ],
+   [
+    "Complete the squares",
+    "Add 9 and 16 to both sides.",
+    "(x - 3)^2 + (y + 4)^2 = 25"
+   ],
+   [
+    "Read the radius",
+    "The right side is \\(r^2\\).",
+    "r = 5"
+   ]
+  ],
+  "why": "Complete the square for x and for y, and add the same amounts to the other side of the equation.",
+  "hint": "What number completes the square for x² − 6x?",
+  "check": {
+   "kind": "value",
+   "expr": "sqrt(9+16)"
+  },
+  "source": "original"
+ },
+ {
+  "id": "sat-r-001",
+  "section": "rw",
+  "domain": "Craft and Structure",
+  "skill": "Words in Context",
+  "difficulty": "Easy",
+  "type": "mcq",
+  "passage": "The new library was designed to be ______: its reading rooms, study carrels, and children’s area can be rearranged within an hour to host lectures, art shows, or community meetings.",
+  "text": "Which choice completes the text with the most logical and precise word or phrase?",
+  "choices": [
+   "isolated",
+   "adaptable",
+   "rigid",
+   "ornate"
+  ],
+  "correct": 1,
+  "steps": [
+   [
+    "Find the clue",
+    "After the colon, the text explains that the spaces can be quickly rearranged for different uses."
+   ],
+   [
+    "Match the meaning",
+    "“Adaptable” means able to change to suit new purposes."
+   ]
+  ],
+  "why": "A colon often introduces an explanation. Use what follows it to define the missing word.",
+  "hint": "What does the part after the colon say the library can do?",
+  "distractors": [
+   "“Isolated” describes location. Nothing in the text says the library is far from anything.",
+   null,
+   "“Rigid” means unable to change, which is the opposite of what the text describes.",
+   "“Ornate” describes heavy decoration. The text is about flexible use, not appearance."
+  ],
+  "source": "original"
+ },
+ {
+  "id": "sat-r-002",
+  "section": "rw",
+  "domain": "Craft and Structure",
+  "skill": "Words in Context",
+  "difficulty": "Medium",
+  "type": "mcq",
+  "passage": "Although early reviewers dismissed the novel as slight, later critics found its quiet scenes ______, discovering layers of meaning that rewarded repeated reading.",
+  "text": "Which choice completes the text with the most logical and precise word or phrase?",
+  "choices": [
+   "fleeting",
+   "tedious",
+   "inscrutable",
+   "rich"
+  ],
+  "correct": 3,
+  "steps": [
+   [
+    "Notice the contrast",
+    "“Although” sets the later critics against the early reviewers who dismissed the novel."
+   ],
+   [
+    "Use the second clue",
+    "“Discovering layers of meaning” shows the scenes had depth, so “rich” fits."
+   ]
+  ],
+  "why": "Contrast words such as “although” signal that the missing word should oppose the earlier idea.",
+  "hint": "Do the later critics agree or disagree with the early reviewers?",
+  "distractors": [
+   "“Fleeting” means brief. The text is about depth of meaning, not length.",
+   "“Tedious” matches the early reviewers’ opinion, but the sentence contrasts the later critics with them.",
+   "“Inscrutable” means impossible to understand, but the critics did find meaning in the scenes.",
+   null
+  ],
+  "source": "original"
+ },
+ {
+  "id": "sat-r-003",
+  "section": "rw",
+  "domain": "Craft and Structure",
+  "skill": "Words in Context",
+  "difficulty": "Hard",
+  "type": "mcq",
+  "passage": "The committee’s report was careful to ______ its recommendations, noting that the survey drew on only three schools and that its findings might not hold for larger districts.",
+  "text": "Which choice completes the text with the most logical and precise word or phrase?",
+  "choices": [
+   "qualify",
+   "publicize",
+   "abandon",
+   "exaggerate"
+  ],
+  "correct": 0,
+  "steps": [
+   [
+    "Read what the report notes",
+    "It points out limits: a small survey and findings that may not apply everywhere."
+   ],
+   [
+    "Choose the precise verb",
+    "To “qualify” a claim is to limit it with conditions, which is exactly what those notes do."
+   ]
+  ],
+  "why": "Academic words often have specific meanings. Here “qualify” means to add limits, not to make eligible.",
+  "hint": "Are the notes about the survey making the recommendations stronger or more limited?",
+  "distractors": [
+   null,
+   "“Publicize” means to spread widely. The text describes limiting the recommendations, not promoting them.",
+   "“Abandon” is too strong. The committee still makes its recommendations and only notes their limits.",
+   "“Exaggerate” is the opposite. Pointing out the survey’s limits makes the claims more modest."
+  ],
+  "source": "original"
+ },
+ {
+  "id": "sat-r-004",
+  "section": "rw",
+  "domain": "Craft and Structure",
+  "skill": "Words in Context",
+  "difficulty": "Medium",
+  "type": "mcq",
+  "passage": "Marine biologists once assumed that the deep ocean floor was a biological desert, but surveys over the past several decades have ______ that view, revealing dense communities of organisms around hydrothermal vents.",
+  "text": "Which choice completes the text with the most logical and precise word or phrase?",
+  "choices": [
+   "simplified",
+   "confirmed",
+   "anticipated",
+   "overturned"
+  ],
+  "correct": 3,
+  "steps": [
+   [
+    "Find the shift",
+    "“Once assumed … but” signals that the old view changed."
+   ],
+   [
+    "Use the evidence",
+    "Dense communities of life contradict the idea of a “desert,” so the view was overturned."
+   ]
+  ],
+  "why": "“Once … but” structures usually describe an old belief that was replaced.",
+  "hint": "Does finding dense communities of life support or contradict the idea of a “desert”?",
+  "distractors": [
+   "“Simplified” suggests the view became easier to state. The evidence actually contradicted it.",
+   "“Confirmed” would mean the surveys supported the desert view, but they found abundant life.",
+   "“Anticipated” means expected in advance, which does not fit surveys that revealed new evidence.",
+   null
+  ],
+  "source": "original"
+ },
+ {
+  "id": "sat-r-005",
+  "section": "rw",
+  "domain": "Craft and Structure",
+  "skill": "Text Structure and Purpose",
+  "difficulty": "Medium",
+  "type": "mcq",
+  "passage": "Many people assume that city pigeons are simply lost wild birds. In fact, they descend from rock doves that humans domesticated thousands of years ago for food and for carrying messages. When some of these birds escaped or were released, they settled on buildings, whose ledges resemble the sea cliffs where wild rock doves nest.",
+  "text": "Which choice best describes the overall structure of the text?",
+  "choices": [
+   "It presents a common belief and then offers an explanation that corrects it.",
+   "It lists problems that pigeons cause and proposes solutions.",
+   "It compares two species of birds and argues that one is better suited to cities.",
+   "It describes an experiment and then reports its results."
+  ],
+  "correct": 0,
+  "steps": [
+   [
+    "Look at the opening",
+    "The text begins with what “many people assume.”"
+   ],
+   [
+    "Follow the turn",
+    "“In fact” introduces the real history of city pigeons, which corrects that assumption."
+   ]
+  ],
+  "why": "Signal phrases such as “many people assume … in fact” mark a structure that corrects a misconception.",
+  "hint": "What does “In fact” do in the second sentence?",
+  "distractors": [
+   null,
+   "The text never mentions problems pigeons cause or any solutions.",
+   "Pigeons and rock doves are presented as related, not compared as competing species.",
+   "No experiment or results are described. The text explains a history."
+  ],
+  "source": "original"
+ },
+ {
+  "id": "sat-r-006",
+  "section": "rw",
+  "domain": "Craft and Structure",
+  "skill": "Text Structure and Purpose",
+  "difficulty": "Hard",
+  "type": "mcq",
+  "passage": "Teodora had rehearsed the speech for weeks, yet when she stepped to the podium the words seemed to belong to someone else. She folded her notes, looked out at the faces of her neighbors, and began instead to describe the flooded street where she had grown up.",
+  "text": "Which choice best describes the function of the second sentence in the text as a whole?",
+  "choices": [
+   "It shows Teodora setting aside her preparation in favor of a more personal approach.",
+   "It explains why Teodora had rehearsed the speech for weeks.",
+   "It suggests that the audience was hostile toward Teodora.",
+   "It reveals that Teodora had forgotten her speech entirely."
+  ],
+  "correct": 0,
+  "steps": [
+   [
+    "Recall the first sentence",
+    "The rehearsed words suddenly feel like they belong to someone else."
+   ],
+   [
+    "See the response",
+    "She folds her notes and tells her own story instead, a deliberate and personal choice."
+   ]
+  ],
+  "why": "Function questions ask what a sentence does in context, not just what it says.",
+  "hint": "Does she lose the speech, or decide not to use it?",
+  "distractors": [
+   null,
+   "The second sentence describes what she does at the podium, not why she rehearsed earlier.",
+   "Nothing suggests hostility. She looks at the faces of her neighbors and speaks to them directly.",
+   "Folding the notes is a choice. The text does not say she forgot what they said."
+  ],
+  "source": "original"
+ },
+ {
+  "id": "sat-r-007",
+  "section": "rw",
+  "domain": "Craft and Structure",
+  "skill": "Text Structure and Purpose",
+  "difficulty": "Medium",
+  "type": "mcq",
+  "passage": "Researchers studying honeybees have found that foragers returning to the hive perform a “waggle dance” whose angle and duration communicate the direction and distance of a food source. This behavior allows other bees to locate flowers they have never visited.",
+  "text": "Which choice best states the main purpose of the text?",
+  "choices": [
+   "To describe how honeybees share information about the location of food",
+   "To argue that honeybees are more intelligent than other insects",
+   "To explain why honeybees prefer certain kinds of flowers",
+   "To question whether the waggle dance actually conveys information"
+  ],
+  "correct": 0,
+  "steps": [
+   [
+    "Identify the topic",
+    "Both sentences describe the waggle dance and what it communicates."
+   ],
+   [
+    "Identify the aim",
+    "The text explains a behavior. It does not argue or question."
+   ]
+  ],
+  "why": "Purpose questions ask why the author wrote the text. Look for words that show describing, arguing, or questioning.",
+  "hint": "Is the author describing, arguing, or doubting?",
+  "distractors": [
+   null,
+   "No comparison with other insects appears in the text.",
+   "The text says nothing about flower preferences, only about finding food sources.",
+   "The text presents the dance’s meaning as a finding, not as something in doubt."
+  ],
+  "source": "original"
+ },
+ {
+  "id": "sat-r-008",
+  "section": "rw",
+  "domain": "Craft and Structure",
+  "skill": "Cross-Text Connections",
+  "difficulty": "Hard",
+  "type": "mcq",
+  "passage": "Text 1: For much of the twentieth century, many paleontologists argued that feathers first evolved to help animals fly, since flight seemed to be the feature that feathers most obviously serve.\n\nText 2: Fossils of several small dinosaurs show feathers on species whose arms were far too short to support flight. Researchers studying these fossils suggest that feathers first served other purposes, such as insulation or display, and were only later adapted for flight.",
+  "text": "Based on the texts, how would the researchers in Text 2 most likely respond to the view described in Text 1?",
+  "choices": [
+   "By suggesting that feathers existed before flight and initially had other functions",
+   "By agreeing that feathers could only have evolved in animals that fly",
+   "By claiming that the dinosaurs with feathers were actually able to fly",
+   "By arguing that feathers have never been used for flight"
+  ],
+  "correct": 0,
+  "steps": [
+   [
+    "State Text 1’s view",
+    "Feathers first evolved for flight."
+   ],
+   [
+    "State Text 2’s evidence",
+    "Feathers appear on animals that could not fly, so they likely began with other uses and were later adapted for flight."
+   ]
+  ],
+  "why": "For cross-text questions, summarize each text in a few words first, then compare.",
+  "hint": "What do feathers on short-armed, flightless dinosaurs suggest about which came first?",
+  "distractors": [
+   null,
+   "Text 2’s evidence is feathers on animals that could not fly, which contradicts this.",
+   "Text 2 says the arms were too short for flight.",
+   "Text 2 says feathers were later adapted for flight, so it does not deny that feathers are used for flight."
+  ],
+  "source": "original"
+ },
+ {
+  "id": "sat-r-009",
+  "section": "rw",
+  "domain": "Craft and Structure",
+  "skill": "Cross-Text Connections",
+  "difficulty": "Medium",
+  "type": "mcq",
+  "passage": "Text 1: Urban planners often promote rooftop gardens as a way to cool cities, since plants release water vapor and shade the surfaces beneath them.\n\nText 2: A two-year study of rooftops in one city found that gardens substantially lowered the temperature of roof surfaces but had only a small effect on air temperature at street level.",
+  "text": "Based on the texts, how would the author of Text 2 most likely respond to the claim in Text 1?",
+  "choices": [
+   "The claim applies only to cities with hot climates.",
+   "The claim is entirely incorrect, because gardens do not change temperatures.",
+   "The claim ignores the high cost of building rooftop gardens.",
+   "The claim is supported for roof surfaces, but the cooling effect on street-level air may be limited."
+  ],
+  "correct": 3,
+  "steps": [
+   [
+    "Separate the findings",
+    "Text 2 found a large effect on roof surfaces and a small effect on street air."
+   ],
+   [
+    "Compare with Text 1",
+    "Text 2 partly supports Text 1’s claim but limits how far it reaches."
+   ]
+  ],
+  "why": "Watch for partial agreement. One text can support part of another text’s claim while limiting it.",
+  "hint": "Does the study find no effect, or effects of different sizes?",
+  "distractors": [
+   "Neither text discusses climates beyond the single city studied.",
+   "Text 2 does find that gardens lower roof temperatures, so “entirely incorrect” is too strong.",
+   "Cost is never mentioned in either text.",
+   null
+  ],
+  "source": "original"
+ },
+ {
+  "id": "sat-r-010",
+  "section": "rw",
+  "domain": "Information and Ideas",
+  "skill": "Central Ideas and Details",
+  "difficulty": "Easy",
+  "type": "mcq",
+  "passage": "Kintsugi is a Japanese technique for repairing broken pottery with lacquer mixed with powdered gold. Rather than hiding the cracks, the method highlights them, so a repaired bowl displays its history openly. Practitioners often describe the result as more beautiful than the original.",
+  "text": "Which choice best states the main idea of the text?",
+  "choices": [
+   "Kintsugi repairs pottery in a way that emphasizes, rather than conceals, where it broke.",
+   "Kintsugi is the only accepted way to repair pottery in Japan.",
+   "Gold is the most valuable material used in Japanese art.",
+   "Broken pottery should be replaced rather than repaired."
+  ],
+  "correct": 0,
+  "steps": [
+   [
+    "Find the repeated idea",
+    "Each sentence connects to repairing pottery in a way that shows the cracks."
+   ],
+   [
+    "Check the scope",
+    "The best answer covers the whole text without adding claims."
+   ]
+  ],
+  "why": "The main idea is what every sentence supports. Details and overstatements are traps.",
+  "hint": "What does the method do with the cracks?",
+  "distractors": [
+   null,
+   "“Only accepted way” is an overstatement. The text describes one technique.",
+   "Gold is a detail of the method, and the text makes no claim about its value in Japanese art.",
+   "This contradicts the text, which praises repairing the pottery."
+  ],
+  "source": "original"
+ },
+ {
+  "id": "sat-r-011",
+  "section": "rw",
+  "domain": "Information and Ideas",
+  "skill": "Central Ideas and Details",
+  "difficulty": "Medium",
+  "type": "mcq",
+  "passage": "Every morning Mr. Okafor swept the sidewalk in front of his bakery, even though city crews came by at noon. Neighbors teased him about it. “They will just do it again,” one said. Mr. Okafor only smiled. “They clean the street,” he replied. “I am welcoming my customers.”",
+  "text": "Which choice best states the main idea of the text?",
+  "choices": [
+   "The neighbors want to help Mr. Okafor sweep the sidewalk.",
+   "Mr. Okafor distrusts the city crews to clean properly.",
+   "Mr. Okafor views sweeping as a way to welcome customers rather than simply a chore.",
+   "Mr. Okafor’s bakery has struggled to attract customers."
+  ],
+  "correct": 2,
+  "steps": [
+   [
+    "Focus on the final line",
+    "Mr. Okafor contrasts what the crews do (“clean the street”) with what he does (“welcoming my customers”)."
+   ],
+   [
+    "State the idea",
+    "For him, sweeping is a gesture of hospitality."
+   ]
+  ],
+  "why": "In short narratives, a character’s closing words often state the central idea.",
+  "hint": "How does Mr. Okafor describe his own sweeping?",
+  "distractors": [
+   "The neighbors tease him. They do not offer to help.",
+   "He never criticizes the crews. He says their job is different from his purpose.",
+   null,
+   "Nothing in the text suggests the bakery is struggling."
+  ],
+  "source": "original"
+ },
+ {
+  "id": "sat-r-012",
+  "section": "rw",
+  "domain": "Information and Ideas",
+  "skill": "Central Ideas and Details",
+  "difficulty": "Hard",
+  "type": "mcq",
+  "passage": "Ornithologists who tracked Arctic terns with lightweight geolocators found that the birds do not fly directly between their Arctic breeding grounds and the waters around Antarctica. Instead, they follow winding routes that take advantage of prevailing winds, and they pause for weeks in productive areas of the North Atlantic to feed. As a result, some individuals travel more than 70,000 kilometers in a year.",
+  "text": "According to the text, why do some Arctic terns travel such long distances?",
+  "choices": [
+   "The geolocators added weight that slowed their flight.",
+   "They follow indirect, wind-assisted routes and stop to feed along the way.",
+   "They cannot find enough food in the Arctic during the breeding season.",
+   "They breed in both the Arctic and the Antarctic each year."
+  ],
+  "correct": 1,
+  "steps": [
+   [
+    "Locate the cause",
+    "“As a result” links the long distance to the sentence before it."
+   ],
+   [
+    "Read that sentence",
+    "Winding wind-assisted routes plus weeks-long feeding stops explain the distance."
+   ]
+  ],
+  "why": "“As a result” points back to the cause. Read the sentence right before it.",
+  "hint": "What does “as a result” refer back to?",
+  "distractors": [
+   "The geolocators are described as lightweight, and nothing suggests they slowed the birds.",
+   null,
+   "The feeding stops are in the North Atlantic, and the text says nothing about food shortages in the Arctic.",
+   "The text says they breed in the Arctic. Antarctica is where they travel, not a second breeding ground."
+  ],
+  "source": "original"
+ },
+ {
+  "id": "sat-r-013",
+  "section": "rw",
+  "domain": "Information and Ideas",
+  "skill": "Command of Evidence (Textual)",
+  "difficulty": "Medium",
+  "type": "mcq",
+  "passage": "In a novel, the narrator, Lena, has just moved with her family to a small coastal town. A student claims that Lena feels uncertain about whether she belongs in her new community.",
+  "text": "Which quotation from the novel most effectively illustrates the student’s claim?",
+  "choices": [
+   "“My mother had already hung our old paintings in the hallway of the new house.”",
+   "“The ferry left for the mainland every morning at seven.”",
+   "“The harbor smelled of salt and diesel, and gulls argued over scraps on the pier.”",
+   "“At the café, I hovered by the door, unsure whether to sit with the girls from my class or slip out before they noticed me.”"
+  ],
+  "correct": 3,
+  "steps": [
+   [
+    "Restate the claim",
+    "Lena is unsure whether she fits in."
+   ],
+   [
+    "Find direct evidence",
+    "Hovering by the door, unsure whether to join her classmates, shows that uncertainty directly."
+   ]
+  ],
+  "why": "Pick the quotation that shows the exact feeling in the claim, not just the setting.",
+  "hint": "Which quotation shows Lena’s own feelings about other people?",
+  "distractors": [
+   "This shows her mother settling in, not Lena’s uncertainty.",
+   "This is a schedule detail with no connection to belonging.",
+   "This describes the setting, not Lena’s feelings about belonging.",
+   null
+  ],
+  "source": "original"
+ },
+ {
+  "id": "sat-r-014",
+  "section": "rw",
+  "domain": "Information and Ideas",
+  "skill": "Command of Evidence (Textual)",
+  "difficulty": "Hard",
+  "type": "mcq",
+  "passage": "A biologist hypothesizes that a species of desert beetle obtains drinking water by collecting droplets from morning fog on small bumps on its back.",
+  "text": "Which finding, if true, would most directly support the biologist’s hypothesis?",
+  "choices": [
+   "Several other desert insects drink water from plants.",
+   "In fog chambers, water droplets formed on the beetles’ bumps and rolled toward their mouths, and beetles kept in fog lost less water than beetles kept without fog.",
+   "The beetles are most active at night, when temperatures are lowest.",
+   "The beetles’ shells are darker in color than the surrounding sand."
+  ],
+  "correct": 1,
+  "steps": [
+   [
+    "Identify what must be shown",
+    "The beetle must actually collect fog water on its bumps and benefit from it."
+   ],
+   [
+    "Match the evidence",
+    "Droplets forming on the bumps and reaching the mouth, plus less water loss with fog, directly test both parts."
+   ]
+  ],
+  "why": "The strongest support tests the specific mechanism in the hypothesis.",
+  "hint": "Which finding involves fog, the bumps, and drinking?",
+  "distractors": [
+   "Other insects’ behavior does not test this beetle’s method.",
+   null,
+   "Activity at night says nothing about collecting fog water.",
+   "Shell color is unrelated to the proposed mechanism."
+  ],
+  "source": "original"
+ },
+ {
+  "id": "sat-r-015",
+  "section": "rw",
+  "domain": "Information and Ideas",
+  "skill": "Command of Evidence (Textual)",
+  "difficulty": "Medium",
+  "type": "mcq",
+  "passage": "A city planner argues that newly built protected bike lanes caused the large increase in cycling observed in several downtown neighborhoods last year.",
+  "text": "Which finding, if true, would most directly weaken the planner’s argument?",
+  "choices": [
+   "Cycling increased more on weekends than on weekdays in the downtown neighborhoods.",
+   "Cycling increased by a similar amount in comparable neighborhoods that did not receive new bike lanes.",
+   "Many residents said in a survey that they liked the new lanes.",
+   "The new lanes were painted a bright color to improve visibility."
+  ],
+  "correct": 1,
+  "steps": [
+   [
+    "Find the causal claim",
+    "The lanes caused the increase."
+   ],
+   [
+    "Look for a challenge",
+    "If cycling rose just as much without new lanes, something else likely caused the change."
+   ]
+  ],
+  "why": "To weaken a cause-and-effect claim, show the effect happened without the cause.",
+  "hint": "What would show that the lanes might not be the reason?",
+  "distractors": [
+   "When the increase happened doesn’t challenge what caused it.",
+   null,
+   "Liking the lanes doesn’t show whether they changed how much people cycled.",
+   "The lane color doesn’t address whether the lanes caused the increase."
+  ],
+  "source": "original"
+ },
+ {
+  "id": "sat-r-016",
+  "section": "rw",
+  "domain": "Information and Ideas",
+  "skill": "Command of Evidence (Quantitative)",
+  "difficulty": "Medium",
+  "type": "mcq",
+  "passage": "A table lists average daily water use per person in four towns: Ashford, 310 liters; Bellmont, 220 liters; Corwin, 180 liters; and Dalby, 265 liters. A student claims that residents of Corwin use less water per person than residents of any other town in the table.",
+  "text": "Which choice most effectively uses data from the table to support the student’s claim?",
+  "choices": [
+   "Bellmont residents use less water per person than Dalby residents.",
+   "Ashford has the highest average water use, at 310 liters per person.",
+   "Corwin’s average of 180 liters per person is lower than the averages for Bellmont (220), Dalby (265), and Ashford (310).",
+   "Dalby residents use an average of 265 liters per person each day."
+  ],
+  "correct": 2,
+  "steps": [
+   [
+    "Restate the claim",
+    "Corwin is lower than every other town."
+   ],
+   [
+    "Check completeness",
+    "Only one choice compares Corwin with all three other towns."
+   ]
+  ],
+  "why": "Support for a “less than all others” claim must compare against every other item.",
+  "hint": "Which choice mentions Corwin and all the other towns?",
+  "distractors": [
+   "This compares two other towns and doesn’t involve Corwin.",
+   "This is about Ashford only and never mentions Corwin.",
+   null,
+   "This states one town’s value without any comparison to Corwin."
+  ],
+  "source": "original"
+ },
+ {
+  "id": "sat-r-017",
+  "section": "rw",
+  "domain": "Information and Ideas",
+  "skill": "Command of Evidence (Quantitative)",
+  "difficulty": "Hard",
+  "type": "mcq",
+  "passage": "Researchers measured the percentage of seeds that germinated at four soil temperatures: 10°C, 22%; 15°C, 48%; 20°C, 81%; and 25°C, 64%. They concluded that germination increases with soil temperature only up to a point.",
+  "text": "Which choice best describes data that support the researchers’ conclusion?",
+  "choices": [
+   "Germination was lowest at 20°C.",
+   "Germination rose from 22% at 10°C to 81% at 20°C but then fell to 64% at 25°C.",
+   "Germination was 48% at 15°C.",
+   "Germination was highest at 25°C."
+  ],
+  "correct": 1,
+  "steps": [
+   [
+    "Unpack “only up to a point”",
+    "The rate must rise and then stop rising or fall."
+   ],
+   [
+    "Check the data",
+    "It climbs through 20°C and drops at 25°C, which matches the conclusion."
+   ]
+  ],
+  "why": "For trend claims, the evidence must show the full pattern, not a single value.",
+  "hint": "Which choice shows both a rise and a drop?",
+  "distractors": [
+   "This is false. 20°C had the highest rate, not the lowest.",
+   null,
+   "A single value cannot show the rise-then-fall pattern.",
+   "This is false. The highest rate (81%) was at 20°C."
+  ],
+  "source": "original"
+ },
+ {
+  "id": "sat-r-018",
+  "section": "rw",
+  "domain": "Information and Ideas",
+  "skill": "Command of Evidence (Quantitative)",
+  "difficulty": "Medium",
+  "type": "mcq",
+  "passage": "In a survey, teens were asked how they most often read the news: 64% said on a phone, 22% on a computer, 9% in print, and 5% said they do not read the news. A student claims that phones are the most common way the surveyed teens read the news.",
+  "text": "Which choice most effectively uses data from the survey to support the student’s claim?",
+  "choices": [
+   "5% of the teens said they do not read the news.",
+   "64% of the teens chose phones, a higher percentage than for any other option.",
+   "22% of the teens read the news on a computer.",
+   "Only 9% of the teens read the news in print."
+  ],
+  "correct": 1,
+  "steps": [
+   [
+    "Restate the claim",
+    "Phones are the most common choice."
+   ],
+   [
+    "Pick the comparison",
+    "Only one choice shows that phones beat every other option."
+   ]
+  ],
+  "why": "Choose the data that proves the exact comparison, here “most common.”",
+  "hint": "Which choice compares phones with all the other options?",
+  "distractors": [
+   "The share of non-readers doesn’t address which method is most common.",
+   null,
+   "The computer figure alone doesn’t compare phones with every option.",
+   "A low print figure doesn’t show that phones are the most common choice."
+  ],
+  "source": "original"
+ },
+ {
+  "id": "sat-r-019",
+  "section": "rw",
+  "domain": "Information and Ideas",
+  "skill": "Inferences",
+  "difficulty": "Medium",
+  "type": "mcq",
+  "passage": "In many forests, certain fungi form underground networks that connect the roots of different trees, and experiments have shown that carbon can move through these networks from one tree to another. In one study, seedlings growing in deep shade that were connected to the network of older trees survived at higher rates than shaded seedlings that were not connected. These results suggest that ______",
+  "text": "Which choice most logically completes the text?",
+  "choices": [
+   "carbon cannot move between trees through underground networks.",
+   "older trees grow faster in shade than seedlings do.",
+   "the networks may help shaded seedlings by supplying resources they cannot easily produce on their own.",
+   "fungi generally harm young trees by taking their carbon."
+  ],
+  "correct": 2,
+  "steps": [
+   [
+    "Link the facts",
+    "Carbon moves through the networks, and connected shaded seedlings survived better."
+   ],
+   [
+    "Draw the cautious conclusion",
+    "Shaded seedlings make less carbon through photosynthesis, so receiving it through the network may help them."
+   ]
+  ],
+  "why": "A good inference follows from the stated facts without going further than they allow.",
+  "hint": "What do connected seedlings have that unconnected ones lack?",
+  "distractors": [
+   "This contradicts the experiments that showed carbon moving through the networks.",
+   "The text compares seedlings with each other, not seedlings with older trees.",
+   null,
+   "This contradicts the finding that connected seedlings survived better."
+  ],
+  "source": "original"
+ },
+ {
+  "id": "sat-r-020",
+  "section": "rw",
+  "domain": "Information and Ideas",
+  "skill": "Inferences",
+  "difficulty": "Hard",
+  "type": "mcq",
+  "passage": "Archaeologists excavating a coastal settlement found bones of deep-water fish species that cannot be caught from shore, along with fishhooks carved from bone. No boats have been recovered at the site, but wooden vessels rarely survive in its acidic soil. The evidence therefore suggests that ______",
+  "text": "Which choice most logically completes the text?",
+  "choices": [
+   "the deep-water fish were washed ashore by storms.",
+   "the residents did not eat fish regularly.",
+   "the bone fishhooks were made only for decoration.",
+   "the residents likely used boats capable of reaching deep water, even though none have been found."
+  ],
+  "correct": 3,
+  "steps": [
+   [
+    "Combine the clues",
+    "Deep-water fish need boats to catch them, and fishhooks show active fishing."
+   ],
+   [
+    "Explain the missing boats",
+    "Wooden boats would not survive in acidic soil, so their absence is expected."
+   ]
+  ],
+  "why": "Inference questions reward accounting for every clue, including why expected evidence might be missing.",
+  "hint": "Why does the text mention the acidic soil?",
+  "distractors": [
+   "Nothing suggests storms. The fishhooks point to fishing instead.",
+   "The fish bones and fishhooks suggest the opposite.",
+   "The text gives no reason to think the hooks were decorative. They fit the fishing evidence.",
+   null
+  ],
+  "source": "original"
+ },
+ {
+  "id": "sat-r-021",
+  "section": "rw",
+  "domain": "Information and Ideas",
+  "skill": "Inferences",
+  "difficulty": "Easy",
+  "type": "mcq",
+  "passage": "Snow leopards live at high elevations where temperatures often fall below freezing. They have thick fur, small rounded ears, and long tails that they wrap around their bodies while resting. Researchers think these features help the animals ______",
+  "text": "Which choice most logically completes the text?",
+  "choices": [
+   "hunt prey at night.",
+   "climb tall trees.",
+   "conserve body heat in cold conditions.",
+   "swim across mountain rivers."
+  ],
+  "correct": 2,
+  "steps": [
+   [
+    "Notice the setting",
+    "The text stresses freezing temperatures."
+   ],
+   [
+    "Connect the features",
+    "Thick fur, small ears, and a wrapped tail all reduce heat loss."
+   ]
+  ],
+  "why": "Connect each detail in the text to the conclusion. The right answer explains all of them.",
+  "hint": "What problem do freezing temperatures create for an animal?",
+  "distractors": [
+   "The features listed relate to cold, not to night hunting.",
+   "The text describes mountains, not trees, and the features are not about climbing.",
+   null,
+   "Nothing in the text involves water or swimming."
+  ],
+  "source": "original"
+ },
+ {
+  "id": "sat-r-022",
+  "section": "rw",
+  "domain": "Standard English Conventions",
+  "skill": "Boundaries",
+  "difficulty": "Easy",
+  "type": "mcq",
+  "passage": "The museum’s new exhibit features more than two hundred ______ many of them have never been displayed before.",
+  "text": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+  "choices": [
+   "artifacts;",
+   "artifacts, which",
+   "artifacts",
+   "artifacts,"
+  ],
+  "correct": 0,
+  "steps": [
+   [
+    "Find the clauses",
+    "Both sides could stand alone as sentences."
+   ],
+   [
+    "Join them correctly",
+    "A semicolon can join two independent clauses."
+   ]
+  ],
+  "why": "Two complete sentences need a period, a semicolon, or a comma plus a conjunction such as “and.”",
+  "hint": "Could “many of them have never been displayed before” stand alone?",
+  "distractors": [
+   null,
+   "“Which many of them have never been displayed” is ungrammatical.",
+   "With no punctuation, the two sentences run together.",
+   "A comma alone between two complete sentences is a comma splice."
+  ],
+  "source": "original"
+ },
+ {
+  "id": "sat-r-023",
+  "section": "rw",
+  "domain": "Standard English Conventions",
+  "skill": "Boundaries",
+  "difficulty": "Medium",
+  "type": "mcq",
+  "passage": "After months of testing, the engineers finally identified the cause of the ______ a single loose wire inside the control panel.",
+  "text": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+  "choices": [
+   "failure;",
+   "failure, it was",
+   "failure:",
+   "failure, and"
+  ],
+  "correct": 2,
+  "steps": [
+   [
+    "Check what follows",
+    "“A single loose wire inside the control panel” is a noun phrase, not a full sentence."
+   ],
+   [
+    "Use the colon",
+    "A colon after a complete clause can introduce an explanation of it."
+   ]
+  ],
+  "why": "A colon follows a complete sentence and introduces what explains or names it.",
+  "hint": "Is the part after the blank a full sentence?",
+  "distractors": [
+   "A semicolon needs a complete sentence on both sides.",
+   "This creates a comma splice between two complete sentences.",
+   null,
+   "“And” would join a noun phrase as if it were a second, separate item, which makes no sense here."
+  ],
+  "source": "original"
+ },
+ {
+  "id": "sat-r-024",
+  "section": "rw",
+  "domain": "Standard English Conventions",
+  "skill": "Boundaries",
+  "difficulty": "Medium",
+  "type": "mcq",
+  "passage": "Marisol ______ a marine engineer from Chile, designed a buoy that converts the motion of ocean waves into electricity.",
+  "text": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+  "choices": [
+   "Vega,",
+   "Vega:",
+   "Vega;",
+   "Vega"
+  ],
+  "correct": 0,
+  "steps": [
+   [
+    "Spot the extra information",
+    "“A marine engineer from Chile” describes Marisol Vega and could be removed."
+   ],
+   [
+    "Match the punctuation",
+    "The comma after “Chile” closes the description, so a comma must open it."
+   ]
+  ],
+  "why": "Extra (nonessential) information is set off by matching punctuation on both sides.",
+  "hint": "What punctuation already appears after “Chile”?",
+  "distractors": [
+   null,
+   "A colon here would separate the subject from its verb.",
+   "A semicolon would split the sentence into parts that cannot stand alone.",
+   "With no opening comma, the description is not set off from the name."
+  ],
+  "source": "original"
+ },
+ {
+  "id": "sat-r-025",
+  "section": "rw",
+  "domain": "Standard English Conventions",
+  "skill": "Boundaries",
+  "difficulty": "Hard",
+  "type": "mcq",
+  "passage": "The researchers tracked three variables throughout the study: ______ soil temperature, and the number of seedlings that survived each month.",
+  "text": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+  "choices": [
+   "rainfall;",
+   "rainfall,",
+   "rainfall:",
+   "rainfall"
+  ],
+  "correct": 1,
+  "steps": [
+   [
+    "Recognize the list",
+    "Three items follow the colon."
+   ],
+   [
+    "Separate the items",
+    "Simple list items are separated with commas."
+   ]
+  ],
+  "why": "Use commas in a simple list. Semicolons in lists are only for items that already contain commas.",
+  "hint": "How many items are being listed?",
+  "distractors": [
+   "Semicolons separate list items only when the items themselves contain commas.",
+   null,
+   "A second colon would interrupt the list that the first colon introduced.",
+   "Leaving out the comma runs the first two items together."
+  ],
+  "source": "original"
+ },
+ {
+  "id": "sat-r-026",
+  "section": "rw",
+  "domain": "Standard English Conventions",
+  "skill": "Boundaries",
+  "difficulty": "Hard",
+  "type": "mcq",
+  "passage": "The team’s first prototype was too heavy to ______ their second, built from carbon fiber, weighed less than half as much.",
+  "text": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+  "choices": [
+   "fly, and,",
+   "fly;",
+   "fly",
+   "fly,"
+  ],
+  "correct": 1,
+  "steps": [
+   [
+    "Find the clauses",
+    "“The team’s first prototype was too heavy to fly” and “their second … weighed less than half as much” are both complete sentences."
+   ],
+   [
+    "Join them",
+    "A semicolon correctly joins two related complete sentences."
+   ]
+  ],
+  "why": "Ignore the commas inside the second clause. They mark extra information and don’t change what is needed at the boundary.",
+  "hint": "Could each half stand alone as a sentence?",
+  "distractors": [
+   "The comma after “and” is unnecessary and breaks up the sentence.",
+   null,
+   "With no punctuation, the sentences run together.",
+   "A comma alone between two complete sentences is a comma splice."
+  ],
+  "source": "original"
+ },
+ {
+  "id": "sat-r-027",
+  "section": "rw",
+  "domain": "Standard English Conventions",
+  "skill": "Form, Structure, and Sense",
+  "difficulty": "Easy",
+  "type": "mcq",
+  "passage": "The collection of rare maps, which includes charts drawn by early navigators, ______ on display through the end of the year.",
+  "text": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+  "choices": [
+   "remains",
+   "are remaining",
+   "remain",
+   "have remained"
+  ],
+  "correct": 0,
+  "steps": [
+   [
+    "Find the subject",
+    "The subject is “collection,” not “maps” or “navigators.”"
+   ],
+   [
+    "Match the verb",
+    "A singular subject takes the singular verb “remains.”"
+   ]
+  ],
+  "why": "Cross out prepositional phrases and “which” clauses to find the real subject.",
+  "hint": "What is the subject: the collection or the maps?",
+  "distractors": [
+   null,
+   "“Are remaining” is also plural.",
+   "“Remain” is plural, matching “maps” instead of the singular subject “collection.”",
+   "“Have remained” is plural and also changes the tense."
+  ],
+  "source": "original"
+ },
+ {
+  "id": "sat-r-028",
+  "section": "rw",
+  "domain": "Standard English Conventions",
+  "skill": "Form, Structure, and Sense",
+  "difficulty": "Medium",
+  "type": "mcq",
+  "passage": "When the city council and the parks department released ______ joint plan for the riverfront, residents praised its focus on walking paths.",
+  "text": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+  "choices": [
+   "it’s",
+   "they’re",
+   "its",
+   "their"
+  ],
+  "correct": 3,
+  "steps": [
+   [
+    "Find the antecedent",
+    "The pronoun refers to “the city council and the parks department.”"
+   ],
+   [
+    "Match the number",
+    "Two groups joined by “and” are plural, so the pronoun is “their.”"
+   ]
+  ],
+  "why": "Subjects joined by “and” are plural, even if each part is singular.",
+  "hint": "Who released the plan: one group or two?",
+  "distractors": [
+   "“It’s” means “it is,” which doesn’t fit before a noun.",
+   "“They’re” means “they are,” which doesn’t show possession.",
+   "“Its” is singular, but the plan belongs to two groups.",
+   null
+  ],
+  "source": "original"
+ },
+ {
+  "id": "sat-r-029",
+  "section": "rw",
+  "domain": "Standard English Conventions",
+  "skill": "Form, Structure, and Sense",
+  "difficulty": "Medium",
+  "type": "mcq",
+  "passage": "By the time the rescue team reached the summit, the storm ______ for nearly six hours.",
+  "text": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+  "choices": [
+   "will rage",
+   "rages",
+   "had been raging",
+   "has raged"
+  ],
+  "correct": 2,
+  "steps": [
+   [
+    "Read the time clues",
+    "“By the time … reached” sets a point in the past."
+   ],
+   [
+    "Pick the tense",
+    "An action ongoing before that past point uses the past perfect progressive, “had been raging.”"
+   ]
+  ],
+  "why": "“By the time” plus a past-tense verb usually calls for “had” plus a verb.",
+  "hint": "Did the raging happen before or after the team reached the summit?",
+  "distractors": [
+   "Future tense contradicts the past-tense time frame.",
+   "Present tense doesn’t fit an event that ended in the past.",
+   null,
+   "“Has raged” connects to the present, not to a past moment."
+  ],
+  "source": "original"
+ },
+ {
+  "id": "sat-r-030",
+  "section": "rw",
+  "domain": "Standard English Conventions",
+  "skill": "Form, Structure, and Sense",
+  "difficulty": "Hard",
+  "type": "mcq",
+  "passage": "Equipped with a mirror more than six meters wide, ______",
+  "text": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+  "choices": [
+   "studying the atmospheres of distant planets is possible with the new telescope.",
+   "the new telescope allows astronomers to study the atmospheres of distant planets.",
+   "astronomers can use the new telescope to study the atmospheres of distant planets.",
+   "the atmospheres of distant planets can be studied with the new telescope."
+  ],
+  "correct": 1,
+  "steps": [
+   [
+    "Ask who is “equipped”",
+    "The opening phrase must describe the noun that comes right after the comma."
+   ],
+   [
+    "Find the match",
+    "The telescope, not the astronomers or atmospheres, has the mirror."
+   ]
+  ],
+  "why": "An introductory modifier describes the very next noun. Make sure that noun is the right one.",
+  "hint": "What has a six-meter mirror?",
+  "distractors": [
+   "This says “studying” has the mirror.",
+   null,
+   "This says the astronomers are equipped with the mirror, which is a dangling modifier.",
+   "This says the atmospheres have the mirror."
+  ],
+  "source": "original"
+ },
+ {
+  "id": "sat-r-031",
+  "section": "rw",
+  "domain": "Standard English Conventions",
+  "skill": "Form, Structure, and Sense",
+  "difficulty": "Hard",
+  "type": "mcq",
+  "passage": "Several ______ observations suggest that the comet’s tail changed direction overnight.",
+  "text": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+  "choices": [
+   "astronomers",
+   "astronomers’s",
+   "astronomers’",
+   "astronomer’s"
+  ],
+  "correct": 2,
+  "steps": [
+   [
+    "Count the owners",
+    "“Several” means more than one astronomer."
+   ],
+   [
+    "Form the plural possessive",
+    "For a plural ending in s, add only an apostrophe: astronomers’."
+   ]
+  ],
+  "why": "Possession needs an apostrophe. Plural nouns ending in s take the apostrophe after the s.",
+  "hint": "How many astronomers made the observations?",
+  "distractors": [
+   "There is no apostrophe, so this doesn’t show possession.",
+   "This is not a standard possessive form.",
+   null,
+   "This is singular possessive, but “several” means more than one."
+  ],
+  "source": "original"
+ },
+ {
+  "id": "sat-r-032",
+  "section": "rw",
+  "domain": "Expression of Ideas",
+  "skill": "Transitions",
+  "difficulty": "Easy",
+  "type": "mcq",
+  "passage": "Many desert plants store water in thick stems or leaves to survive long dry periods. ______ the saguaro cactus can hold hundreds of liters of water in its stem after a heavy rain.",
+  "text": "Which choice completes the text with the most logical transition?",
+  "choices": [
+   "Nevertheless,",
+   "In contrast,",
+   "However,",
+   "For example,"
+  ],
+  "correct": 3,
+  "steps": [
+   [
+    "Name the relationship",
+    "The second sentence gives a specific case of the general claim."
+   ],
+   [
+    "Choose the signal",
+    "“For example” introduces an illustration."
+   ]
+  ],
+  "why": "Decide the relationship first (example, contrast, result, addition), then choose the word.",
+  "hint": "Is the saguaro an example of the first sentence, or an exception to it?",
+  "distractors": [
+   "“Nevertheless” signals a concession, which doesn’t fit.",
+   "“In contrast” also signals a difference that isn’t there.",
+   "“However” signals a contrast, but the saguaro fits the pattern.",
+   null
+  ],
+  "source": "original"
+ },
+ {
+  "id": "sat-r-033",
+  "section": "rw",
+  "domain": "Expression of Ideas",
+  "skill": "Transitions",
+  "difficulty": "Medium",
+  "type": "mcq",
+  "passage": "The first steam locomotives were slow, noisy, and prone to breaking down. ______ within a few decades, railroads had transformed travel across much of Europe.",
+  "text": "Which choice completes the text with the most logical transition?",
+  "choices": [
+   "For instance,",
+   "Similarly,",
+   "Still,",
+   "Therefore,"
+  ],
+  "correct": 2,
+  "steps": [
+   [
+    "Compare the sentences",
+    "The first describes weaknesses, and the second a huge success despite them."
+   ],
+   [
+    "Choose the concession",
+    "“Still” means “despite that,” which fits."
+   ]
+  ],
+  "why": "When the second sentence succeeds despite the first, look for a concession word such as “still” or “nevertheless.”",
+  "hint": "Is the second sentence a result of the weaknesses, or an outcome despite them?",
+  "distractors": [
+   "“For instance” introduces an example, but the second sentence is not an example of the weaknesses.",
+   "“Similarly” signals that the second sentence is like the first, but it contrasts with it.",
+   null,
+   "“Therefore” suggests the weaknesses caused the success, which is illogical."
+  ],
+  "source": "original"
+ },
+ {
+  "id": "sat-r-034",
+  "section": "rw",
+  "domain": "Expression of Ideas",
+  "skill": "Transitions",
+  "difficulty": "Hard",
+  "type": "mcq",
+  "passage": "The researchers expected that adding fertilizer would increase the grass’s growth. ______ plots that received fertilizer grew no faster than unfertilized plots, likely because water, not nutrients, limited growth during the dry season.",
+  "text": "Which choice completes the text with the most logical transition?",
+  "choices": [
+   "Indeed,",
+   "Likewise,",
+   "However,",
+   "Moreover,"
+  ],
+  "correct": 2,
+  "steps": [
+   [
+    "Compare expectation and result",
+    "They expected faster growth but got none."
+   ],
+   [
+    "Choose the contrast",
+    "“However” marks an outcome that goes against the expectation."
+   ]
+  ],
+  "why": "Expectation-versus-result sentences need a contrast transition.",
+  "hint": "Did the result match what the researchers expected?",
+  "distractors": [
+   "“Indeed” confirms the previous sentence, but the result contradicts it.",
+   "“Likewise” signals similarity, but the result differs from the expectation.",
+   null,
+   "“Moreover” adds a supporting point, but the result contradicts the expectation."
+  ],
+  "source": "original"
+ },
+ {
+  "id": "sat-r-035",
+  "section": "rw",
+  "domain": "Expression of Ideas",
+  "skill": "Rhetorical Synthesis",
+  "difficulty": "Medium",
+  "type": "mcq",
+  "passage": "While researching a topic, a student has taken the following notes:\n• The axolotl is a salamander native to lakes near Mexico City.\n• Unlike most salamanders, it keeps its gills and lives in water throughout its life.\n• It can regrow lost limbs and even parts of its heart and brain.\n• Scientists study axolotls to learn about tissue regeneration.",
+  "text": "The student wants to emphasize why scientists are interested in axolotls. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+  "choices": [
+   "Unlike most salamanders, the axolotl keeps its gills and lives in water throughout its life.",
+   "Axolotls are salamanders, and they live in water.",
+   "The axolotl is a salamander native to lakes near Mexico City.",
+   "Because axolotls can regrow lost limbs and even parts of their hearts and brains, scientists study them to learn about tissue regeneration."
+  ],
+  "correct": 3,
+  "steps": [
+   [
+    "Restate the goal",
+    "Explain why scientists are interested in axolotls."
+   ],
+   [
+    "Match the notes",
+    "Only one choice connects their regeneration ability to scientific study."
+   ]
+  ],
+  "why": "In note-based questions, the goal in the question matters more than how accurate each choice is. Every choice may be true.",
+  "hint": "Which notes explain scientists’ interest?",
+  "distractors": [
+   "This describes an unusual trait but doesn’t connect it to research.",
+   "This is too general and leaves out the reason scientists study axolotls.",
+   "This is accurate but says nothing about scientific interest.",
+   null
+  ],
+  "source": "original"
+ },
+ {
+  "id": "sat-r-036",
+  "section": "rw",
+  "domain": "Expression of Ideas",
+  "skill": "Rhetorical Synthesis",
+  "difficulty": "Hard",
+  "type": "mcq",
+  "passage": "While researching a topic, a student has taken the following notes:\n• The Voyager 1 and Voyager 2 space probes both launched in 1977.\n• In 2012, Voyager 1 became the first spacecraft to enter interstellar space.\n• Voyager 2 entered interstellar space in 2018.",
+  "text": "The student wants to compare when the two probes reached interstellar space. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+  "choices": [
+   "In 2012, Voyager 1 became the first spacecraft to enter interstellar space.",
+   "Voyager 2 is a space probe that entered interstellar space in 2018.",
+   "The Voyager 1 and Voyager 2 probes both launched in 1977.",
+   "Although both probes launched in 1977, Voyager 1 reached interstellar space in 2012, six years before Voyager 2 did in 2018."
+  ],
+  "correct": 3,
+  "steps": [
+   [
+    "Restate the goal",
+    "Compare the two arrival dates."
+   ],
+   [
+    "Check each choice",
+    "Only one choice gives both dates and relates them."
+   ]
+  ],
+  "why": "A comparison needs information about both things being compared.",
+  "hint": "Which choice mentions both arrival years?",
+  "distractors": [
+   "This covers only Voyager 1.",
+   "This covers only Voyager 2.",
+   "This compares launch dates, not arrival in interstellar space.",
+   null
+  ],
+  "source": "original"
+ }
+]
