@@ -23,13 +23,13 @@ async function review(page: Page) {
   await page.getByRole('button',{name:'Check answer'}).click();
   await expect(page.getByText('That’s right.')).toBeVisible();
   await page.getByRole('navigation',{name:'Main navigation'}).getByRole('button',{name:'Review',exact:true}).click();
-  await expect(page.locator('footer')).toContainText('Saved to Railway database');
+  await expect(page.locator('footer')).toContainText('Progress saved');
 }
 const reflection = (page: Page) => page.getByRole('textbox',{name:'What will you try next time?'});
 test('hosted progress restores from database without relying on localStorage', async ({page}) => {
   const db = await mockDatabase(page); await review(page);
   await reflection(page).fill('Subtract the fixed fee before dividing.');
-  await expect(page.locator('footer')).toContainText('Saved to Railway database');
+  await expect(page.locator('footer')).toContainText('Progress saved');
   expect(db.state.attempts).toHaveLength(1);
   await page.evaluate(() => localStorage.clear());
   await page.reload();
@@ -43,7 +43,7 @@ test('a lost save acknowledgement retries idempotently and preserves newer edits
   await expect(page.getByRole('alert')).toContainText('Progress is not saved.');
   await reflection(page).fill('A newer reflection after losing the response.');
   await page.getByRole('button',{name:'Retry saving'}).click();
-  await expect(page.locator('footer')).toContainText('Saved to Railway database');
+  await expect(page.locator('footer')).toContainText('Progress saved');
   expect(db.state.reflections['wp-math-001'].text).toBe('A newer reflection after losing the response.');
   expect(db.state.attempts).toHaveLength(1);
 });
@@ -67,7 +67,7 @@ test('save failure with full browser storage clearly reports memory-only recover
   await expect(page.getByRole('alert')).toContainText('Browser backup is unavailable.');
   await expect(reflection(page)).toHaveValue('Keep this note in memory.');
   await page.getByRole('button',{name:'Retry saving'}).click();
-  await expect(page.locator('footer')).toContainText('Saved to Railway database');
+  await expect(page.locator('footer')).toContainText('Progress saved');
 });
 test('local progress backup imports to the database, including typed answers and new question ids', async ({page}) => {
   const db = await mockDatabase(page);
@@ -79,7 +79,7 @@ test('local progress backup imports to the database, including typed answers and
   backup.reviewAttemptId = 'from-local';
   page.on('dialog', async dialog => {await dialog.accept();});
   await page.getByLabel('Progress backup file').setInputFiles({name:'progress.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(backup))});
-  await expect(page.locator('footer')).toContainText('Saved to Railway database');
+  await expect(page.locator('footer')).toContainText('Progress saved');
   await expect.poll(() => db.state.attempts.length).toBe(2);
   await page.getByRole('navigation',{name:'Main navigation'}).getByRole('button',{name:'Review',exact:true}).click();
   await expect(reflection(page)).toHaveValue('A saved local reflection.');
@@ -101,7 +101,7 @@ test('daily plan progress, tutor hints, and confirmed reflections restore from d
   await page.goto('/#tutor');
   await page.getByRole('button',{name:'✧ Small hint'}).click();
   await expect(page.getByText('1 of 3 hints')).toBeVisible();
-  await expect(page.locator('footer')).toContainText('Saved to Railway database');
+  await expect(page.locator('footer')).toContainText('Progress saved');
   await page.evaluate(() => localStorage.clear());
   await page.reload();
   await expect(page.getByText('1 of 3 hints')).toBeVisible();
@@ -113,7 +113,7 @@ test('daily plan progress, tutor hints, and confirmed reflections restore from d
   await page.getByRole('button',{name:'Explore my mistake'}).click();
   await page.getByRole('radio',{name:/Concept gap/}).check();
   await page.getByRole('button',{name:'Save my reflection'}).click();
-  await expect(page.locator('footer')).toContainText('Saved to Railway database');
+  await expect(page.locator('footer')).toContainText('Progress saved');
   await page.evaluate(() => localStorage.clear());
   await page.reload();
   await expect(page.getByRole('heading',{name:'Separate the parts.'})).toBeVisible();
@@ -129,7 +129,7 @@ test('practice filters, typed work and handwriting transcriptions restore from d
   await page.getByRole('textbox',{name:/Your solution, one equation per line/}).fill('18 + 7d = 60\n7d = 42\nd = 6');
   await page.getByRole('button',{name:'Check my steps →'}).click();
   await expect(page.locator('.walkstep.error')).toHaveCount(0);
-  await expect(page.locator('footer')).toContainText('Saved to Railway database');
+  await expect(page.locator('footer')).toContainText('Progress saved');
   await page.evaluate(() => localStorage.clear()); await page.reload();
   await expect(page.getByRole('textbox',{name:/Your solution, one equation per line/})).toHaveValue('18 + 7d = 60\n7d = 42\nd = 6');
   await page.goto('/#practice');

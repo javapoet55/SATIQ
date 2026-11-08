@@ -37,7 +37,7 @@ export function useServerStore(snapshot: ServerSnapshot): ProgressStore {
   const [state, setState] = useState(initial.current.state);
   const current = useRef(state); const revision = useRef(initial.current.revision);
   const [error, setError] = useState(initial.current.conflict ? 'Another tab saved newer progress. Export this pending work, then reload the server copy.' : '');
-  const [syncStatus, setSyncStatus] = useState(initial.current.pending ? 'Pending database save' : 'Saved to Railway database');
+  const [syncStatus, setSyncStatus] = useState(initial.current.pending ? 'Pending database save' : 'Progress saved');
   const dirty = useRef(initial.current.pending); const generation = useRef(0);
   const cacheAvailable = useRef(true);
   const conflict = useRef(initial.current.conflict); const busy = useRef(false);
@@ -51,7 +51,7 @@ export function useServerStore(snapshot: ServerSnapshot): ProgressStore {
   };
   const flush = async (keepalive = false) => {
     if (!dirty.current || busy.current || conflict.current || ended.current) return;
-    clearTimeout(timer.current); busy.current = true; setSyncStatus('Saving to Railway…');
+    clearTimeout(timer.current); busy.current = true; setSyncStatus('Saving progress…');
     request.current ??= {state:current.current, revision:revision.current, writeId:crypto.randomUUID(), generation:generation.current};
     const sent = request.current;
     try {
@@ -64,7 +64,7 @@ export function useServerStore(snapshot: ServerSnapshot): ProgressStore {
       if (!Number.isSafeInteger(result.revision) || result.revision <= sent.revision) throw new Error('Unexpected database save response.');
       revision.current = result.revision; request.current = null;
       dirty.current = generation.current !== sent.generation;
-      cache(); setError(''); setSyncStatus(dirty.current ? 'Pending database save' : 'Saved to Railway database');
+      cache(); setError(''); setSyncStatus(dirty.current ? 'Pending database save' : 'Progress saved');
     } catch (e) {
       cache(); setError(`${e instanceof Error ? e.message : 'Connection lost.'} ${cacheAvailable.current ? 'Pending work is retained in this tab and its browser backup.' : 'Browser backup is unavailable. Pending work is in this tab only; export a backup now.'} Retry saving before closing.`); setSyncStatus('Database save pending');
     } finally {busy.current = false;}

@@ -34,7 +34,7 @@ export function AssistantScreen({store}:{store:ProgressStore}) {
     if(list)list.scrollTop=sending?list.scrollHeight:(list.lastElementChild as HTMLElement|null)?.offsetTop ?? 0;
   },[snapshot?.history,sending]);
   const blocked = testInProgress(store.state) || !!snapshot?.context.testBlocked;
-  const saving = !!store.error || (!!store.hosted && store.syncStatus !== 'Saved to Railway database');
+  const saving = !!store.error || (!!store.hosted && store.syncStatus !== 'Progress saved');
   const load = async () => {
     setLoading(true);setError('');
     try {
@@ -77,9 +77,9 @@ export function AssistantScreen({store}:{store:ProgressStore}) {
   const context = snapshot?.context;
   return <>
     <Intro tag="A LITTLE CLARITY, WHEN YOU NEED IT" title="Ask. Understand. Move forward.">Your SAT questions, connected to your own learning journey.</Intro>
-    {!store.hosted && <div className="card spaced" role="status">AI Assistant uses the hosted study database. Open the Railway app to connect your saved activity and GPT.</div>}
+    {!store.hosted && <div className="card spaced" role="status">Open the online PrepOrbit AI app to use AI Assistant with your saved activity.</div>}
     {store.hosted && !snapshot && <div className="card spaced"><p role="status">{loading?'Reading your saved activity…':'The assistant could not connect.'}</p>{!loading&&<button className="btn" onClick={()=>void load()}>Reconnect assistant</button>}</div>}
-    {snapshot && !snapshot.configured && <div className="assistant-banner" role="status"><strong>Your study context is ready. GPT is not connected yet.</strong><p>Add OPENAI_API_KEY to the Railway web service and deploy the variable change, then choose Refresh context. You can explore the prompts and draft a question now.</p></div>}
+    {snapshot && !snapshot.configured && <div className="assistant-banner" role="status"><strong>Your study context is ready. GPT is not connected yet.</strong><p>The assistant is being set up. You can explore the prompts and draft a question now, then choose Refresh context to check the connection.</p></div>}
     {blocked && <div className="assistant-banner" role="status">Finish and submit your practice test to unlock AI help.</div>}
     <div className="assistant-layout">
       <section className="card assistant-chat" aria-label="AI conversation">
@@ -112,7 +112,7 @@ export function AssistantScreen({store}:{store:ProgressStore}) {
         {context?.weeklyQuestions===0&&<p className="muted">No answers saved this week yet. A few practice questions will give us a starting point.</p>}
         <p className="muted assistant-note">First attempt per distinct question this week. Small samples suggest what to practice; they do not establish mastery. Estimated SAT score is unavailable.</p>
         {store.hosted&&<button className="btn" disabled={loading || sending || saving} onClick={()=>void load()}>{loading?'Refreshing…':'Refresh context'}</button>}
-        <p className="muted assistant-note">Chat is saved in your private browser study profile on Railway. The most recent 20 exchanges are shown. Refresh context after studying in another tab.</p>
+        <p className="muted assistant-note">Chat is saved to your signed-in study profile. The most recent 20 exchanges are shown. Refresh context after studying in another tab.</p>
       </aside>
     </div>
   </>;

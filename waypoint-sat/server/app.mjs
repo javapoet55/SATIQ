@@ -242,7 +242,7 @@ export function createApp({database, assistant = createAssistant(), ai = createA
           if (req.method === 'GET') {json(200,{configured:assistant.configured,mathConfigured:!!assistant.mathConfigured,model:assistant.model,profileId:snapshot.profileId,context,history});return;}
           if (typeof body?.message !== 'string' || !body.message.trim() || body.message.trim().length > 2000 || !UUID.test(body.requestId)) throw assistantError(400,'Enter a question of 1–2,000 characters with a valid request ID.');
           if (context.testBlocked) throw assistantError(409,'Finish and submit your practice test before using AI help.');
-          if (!assistant.configured) throw assistantError(503,'GPT is not connected yet. Add OPENAI_API_KEY to the Railway web service and deploy the variable change.');
+          if (!assistant.configured) throw assistantError(503,'AI Assistant is temporarily unavailable. Please try again later.');
           const message = body.message.trim();
           const reservation = await database.reserveAssistant(owner,body.requestId,message,context);
           if (reservation.kind === 'completed') {json(200,{id:body.requestId,message,answer:reservation.answer,details:reservation.details ?? {},context:reservation.context});return;}

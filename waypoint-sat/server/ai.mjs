@@ -3,7 +3,7 @@ export const aiError = (status, message) => Object.assign(new Error(message), {s
 
 export function createAI({apiKey = process.env.OPENAI_API_KEY, model = process.env.OPENAI_MODEL || 'gpt-5-mini', fetchImpl = fetch} = {}) {
   async function call({instructions, input, maxTokens = 2048, effort = 'low', schema, timeoutMs = 90000, modelOverride}) {
-    if (!apiKey) throw aiError(503, 'AI help is not connected yet. Add OPENAI_API_KEY to the Railway web service.');
+    if (!apiKey) throw aiError(503, 'AI help is temporarily unavailable. Please try again later.');
     const useModel = modelOverride || model;
     const body = {model: useModel, store: false, max_output_tokens: maxTokens, instructions, input,
       ...(useModel.startsWith('gpt-5') || /^o\d/.test(useModel) ? {reasoning: {effort}} : {}),
@@ -13,7 +13,7 @@ export function createAI({apiKey = process.env.OPENAI_API_KEY, model = process.e
       response = await fetchImpl('https://api.openai.com/v1/responses', {method: 'POST', headers: {Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json'},
         body: JSON.stringify(body), signal: AbortSignal.timeout(timeoutMs)});
     } catch { throw aiError(504, 'The AI took too long or could not be reached. Try again.'); }
-    if (!response.ok) throw aiError(response.status === 429 ? 429 : 502, response.status === 401 ? 'The server AI key was rejected. Check OPENAI_API_KEY in Railway.' : response.status === 429 ? 'The AI is busy or its allowance is used up. Try again later.' : 'The AI could not answer right now. Try again.');
+    if (!response.ok) throw aiError(response.status === 429 ? 429 : 502, response.status === 401 ? 'AI help could not connect. Please try again later.' : response.status === 429 ? 'The AI is busy or its allowance is used up. Try again later.' : 'The AI could not answer right now. Try again.');
     let json;
     try { json = await response.json(); } catch { throw aiError(502, 'The AI returned an unreadable answer. Try again.'); }
     const text = (json.output ?? []).filter(o => o.type === 'message').flatMap(o => o.content ?? []).filter(c => c.type === 'output_text').map(c => c.text).join('\n').trim();

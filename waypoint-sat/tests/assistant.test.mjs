@@ -49,7 +49,7 @@ test('weekly evidence is timezone-aware, answer-key based, and ignores retries i
 test('missing API key still exposes real scoped context and never fabricates an answer',async t=>{
   const {get,post}=await server(t,createAssistant({apiKey:''}));
   const snapshot=await(await get()).json();assert.equal(snapshot.configured,false);assert.equal(snapshot.context.weeklyQuestions,0);assert.deepEqual(snapshot.history,[]);
-  const response=await post({requestId:randomUUID(),message:'My weak areas?'});assert.equal(response.status,503);assert.match((await response.json()).message,/OPENAI_API_KEY/);
+  const response=await post({requestId:randomUUID(),message:'My weak areas?'});assert.equal(response.status,503);assert.match((await response.json()).message,/temporarily unavailable/);
 });
 test('GPT receives only server-loaded evidence; completed replies persist and retry without paying twice',async t=>{
   let calls=0,request;

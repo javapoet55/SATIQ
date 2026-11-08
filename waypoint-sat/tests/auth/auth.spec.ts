@@ -23,7 +23,7 @@ test('new visitors must sign in; sign up opens the study space and progress surv
   await page.goto('/#practice');
   await page.getByRole('radio', {name:'B. 6 days', exact:true}).check();
   await page.getByRole('button', {name:'Check answer'}).click();
-  await expect(page.locator('footer')).toContainText('Saved to Railway database');
+  await expect(page.locator('footer')).toContainText('Progress saved');
   await page.getByRole('button', {name:'Sign out'}).click();
   await expect(page.getByRole('heading', {name:'Welcome back.'})).toBeVisible();
   expect(await page.evaluate(() => localStorage.getItem('waypoint-server-cache-v1'))).toBeNull();

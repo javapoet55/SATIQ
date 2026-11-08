@@ -51,7 +51,7 @@ export function createAssistant({apiKey=process.env.OPENAI_API_KEY,model=process
   return {
     configured:!!apiKey, model, mathConfigured:mathTools.configured,
     async answer(message, context, history, {assertAllowed=async()=>{}}={}) {
-      if (!apiKey) throw assistantError(503,'GPT is not connected yet. Add OPENAI_API_KEY to the Railway web service and deploy the variable change.');
+      if (!apiKey) throw assistantError(503,'AI Assistant is temporarily unavailable. Please try again later.');
       const deadline = AbortSignal.timeout(65000);
       const warnings = [], toolsUsed = [], charts = [];
       let tools = [];
@@ -74,7 +74,7 @@ export function createAssistant({apiKey=process.env.OPENAI_API_KEY,model=process
             ...(tools.length ? {tools,parallel_tool_calls:false,tool_choice:round===2 || calls>=4?'none':'auto'} : {}),
             instructions,input})});}
         catch {throw assistantError(504,'GPT took too long or could not be reached. Your question is kept; try again.');}
-        if (!response.ok) throw assistantError(response.status === 429 ? 429 : 502,response.status === 401 ? 'The server API key was rejected. Check OPENAI_API_KEY in Railway.' : response.status === 429 ? 'GPT is busy or its API allowance is exhausted. Try again later.' : 'GPT could not answer. Check the server model configuration or try again.');
+        if (!response.ok) throw assistantError(response.status === 429 ? 429 : 502,response.status === 401 ? 'AI Assistant could not connect. Please try again later.' : response.status === 429 ? 'GPT is busy or its API allowance is exhausted. Try again later.' : 'GPT could not answer. Check the server model configuration or try again.');
         let body;
         try {body = await response.json();} catch {throw assistantError(502,'GPT returned an unreadable answer. Your question is kept; try again.');}
         if(body.status!=='completed') throw assistantError(502,'GPT did not finish an answer. Your question is kept; try again.');
