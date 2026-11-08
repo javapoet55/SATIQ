@@ -14,11 +14,11 @@ export const MAX_SUBJECTS = 6;
 export const CERTIFICATE_HOURS = 100;
 export const CERTIFICATE_MINUTES = CERTIFICATE_HOURS * 60;
 export const MIN_SESSION_MINUTES = 15;
-export const MAX_SESSION_MINUTES = 240;
+export const MAX_SESSION_MINUTES = 120;
 // Certificate integrity limits. Only this much time with any one student counts toward the certificate
 // (so at least four students are needed), and sessions must be logged soon after they happen.
 export const MAX_MINUTES_PER_STUDENT = 25 * 60;
-export const MAX_WEEKLY_MINUTES = 40 * 60;
+export const MAX_WEEKLY_MINUTES = 20 * 60;
 export const LOG_WINDOW_DAYS = 30;
 // Limits that keep invitations from turning into spam.
 export const MAX_REQUESTS_PER_DAY = 5;

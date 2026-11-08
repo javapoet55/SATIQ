@@ -1,6 +1,6 @@
 import React, {createContext, useCallback, useContext, useEffect, useState} from 'react';
 import {Intro} from './StudyComponents';
-import {GRADES, SUBJECTS, SEARCH_RADII, MAX_SUBJECTS, CERTIFICATE_MINUTES, formatHours} from './data/tutoring-schema';
+import {GRADES, SUBJECTS, SEARCH_RADII, MAX_SUBJECTS, CERTIFICATE_MINUTES, MAX_SESSION_MINUTES, formatHours} from './data/tutoring-schema';
 import {GuidelinesAgreement, RolePicker, Chips, choiceOf, rolesOf, hoursText, dateText, type RoleChoice} from './TutoringParts';
 import * as api from './tutoring-api';
 import type {Me, TutorCard, Connection, HoursData} from './tutoring-api';
@@ -230,7 +230,7 @@ function Connections({notify}: {notify: (t: string) => void}) {
 }
 
 // ---- Teaching hours
-const LENGTHS = Array.from({length: 16}, (_, i) => (i + 1) * 15);
+const LENGTHS = Array.from({length: MAX_SESSION_MINUTES / 15}, (_, i) => (i + 1) * 15);
 const today = () => new Date().toLocaleDateString('en-CA');
 function Teaching({notify}: {notify: (t: string) => void}) {
   const {me, reload} = useTutoring();
@@ -280,6 +280,7 @@ function Teaching({notify}: {notify: (t: string) => void}) {
             <label className="t-field">Student<select value={connectionId} onChange={e => setConnectionId(e.target.value)}>{connections.map(c => <option key={c.id} value={c.id}>{c.other.name} · {c.subject}</option>)}</select></label>
             <label className="t-field">Date<input type="date" value={date} max={today()} onChange={e => setDate(e.target.value)} required/></label>
             <label className="t-field">Length<select value={minutes} onChange={e => setMinutes(Number(e.target.value))}>{LENGTHS.map(m => <option key={m} value={m}>{hoursText(m)}</option>)}</select></label>
+            <p className="muted small wide">Limits: up to 2 hours a day and 20 hours a week.</p>
             <label className="t-field wide">What did you work on?<input value={note} onChange={e => setNote(e.target.value)} required minLength={3} maxLength={300} placeholder="Linear equations and word problems"/></label>
             <button className="primary" disabled={busy}>Log session</button></form>}</section>
       <section className="spaced" aria-label="Logged sessions"><h2 className="solution-title">Your sessions</h2>

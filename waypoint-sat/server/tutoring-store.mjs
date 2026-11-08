@@ -227,12 +227,12 @@ export class TutoringStore {
       const dup = await client.query('SELECT 1 FROM waypoint_hours WHERE connection_id = $1 AND session_date = $2 AND minutes = $3 AND note = $4', [connectionId, date, minutes, note]);
       if (dup.rowCount) throw fail('duplicate', 'You already logged this session.', 409);
       const sameDay = await client.query('SELECT COALESCE(SUM(minutes), 0)::int AS m FROM waypoint_hours WHERE tutor_id = $1 AND session_date = $2 AND status <> $3', [tutorId, date, 'disputed']);
-      if (sameDay.rows[0].m + minutes > 480) throw fail('daily', 'That would be more than 8 hours of teaching in one day.');
+      if (sameDay.rows[0].m + minutes > MAX_SESSION_MINUTES) throw fail('daily', 'That would be more than 2 hours of teaching in one day.');
       const withStudent = await client.query('SELECT COALESCE(SUM(minutes), 0)::int AS m FROM waypoint_hours WHERE connection_id = $1 AND session_date = $2 AND status <> $3', [connectionId, date, 'disputed']);
-      if (withStudent.rows[0].m + minutes > MAX_SESSION_MINUTES) throw fail('studentDay', 'That would be more than 4 hours with one student in a day.');
+      if (withStudent.rows[0].m + minutes > MAX_SESSION_MINUTES) throw fail('studentDay', 'That would be more than 2 hours with one student in a day.');
       const week = await client.query(`SELECT COALESCE(SUM(minutes) FILTER (WHERE session_date BETWEEN $2::date - 6 AND $2::date), 0)::int AS before, COALESCE(SUM(minutes) FILTER (WHERE session_date BETWEEN $2::date AND $2::date + 6), 0)::int AS after
         FROM waypoint_hours WHERE tutor_id = $1 AND status <> 'disputed'`, [tutorId, date]);
-      if (Math.max(week.rows[0].before, week.rows[0].after) + minutes > MAX_WEEKLY_MINUTES) throw fail('weekly', 'That would be more than 40 hours of teaching in one week.');
+      if (Math.max(week.rows[0].before, week.rows[0].after) + minutes > MAX_WEEKLY_MINUTES) throw fail('weekly', 'That would be more than 20 hours of teaching in one week.');
       const waiting = await client.query("SELECT COUNT(*)::int AS n FROM waypoint_hours WHERE tutor_id = $1 AND status = 'pending'", [tutorId]);
       if (waiting.rows[0].n >= 60) throw fail('pending', 'Many sessions are still waiting for confirmation. Ask your students to confirm them first.', 429);
       const id = randomUUID();

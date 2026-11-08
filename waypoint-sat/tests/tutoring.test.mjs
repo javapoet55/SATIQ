@@ -173,10 +173,10 @@ test('tutor matching end to end', {skip: DB ? false : 'Set DATABASE_URL to run t
   const overview = await (await get(boss.cookie, '/api/admin/tutoring')).json();
   const row = overview.tutors.find(x => x.email === priya.email);
   assert.deepEqual([row.confirmedMinutes, row.eligible, row.certificate], [90, false, null]);
-  // Logging limits: not too long ago, at most 4 hours with one student a day.
+  // Logging limits: not too long ago, at most 2 hours a day.
   const longAgo = new Date(Date.now() - 40 * 86400000).toISOString().slice(0, 10);
   assert.equal((await post(priya.cookie, '/api/tutoring/hours', {connectionId, date: longAgo, minutes: 60, note: 'Too old to log'})).status, 400, 'sessions must be logged within 30 days');
-  assert.equal((await post(priya.cookie, '/api/tutoring/hours', {connectionId, date: today, minutes: 240, note: 'Too much in one day'})).status, 400, 'at most 4 hours with one student per day');
+  assert.equal((await post(priya.cookie, '/api/tutoring/hours', {connectionId, date: today, minutes: 60, note: 'Too much in one day'})).status, 400, 'at most 2 hours per day (90 already logged today)');
   // Fast-forward: lots of confirmed sessions with ONE student (sessions can only be added through the app one at a time).
   const studentId = (await database.pool.query('SELECT id AS user_id FROM waypoint_users WHERE email = $1', [alex.email])).rows[0].user_id;
   const days = Array.from({length: 33}, (_, i) => `2025-01-${String(i % 28 + 1).padStart(2, '0')}`);
