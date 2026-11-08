@@ -134,6 +134,7 @@ test('a student asks a nearby tutor, the tutor accepts, hours are confirmed and 
   await expect(tutor.getByRole('heading', {name:'Set up your tutoring profile.'})).toBeVisible();
   await profile(tutor, {'ZIP code':'94105', 'LinkedIn profile':'https://www.linkedin.com/in/priya-sharma-e2e', 'School or university':'Stanford University', 'About you':'Stanford sophomore who loves explaining algebra and geometry.'});
   await tutor.getByLabel('SAT Math').check();
+  await tutor.screenshot({path:'test-results-auth/screenshots/profile.png', fullPage:true});
   await tutor.getByRole('button', {name:'Save profile'}).click();
   await expect(tutor.getByRole('heading', {name:'Teaching hours.'})).toBeVisible();
   // Student signs up and searches. They see only the first name and last initial, and a distance band.
@@ -150,6 +151,7 @@ test('a student asks a nearby tutor, the tutor accepts, hours are confirmed and 
   await expect(card).toContainText(/Within \d+ miles/);
   await expect(student.locator('body')).not.toContainText('Sharma');
   await expect(student.locator('body')).not.toContainText('94105');
+  await student.screenshot({path:'test-results-auth/screenshots/find-tutor.png', fullPage:true});
   await card.getByRole('button', {name:/Ask Priya for help/}).click();
   await card.getByLabel(/Your note to Priya/).fill('I need help with linear equations before my SAT.');
   await card.getByRole('button', {name:'Send request'}).click();
@@ -162,6 +164,7 @@ test('a student asks a nearby tutor, the tutor accepts, hours are confirmed and 
   await expect(tutor.locator('body')).not.toContainText(studentEmail);
   await request.getByRole('button', {name:'Accept'}).click();
   await expect(tutor.getByText(studentEmail)).toBeVisible();
+  await tutor.screenshot({path:'test-results-auth/screenshots/connections.png', fullPage:true});
   await expect(tutor.getByRole('heading', {name:'Alex Morgan'})).toBeVisible();
   // Tutor logs a session; the student confirms it.
   await tutor.goto('./#teaching');
@@ -185,6 +188,7 @@ test('a student asks a nearby tutor, the tutor accepts, hours are confirmed and 
   } finally { await db.close(); }
   await tutor.reload();
   await expect(tutor.getByText('100 hours reached')).toBeVisible();
+  await tutor.screenshot({path:'test-results-auth/screenshots/teaching.png', fullPage:true});
   const admin = await (await browser.newContext()).newPage();
   await admin.goto('./#signup');
   await fillSignUp(admin, adminEmail, 'admin password ok', 'admin password ok', 'Site Admin');
@@ -196,6 +200,7 @@ test('a student asks a nearby tutor, the tutor accepts, hours are confirmed and 
   admin.once('dialog', dialog => dialog.accept());
   await row.getByRole('button', {name:'Generate certificate'}).click();
   await expect(admin.getByText('Certificate issued.')).toBeVisible();
+  await admin.screenshot({path:'test-results-auth/screenshots/admin-tutoring.png', fullPage:true});
   const check = new PostgresStore(process.env.DATABASE_URL);
   try { code = (await check.pool.query('SELECT code FROM waypoint_certificates ORDER BY issued_at DESC LIMIT 1')).rows[0].code; } finally { await check.close(); }
   // Anyone can verify the certificate, signed in or not.

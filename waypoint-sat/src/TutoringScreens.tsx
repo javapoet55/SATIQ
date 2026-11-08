@@ -242,6 +242,7 @@ function Teaching({notify}: {notify: (t: string) => void}) {
   const [date, setDate] = useState(today());
   const [minutes, setMinutes] = useState(60);
   const [note, setNote] = useState('');
+  const [showAll, setShowAll] = useState(false);
   const load = useCallback(async () => {
     try { const [h, c] = await Promise.all([api.loadHours(), api.loadConnections()]); setData(h); setConnections(c.filter(x => x.status === 'accepted' && x.role === 'tutor')); setError(''); }
     catch (e) { setError(message(e)); }
@@ -281,8 +282,8 @@ function Teaching({notify}: {notify: (t: string) => void}) {
             <label className="t-field wide">What did you work on?<input value={note} onChange={e => setNote(e.target.value)} required minLength={3} maxLength={300} placeholder="Linear equations and word problems"/></label>
             <button className="primary" disabled={busy}>Log session</button></form>}</section>
       <section className="spaced" aria-label="Logged sessions"><h2 className="solution-title">Your sessions</h2>
-        {t.entries.length === 0 ? <div className="card"><p className="muted">Nothing logged yet.</p></div> : <div className="card">{t.entries.map(e => <div key={e.id} className="hours-row"><div><strong>{e.name}</strong> · {dateText(e.date)} · {hoursText(e.minutes)}<br/><span className="muted small">{e.note}</span></div>
-          <div className="row">{statusPill(e.status)}{e.status !== 'confirmed' && <button disabled={busy} aria-label={`Remove session with ${e.name} on ${dateText(e.date)}`} onClick={() => act(() => api.deleteHours(e.id), 'Session removed.')}>Remove</button>}</div></div>)}</div>}</section></>}
+        {t.entries.length === 0 ? <div className="card"><p className="muted">Nothing logged yet.</p></div> : <div className="card">{(showAll ? t.entries : t.entries.slice(0, 10)).map(e => <div key={e.id} className="hours-row"><div><strong>{e.name}</strong> · {dateText(e.date)} · {hoursText(e.minutes)}<br/><span className="muted small">{e.note}</span></div>
+          <div className="row">{statusPill(e.status)}{e.status !== 'confirmed' && <button disabled={busy} aria-label={`Remove session with ${e.name} on ${dateText(e.date)}`} onClick={() => act(() => api.deleteHours(e.id), 'Session removed.')}>Remove</button>}</div></div>)}{t.entries.length > 10 && <button className="text-button" aria-expanded={showAll} onClick={() => setShowAll(!showAll)}>{showAll ? 'Show fewer' : `Show all ${t.entries.length} sessions`}</button>}</div>}</section></>}
     {data && data.asStudent.some(e => e.status !== 'pending') && <section className="spaced" aria-label="Your past sessions as a student"><h2 className="solution-title">Sessions you’ve taken</h2><div className="card">{data.asStudent.filter(e => e.status !== 'pending').map(e => <div key={e.id} className="hours-row"><div><strong>{e.name}</strong> · {dateText(e.date)} · {hoursText(e.minutes)}</div>{statusPill(e.status)}</div>)}</div></section>}
   </>;
 }
