@@ -104,3 +104,48 @@
 .section-heading{margin-top:28px}
 .topic-options .test-option h3{margin:4px 0 0}
 .topic-icon{display:inline-grid;place-items:center;width:40px;height:40px;border-radius:10px;background:var(--mint);font-weight:700}
+/* Admin · users overview */
+.admin-lead{margin-bottom:18px}
+.kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px}
+.kpi{background:white;border:1px solid var(--line);border-radius:14px;padding:16px 18px;display:grid;gap:4px}
+.kpi span{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.kpi span i,.viz-legend i,.viz-tooltip i,.role-cell i{display:inline-block;width:10px;height:10px;border-radius:3px;flex:none}
+.kpi strong{font:400 32px/1.1 Georgia,serif;font-variant-numeric:tabular-nums;color:var(--ink)}
+.kpi small{font-size:12px;color:var(--muted)}
+.viz-grid-2{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:18px}
+.viz-card{padding:22px 22px 14px}
+.viz-head{align-items:flex-start;margin-bottom:6px}.viz-head .caption{margin-top:2px}
+.viz-legend{display:flex;gap:16px;font-size:12px;color:var(--muted);margin:8px 0 10px}.viz-legend span{display:flex;align-items:center;gap:6px}
+.viz-plot{position:relative;width:100%;min-width:0;overflow:hidden}.viz-card{min-width:0}
+.viz-plot svg{display:block;overflow:visible}
+.viz-plot rect[tabindex]:focus-visible{outline:none;stroke:#ac632f;stroke-width:2}
+.viz-grid{stroke:#eef1ec;stroke-width:1}.viz-baseline{stroke:#c9d2c8;stroke-width:1}
+.viz-axis{font-size:11px;fill:var(--muted);font-variant-numeric:tabular-nums}
+.viz-label{font-size:12px;fill:var(--ink)}.viz-value{font-size:12px;fill:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+.viz-tooltip{position:absolute;pointer-events:none;width:160px;background:white;border:1px solid var(--line);box-shadow:0 6px 20px #213c341f;border-radius:10px;padding:10px 12px;font-size:12px;z-index:3}
+.viz-tooltip strong{display:block;margin-bottom:6px;font-size:12px}
+.viz-tooltip div{display:flex;align-items:center;gap:6px;color:var(--muted)}.viz-tooltip b{margin-left:auto;color:var(--ink);font-variant-numeric:tabular-nums}
+.viz-tooltip-total{border-top:1px solid var(--line);margin-top:6px;padding-top:6px}
+.segmented{display:flex;gap:4px;background:#f1f3ee;border-radius:10px;padding:3px}
+.segmented button{min-height:34px;padding:6px 10px;font-size:12px;border:0;background:transparent;border-radius:8px}
+.segmented button.active{background:white;color:var(--ink);box-shadow:0 1px 3px #213c3426}.segmented button.active:hover{background:white;color:var(--ink)}
+.users-card{padding:20px 0 12px}
+.users-toolbar{padding:0 22px 14px;flex-wrap:wrap}
+.users-toolbar input,.users-toolbar select{font:inherit;font-size:14px;min-height:40px;padding:8px 12px;border:1px solid #84978b;border-radius:9px;background:white;color:var(--ink)}
+.users-toolbar input{width:220px}
+.table-scroll{overflow-x:auto}
+.users-table{width:100%;min-width:640px;border-collapse:collapse;font-size:14px}
+.users-table th{text-align:left;font-size:12px;color:var(--muted);font-weight:600;border-bottom:1px solid var(--line);padding:0 22px 8px}
+.users-table th .sort{border:0;background:none;padding:4px 0;min-height:0;font:inherit;color:inherit}
+.users-table th .sort:hover{color:var(--ink);background:none}
+.users-table td{padding:11px 22px;border-bottom:1px solid #eef1ec;vertical-align:middle;white-space:nowrap;font-variant-numeric:tabular-nums}
+.users-table tr:last-child td{border-bottom:0}
+.users-table tbody tr:hover{background:#fafbf8}
+.users-table td small{display:block;font-size:12px;color:var(--muted)}
+.users-table td.email{white-space:normal;overflow-wrap:anywhere;min-width:200px}.users-table td.email a{color:var(--ink);text-decoration:none}.users-table td.email a:hover{text-decoration:underline}
+.admin-pill{margin-left:8px;font-size:11px;padding:2px 8px;white-space:nowrap}
+.role-cell{display:flex;align-items:center;gap:8px}
+.role-cell select{font:inherit;font-size:13px;border:1px solid transparent;background:transparent;border-radius:7px;padding:4px 6px;color:var(--ink);cursor:pointer}
+.role-cell select:hover,.role-cell select:focus-visible{border-color:#84978b;background:white}
+@media(max-width:1150px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.viz-grid-2{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:700px){.kpis{grid-template-columns:1fr 1fr}.users-toolbar input{width:100%}.users-table td,.users-table th{padding-left:14px;padding-right:14px}}

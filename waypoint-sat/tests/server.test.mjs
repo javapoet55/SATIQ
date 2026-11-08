@@ -24,11 +24,16 @@ class TestDatabase {
     if (!this.rows.has(from) || this.rows.has(to)) return false;
     this.rows.set(to, this.rows.get(from)); this.rows.delete(from); return true;
   }
-  async createUser(email, passwordHash) {
+  async createUser(email, passwordHash, role = 'student') {
     await this.health();
     if ([...this.users.values()].some(u => u.email === email)) return null;
-    const user = {id:randomUUID(), email, passwordHash}; this.users.set(user.id, user); return {id:user.id, email};
+    const now = new Date().toISOString();
+    const user = {id:randomUUID(), email, passwordHash, role, createdAt:now, lastActiveAt:now}; this.users.set(user.id, user); return {id:user.id, email, role};
   }
+  touches = 0;
+  async touchUser(id) { this.touches++; const u = this.users.get(id); if (u) u.lastActiveAt = new Date().toISOString(); }
+  async listUsers() { return [...this.users.values()].map(({passwordHash, ...u}) => u).reverse(); }
+  async setUserRole(id, role) { const u = this.users.get(id); if (!u) return false; u.role = role; return true; }
   async findUserByEmail(email) { await this.health(); return [...this.users.values()].find(u => u.email === email) ?? null; }
   async createSession(hash, userId, expiresAt) { this.sessions.set(hash, {userId, expiresAt}); }
   async getSessionUser(hash) {
@@ -61,8 +66,8 @@ async function start(t, options = {}) {
   const put = async (cookie, body, extra = {}) => fetch(`${url}/api/progress`, {method:'PUT', headers:{cookie, 'Content-Type':'application/json', 'X-Waypoint-Client':'1', ...extra}, body:JSON.stringify(body)});
   const auth = async (action, body, cookie = '', extra = {}) => fetch(`${url}/api/auth/${action}`, {method:'POST', headers:{cookie, 'Content-Type':'application/json', 'X-Waypoint-Client':'1', ...extra}, body:JSON.stringify(body)});
   const me = async cookie => (await fetch(`${url}/api/auth/me`, {headers:{cookie}})).json();
-  const signup = async (email = `s${randomUUID()}@example.com`, password = 'correct horse battery', cookie = '') => {
-    const response = await auth('signup', {email, password}, cookie);
+  const signup = async (email = `s${randomUUID()}@example.com`, password = 'correct horse battery', cookie = '', role) => {
+    const response = await auth('signup', role === undefined ? {email, password} : {email, password, role}, cookie);
     assert.equal(response.status, 200);
     return {email, password, cookie: cookieOf(response, 'waypoint_session'), response};
   };
@@ -203,4 +208,42 @@ test('sign-in attempts and reset emails are rate limited', async t => {
   for (let i = 0; i < 5; i++) assert.equal((await auth('forgot', {email})).status, 200);
   await new Promise(resolve => setTimeout(resolve, 50));
   assert.equal(sent.length, 3);
+});
+
+test('sign-up records student or tutor; admins see every account with dates and can change roles', async t => {
+  const {url, auth, signup, database} = await start(t, {adminEmails:'Boss@Example.com'});
+  const admin = await signup('boss@example.com');
+  const student = await signup('kid@example.com');
+  await signup('teach@example.com', 'correct horse battery', '', 'tutor');
+  assert.equal((await auth('signup', {email:'bad@example.com', password:'correct horse battery', role:'admin'})).status, 400);
+  const users = async cookie => fetch(`${url}/api/admin/users`, {headers:{cookie}});
+  // Non-admins and signed-out visitors cannot list accounts.
+  assert.equal((await users(student.cookie)).status, 403);
+  assert.equal((await users('')).status, 401);
+  const response = await users(admin.cookie);
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get('cache-control'), 'no-store');
+  const list = (await response.json()).users;
+  assert.equal(list.length, 3);
+  const byEmail = Object.fromEntries(list.map(u => [u.email, u]));
+  assert.equal(byEmail['kid@example.com'].role, 'student');
+  assert.equal(byEmail['teach@example.com'].role, 'tutor');
+  assert.equal(byEmail['boss@example.com'].admin, true);
+  assert.equal(byEmail['kid@example.com'].admin, false);
+  for (const u of list) { assert.ok(!Number.isNaN(Date.parse(u.createdAt))); assert.ok(!Number.isNaN(Date.parse(u.lastActiveAt))); assert.equal(u.passwordHash, undefined); assert.deepEqual(Object.keys(u).sort(), ['admin','createdAt','email','id','lastActiveAt','role']); }
+  const setRole = (cookie, body) => fetch(`${url}/api/admin/user-role`, {method:'POST', headers:{cookie, 'Content-Type':'application/json', 'X-Waypoint-Client':'1'}, body:JSON.stringify(body)});
+  const kid = byEmail['kid@example.com'];
+  assert.equal((await setRole(student.cookie, {id:kid.id, role:'tutor'})).status, 403);
+  assert.equal((await setRole(admin.cookie, {id:kid.id, role:'owner'})).status, 400);
+  assert.equal((await setRole(admin.cookie, {id:randomUUID(), role:'tutor'})).status, 404);
+  assert.equal((await setRole(admin.cookie, {id:kid.id, role:'tutor'})).status, 200);
+  assert.equal(database.users.get(kid.id).role, 'tutor');
+});
+
+test('signed-in requests record last activity at most once per throttle window', async t => {
+  const {get, signup, database} = await start(t);
+  const {cookie} = await signup();
+  const before = database.touches;
+  await get(cookie); await get(cookie); await get(cookie);
+  assert.equal(database.touches - before, 1);
 });

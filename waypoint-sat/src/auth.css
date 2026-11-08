@@ -21,3 +21,11 @@
 .signout{font-size:12px;padding:6px 10px;min-height:36px;white-space:nowrap}
 @media (max-width:400px){.header-actions .avatar{display:none}.header-actions .signout{padding:4px 8px}main>header{gap:8px;height:auto;min-height:90px;padding:10px 0}.header-actions{flex-wrap:wrap;justify-content:flex-end;row-gap:6px}}
 @media (max-width:480px){.auth{padding:24px 18px}.auth h1{font-size:28px}}
+.auth-role{border:0;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:14px}
+.auth-role legend{font-weight:600;padding:0;margin-bottom:6px}
+.auth-role label{display:flex;gap:8px;align-items:flex-start;border:1px solid #84978b;border-radius:9px;padding:10px 12px;cursor:pointer;background:white}
+.auth-role label.selected{border-color:var(--green);outline:2px solid var(--green);background:var(--mint)}
+.auth-role label:has(input:focus-visible){outline:3px solid #ac632f;outline-offset:2px}
+.auth-role input{margin:3px 0 0;accent-color:var(--green)}
+.auth-role span{display:grid;line-height:1.3}
+.auth-role small{font-size:12px;color:var(--muted);margin-top:2px}

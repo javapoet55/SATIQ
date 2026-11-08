@@ -31,6 +31,10 @@ export const adminList = (status: string) => request<{questions: GeneratedRow[]}
 export const adminJobs = () => request<{jobs: Job[]}>('/api/admin/jobs').then(r => r.jobs);
 export const adminGenerate = (spec: {section: string; skill: string; difficulty: string; type: string; count: number}) => request<{job: Job}>('/api/admin/generate', spec);
 export const adminDecide = (id: string, decision: 'approve' | 'reject') => request<{ok: boolean}>('/api/admin/decide', {id, decision});
+export type UserRole = 'student' | 'tutor';
+export interface AdminUser {id: string; email: string; role: UserRole; createdAt: string; lastActiveAt: string | null; admin: boolean}
+export const adminUsers = () => request<{users: AdminUser[]}>('/api/admin/users', undefined, 30000).then(r => r.users);
+export const adminSetRole = (id: string, role: UserRole) => request<{ok: boolean}>('/api/admin/user-role', {id, role});
 export const timezone = () => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'; } catch { return 'UTC'; } };
 
 // Shrinks a photo in the browser so uploads stay small and fast (long side at most 1600px, JPEG).

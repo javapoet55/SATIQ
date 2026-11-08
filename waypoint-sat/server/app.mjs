@@ -15,7 +15,9 @@ import {hashPassword, verifyPassword, burnPasswordCheck, newToken, tokenHash, TO
 const ANON_COOKIE = 'waypoint_student';
 const SESSION_COOKIE = 'waypoint_session';
 const STUDY_ROUTES = new Set(['GET /api/config','GET /api/questions','POST /api/ai/tutor','POST /api/ai/explain-work','POST /api/ai/handwriting','POST /api/ai/insight',
-  'GET /api/admin/questions','POST /api/admin/generate','GET /api/admin/jobs','POST /api/admin/decide']);
+  'GET /api/admin/questions','POST /api/admin/generate','GET /api/admin/jobs','POST /api/admin/decide','GET /api/admin/users','POST /api/admin/user-role']);
+const ROLES = new Set(['student','tutor']);
+const TOUCH_MS = 5 * 60 * 1000;
 const AI_LIMITS = {tutor: 80, explain: 40, handwriting: 15, insight: 12};
 const AUTH_ROUTES = new Set(['GET /api/auth/me','POST /api/auth/signup','POST /api/auth/signin','POST /api/auth/signout','POST /api/auth/forgot','POST /api/auth/reset']);
 const ownerOf = user => `user:${user.id}`;
@@ -49,6 +51,7 @@ export function createApp({database, assistant = createAssistant(), ai = createA
 }}) {
   const admins = new Set(adminEmails.split(',').map(e => e.trim().toLowerCase()).filter(Boolean));
   const jobs = new Map();
+  const touched = new Map();
   return createServer(async (req, res) => {
     for (const [key,value] of Object.entries(headers)) res.setHeader(key, value);
     const json = (status, value) => { res.writeHead(status, {'Content-Type':'application/json; charset=utf-8', 'Cache-Control':'no-store'}); res.end(JSON.stringify(value)); };
@@ -95,7 +98,9 @@ export function createApp({database, assistant = createAssistant(), ai = createA
             if (!email) { json(400, {message:'Enter a valid email address.'}); return; }
             const problem = passwordProblem(body?.password);
             if (problem) { json(400, {message:problem}); return; }
-            const account = await database.createUser(email, await hashPassword(body.password));
+            const role = body?.role === undefined ? 'student' : ROLES.has(body.role) ? body.role : null;
+            if (!role) { json(400, {message:'Choose whether you are signing up as a student or a tutor.'}); return; }
+            const account = await database.createUser(email, await hashPassword(body.password), role);
             if (!account) { json(409, {message:'An account with this email already exists. Sign in, or reset your password.'}); return; }
             await signIn(account); return;
           }
@@ -140,6 +145,11 @@ export function createApp({database, assistant = createAssistant(), ai = createA
         // Progress and assistant history belong to the signed-in account.
         if (!user) { json(401, {message:'Your session ended. Sign in again to keep saving.'}); return; }
         const owner = ownerOf(user);
+        // Last-active tracking: at most one write every five minutes per account; never blocks or fails the request.
+        if (database.touchUser && Date.now() - (touched.get(user.id) ?? 0) > TOUCH_MS) {
+          touched.set(user.id, Date.now()); if (touched.size > 5000) touched.delete(touched.keys().next().value);
+          database.touchUser(user.id).catch(() => touched.delete(user.id));
+        }
         const isAdmin = admins.has(user.email.toLowerCase());
         const testRunning = state => state.sessions.some(s => ['running','paused'].includes(s.status)) || !!state.runs?.some(r => r.status === 'active');
         const useAi = async feature => {
@@ -195,13 +205,22 @@ export function createApp({database, assistant = createAssistant(), ai = createA
           }
         }
         if (route.startsWith('GET /api/admin/') || route.startsWith('POST /api/admin/')) {
-          if (!isAdmin) { json(403, {message:'Only administrators can manage generated questions.'}); return; }
+          if (!isAdmin) { json(403, {message:'Only administrators can open the admin tools.'}); return; }
           if (route === 'GET /api/admin/questions') {
             const status = new URL(req.url,'http://localhost').searchParams.get('status');
             json(200, {questions: await database.listGeneratedQuestions(['pending','flagged','approved','rejected'].includes(status) ? status : null)}); return;
           }
           if (route === 'GET /api/admin/jobs') { json(200, {jobs: [...jobs.values()].reverse()}); return; }
+          if (route === 'GET /api/admin/users') {
+            const users = await database.listUsers();
+            json(200, {users: users.map(u => ({id: u.id, email: u.email, role: u.role, createdAt: u.createdAt, lastActiveAt: u.lastActiveAt ?? null, admin: admins.has(u.email.toLowerCase())}))}); return;
+          }
           const body = await readBody(req, 16 * 1024);
+          if (route === 'POST /api/admin/user-role') {
+            if (typeof body?.id !== 'string' || !UUID.test(body.id) || !ROLES.has(body?.role)) throw aiError(400,'Choose student or tutor for a user ID.');
+            if (!(await database.setUserRole(body.id, body.role))) throw aiError(404,'That account was not found.');
+            json(200, {ok:true}); return;
+          }
           if (route === 'POST /api/admin/decide') {
             const decision = body?.decision === 'approve' ? 'approved' : body?.decision === 'reject' ? 'rejected' : null;
             if (!decision || typeof body?.id !== 'string') throw aiError(400,'Choose approve or reject for a question ID.');
