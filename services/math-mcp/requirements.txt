@@ -1,0 +1,9 @@
+math-mcp-learning-server[scientific,plotting]==0.12.5
+fastmcp==3.4.11
+numpy==2.5.4
+matplotlib==3.11.2
+pydantic==2.14.3
+pydantic-settings==2.16.2
+uvicorn==0.54.0
+httpx==0.28.1
+PyJWT==2.15.1
