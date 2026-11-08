@@ -117,9 +117,14 @@ test('production cookie is secure and database outage produces a safe failure', 
 test('static app is served with security headers; missing assets are not HTML', async t => {
   const {url} = await start(t);
   const response = await fetch(url);
-  assert.equal(response.status,200); assert.match(await response.text(), /PrepOrbit AI/);
+  assert.equal(response.status,200); assert.match(await response.text(), /Prep Orbit AI/);
   assert.equal(response.headers.get('x-frame-options'),'DENY');
   assert.equal((await fetch(`${url}/assets/missing.js`)).status,404);
+  const study=await fetch(`${url}/app/`);assert.equal(study.status,200);assert.match(await study.text(),/PrepOrbit AI/);
+  const redirect=await fetch(`${url}/app`,{redirect:'manual'});assert.equal(redirect.status,308);assert.equal(redirect.headers.get('location'),'/app/');
+  const icon=await fetch(`${url}/landing/logo-mark.svg`);assert.equal(icon.status,200);assert.match(icon.headers.get('content-type'),/image\/svg/);
+  const head=await fetch(url,{method:'HEAD'});assert.equal(head.status,200);assert.equal(await head.text(),'');
+  assert.equal((await fetch(`${url}/landing/not-found.png`)).status,404);
 });
 
 test('sign up validates input, rejects duplicates, and sign in/out manage the session', async t => {

@@ -122,7 +122,7 @@ export function createApp({database, assistant = createAssistant(), ai = createA
               if (!account) return;
               const token = newToken();
               await database.createPasswordReset(tokenHash(token), account.id, Date.now() + RESET_TTL_MS);
-              await mailer.sendPasswordReset({to:account.email, link:`${expectedOrigin}/#reset=${token}`});
+              await mailer.sendPasswordReset({to:account.email, link:`${expectedOrigin}/app/#reset=${token}`});
             })().catch(error => console.error('Password reset request failed:', error.message));
             return;
           }
@@ -271,7 +271,8 @@ export function createApp({database, assistant = createAssistant(), ai = createA
         json(200, saved); return;
       }
       if (!['GET','HEAD'].includes(req.method)) { res.writeHead(405, {Allow:'GET, HEAD'}); res.end(); return; }
-      const name = path === '/' ? '/index.html' : decodeURIComponent(path);
+      if(path==='/app') {res.writeHead(308,{Location:'/app/','Cache-Control':'no-cache'});res.end();return;}
+      const name = path === '/' ? '/landing/index.html' : path==='/app/' || path==='/app/index.html' ? '/index.html' : decodeURIComponent(path);
       let file = resolve(dist, `.${name}`);
       if (!file.startsWith(`${resolve(dist)}${sep}`)) { json(403, {message:'Forbidden path.'}); return; }
       try { if (!(await stat(file)).isFile()) throw new Error(); }
