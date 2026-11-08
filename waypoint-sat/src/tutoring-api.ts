@@ -6,7 +6,7 @@ export interface OwnProfile {
   linkedin: string | null; school: string | null; subjects: string[]; bio: string | null; availability: string | null; radiusMiles: number; accepting: boolean;
   guidelinesAccepted: boolean; reviewed: boolean; complete: boolean;
 }
-export interface Totals {confirmed: number; pending: number; students: number; firstDate: string | null; lastDate: string | null}
+export interface Totals {confirmed: number; counted: number; overCap: number; pending: number; students: number; firstDate: string | null; lastDate: string | null}
 export interface Me {profile: OwnProfile | null; counts: {incomingRequests: number; hoursToConfirm: number}; totals: Totals | null; certificate: {code: string; issuedAt: string} | null}
 export interface TutorCard {
   id: string; name: string; school: string; subjects: string[]; bio: string; availability: string | null; linkedin: string; reviewed: boolean;
@@ -22,7 +22,8 @@ export interface HoursData {asTutor: {entries: HourEntry[]; totals: Totals; cert
 export interface VerifiedCertificate {code: string; name: string; hours: string; students: number; firstDate: string; lastDate: string; issuedAt: string; revoked: boolean}
 export interface AdminTutor {
   id: string; name: string; email: string; school: string | null; linkedin: string | null; subjects: string[]; place: string | null; accepting: boolean; reviewed: boolean;
-  confirmedMinutes: number; pendingMinutes: number; students: number; eligible: boolean; certificate: {id: string; code: string; issuedAt: string; hours: string} | null;
+  confirmedMinutes: number; countedMinutes: number; pendingMinutes: number; students: number; eligible: boolean; needsNote: boolean;
+  flags: {code: string; severity: 'high' | 'review' | 'info'; message: string}[]; perStudent: {name: string; minutes: number; counted: number}[]; certificate: {id: string; code: string; issuedAt: string; hours: string} | null;
 }
 export interface AdminReport {id: string; reason: string; createdAt: string; reporter: string; target: string}
 
@@ -41,7 +42,7 @@ export const deleteHours = (id: string) => request<{ok: boolean}>('/api/tutoring
 export const decideHours = (id: string, decision: 'confirm' | 'dispute') => request<{ok: boolean}>('/api/tutoring/hours/decide', {id, decision});
 export const verifyCertificate = (code: string) => request<VerifiedCertificate>(`/api/verify/${encodeURIComponent(code)}`, undefined, 15000);
 export const adminTutoring = () => request<{tutors: AdminTutor[]; reports: AdminReport[]}>('/api/admin/tutoring', undefined, 20000);
-export const adminIssueCertificate = (userId: string) => request<{code: string}>('/api/admin/tutoring/certificate', {userId});
+export const adminIssueCertificate = (userId: string, reviewNote = '') => request<{code: string}>('/api/admin/tutoring/certificate', {userId, reviewNote});
 export const adminRevokeCertificate = (id: string, reason: string) => request<{ok: boolean}>('/api/admin/tutoring/revoke', {id, reason});
 export const adminReviewTutor = (userId: string, reviewed: boolean) => request<{ok: boolean}>('/api/admin/tutoring/review', {userId, reviewed});
 export const adminCloseReport = (id: string) => request<{ok: boolean}>('/api/admin/tutoring/close-report', {id});

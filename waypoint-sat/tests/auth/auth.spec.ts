@@ -182,8 +182,13 @@ test('a student asks a nearby tutor, the tutor accepts, hours are confirmed and 
   try {
     const t = await db.findUserByEmail(tutorEmail), connection = (await db.pool.query('SELECT id, student_id FROM waypoint_connections WHERE tutor_id = $1', [t.id])).rows[0];
     const insert = (days: number, minutes: number) => db.pool.query("INSERT INTO waypoint_hours (id, connection_id, tutor_id, student_id, session_date, minutes, note, status, decided_at) VALUES (gen_random_uuid(), $1, $2, $3, CURRENT_DATE - $4::int, $5, 'seeded', 'confirmed', NOW())", [connection.id, t.id, connection.student_id, days, minutes]);
-    for (let i = 0; i < 24; i++) await insert(i + 2, 240);
-    await insert(30, 180);
+    // 25 counted hours with this student (60 minutes logged above + 24 more), then three other students at 25 hours each.
+    for (let i = 0; i < 24; i++) await insert(i + 2, 60);
+    for (const n of [1, 2, 3]) {
+      const u = await db.createUser(`e2e-extra${n}-${Date.now()}@example.com`, 'x', 'student');
+      const cid = (await db.pool.query("INSERT INTO waypoint_connections (id, student_id, tutor_id, status, subject, message, responded_at) VALUES (gen_random_uuid(), $1, $2, 'accepted', 'SAT Math', 'seeded', NOW() - INTERVAL '90 days') RETURNING id", [u.id, t.id])).rows[0].id;
+      for (let i = 0; i < 10; i++) await db.pool.query("INSERT INTO waypoint_hours (id, connection_id, tutor_id, student_id, session_date, minutes, note, status, decided_at, created_at) VALUES (gen_random_uuid(), $1, $2, $3, CURRENT_DATE - $4::int, 150, $5, 'confirmed', NOW(), NOW())", [cid, t.id, u.id, i * 3 + n, `Seeded session ${n}-${i}`]);
+    }
     await db.pool.query('DELETE FROM waypoint_users WHERE email = $1', [adminEmail]);
   } finally { await db.close(); }
   await tutor.reload();
@@ -196,8 +201,8 @@ test('a student asks a nearby tutor, the tutor accepts, hours are confirmed and 
   await admin.goto('./#admin');
   await admin.getByRole('button', {name:'Tutoring', exact:true}).click();
   const row = admin.locator('article.admin-row', {hasText:'Priya S'});
-  await expect(row).toContainText('100 / 100 hours confirmed');
-  admin.once('dialog', dialog => dialog.accept());
+  await expect(row).toContainText('100 / 100 hours count');
+  admin.on('dialog', dialog => dialog.type() === 'prompt' ? dialog.accept('Emailed all four students; they confirmed.') : dialog.accept());
   await row.getByRole('button', {name:'Generate certificate'}).click();
   await expect(admin.getByText('Certificate issued.')).toBeVisible();
   await admin.screenshot({path:'test-results-auth/screenshots/admin-tutoring.png', fullPage:true});

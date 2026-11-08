@@ -173,18 +173,48 @@ test('tutor matching end to end', {skip: DB ? false : 'Set DATABASE_URL to run t
   const overview = await (await get(boss.cookie, '/api/admin/tutoring')).json();
   const row = overview.tutors.find(x => x.email === priya.email);
   assert.deepEqual([row.confirmedMinutes, row.eligible, row.certificate], [90, false, null]);
-  // Fast-forward: 99 more hours of confirmed sessions (hours can only be added through the app one at a time).
+  // Logging limits: not too long ago, at most 4 hours with one student a day.
+  const longAgo = new Date(Date.now() - 40 * 86400000).toISOString().slice(0, 10);
+  assert.equal((await post(priya.cookie, '/api/tutoring/hours', {connectionId, date: longAgo, minutes: 60, note: 'Too old to log'})).status, 400, 'sessions must be logged within 30 days');
+  assert.equal((await post(priya.cookie, '/api/tutoring/hours', {connectionId, date: today, minutes: 240, note: 'Too much in one day'})).status, 400, 'at most 4 hours with one student per day');
+  // Fast-forward: lots of confirmed sessions with ONE student (sessions can only be added through the app one at a time).
   const studentId = (await database.pool.query('SELECT id AS user_id FROM waypoint_users WHERE email = $1', [alex.email])).rows[0].user_id;
   const days = Array.from({length: 33}, (_, i) => `2025-01-${String(i % 28 + 1).padStart(2, '0')}`);
-  for (let i = 0; i < 33; i++) await database.pool.query("INSERT INTO waypoint_hours (id, connection_id, tutor_id, student_id, session_date, minutes, note, status) VALUES ($1,$2,$3,$4,$5,180,$6,'confirmed')", [randomUUID(), connectionId, tutorId, studentId, days[i], `Session ${i}`]);
-  const issued = await post(boss.cookie, '/api/admin/tutoring/certificate', {userId: tutorId});
+  const seed = (student, connection, date, minutes, note) => database.pool.query("INSERT INTO waypoint_hours (id, connection_id, tutor_id, student_id, session_date, minutes, note, status, decided_at) VALUES ($1,$2,$3,$4,$5,$6,$7,'confirmed', NOW())", [randomUUID(), connection, tutorId, student, date, minutes, note]);
+  for (let i = 0; i < 33; i++) await seed(studentId, connectionId, days[i], 180, `Session ${i}`);
+  // One student cannot make a certificate: only 25 hours with any one student count.
+  const single = await post(boss.cookie, '/api/admin/tutoring/certificate', {userId: tutorId});
+  assert.equal(single.status, 409); assert.match((await single.json()).message, /25 hours with any one student/);
+  const capped = (await (await get(boss.cookie, '/api/admin/tutoring')).json()).tutors.find(x => x.email === priya.email);
+  assert.deepEqual([capped.confirmedMinutes, capped.countedMinutes, capped.eligible, capped.students], [6030, 1500, false, 1]);
+  assert.ok(capped.flags.some(f => f.code === 'student_cap') && capped.flags.some(f => f.code === 'few_students'));
+  assert.deepEqual((await (await get(priya.cookie, '/api/tutoring/hours')).json()).asTutor.totals.counted, 1500);
+  // Three more students, 25 hours each, make 100 counted hours.
+  for (const name of ['Sam', 'Jo', 'Lee']) {
+    const student = await signup(name.toLowerCase(), `${name} Student`, ['student']);
+    const id = (await database.pool.query('SELECT id FROM waypoint_users WHERE email = $1', [student.email])).rows[0].id, connection = randomUUID();
+    await database.pool.query("INSERT INTO waypoint_connections (id, student_id, tutor_id, status, subject, message, responded_at) VALUES ($1,$2,$3,'accepted','SAT Math','Help please', NOW())", [connection, id, tutorId]);
+    // Jo also tutors Priya: swapped confirmations between two accounts are a high-priority flag.
+    if (name === 'Jo') await database.pool.query("INSERT INTO waypoint_connections (id, student_id, tutor_id, status, subject, message, responded_at) VALUES ($1,$2,$3,'accepted','SAT Math','Return favor', NOW())", [randomUUID(), tutorId, id]);
+    for (let i = 0; i < 10; i++) await seed(id, connection, `2025-01-${String(i + 1).padStart(2, '0')}`, 150, `${name} session ${i}`);
+  }
+  // A student who also tutors this tutor is a high-priority flag: a note is required.
+  const unreviewed = await post(boss.cookie, '/api/admin/tutoring/certificate', {userId: tutorId});
+  assert.equal(unreviewed.status, 409); assert.match((await unreviewed.json()).message, /high-priority flags/);
+  const flagged = (await (await get(boss.cookie, '/api/admin/tutoring')).json()).tutors.find(x => x.email === priya.email);
+  assert.deepEqual([flagged.countedMinutes, flagged.eligible, flagged.students, flagged.needsNote], [6000, true, 4, true]);
+  assert.ok(flagged.flags.find(f => f.code === 'reciprocal' && f.severity === 'high' && /Jo S\./.test(f.message) === false && /Jo Student/.test(f.message)));
+  assert.equal((await post(boss.cookie, '/api/admin/tutoring/certificate', {userId: tutorId, reviewNote: 'short'})).status, 409);
+  const issued = await post(boss.cookie, '/api/admin/tutoring/certificate', {userId: tutorId, reviewNote: 'Emailed all four students; they confirmed the sessions.'});
   assert.equal(issued.status, 200, await issued.clone().text());
+  const stored = (await database.pool.query('SELECT minutes, students, review_note, integrity FROM waypoint_certificates WHERE tutor_id = $1 AND revoked_at IS NULL', [tutorId])).rows[0];
+  assert.deepEqual([stored.minutes, stored.students, stored.review_note], [6000, 4, 'Emailed all four students; they confirmed the sessions.']); assert.ok(stored.integrity.flags.length > 0);
   const {code} = await issued.json();
   assert.match(code, /^[A-HJKMNP-TV-Z2-9]{12}$/);
   await new Promise(r => setTimeout(r, 50));
   assert.equal(sent.at(-1).to, priya.email); assert.match(sent.at(-1).text, new RegExp(`#verify/${code}`));
   const verified = await (await fetch(`${url}/api/verify/${code.slice(0, 4)}-${code.slice(4, 8)}-${code.slice(8).toLowerCase()}`)).json();
-  assert.deepEqual([verified.name, verified.hours, verified.students, verified.revoked], ['Priya Sharma', '100.5', 1, false]);
+  assert.deepEqual([verified.name, verified.hours, verified.students, verified.revoked], ['Priya Sharma', '100', 4, false]);
   assert.doesNotMatch(JSON.stringify(verified), /Alex|Morgan|@/);
   assert.equal((await fetch(`${url}/api/verify/AAAAAAAAAAAA`)).status, 404); assert.equal((await fetch(`${url}/api/verify/short`)).status, 404);
   assert.equal((await (await get(priya.cookie, '/api/tutoring/me')).json()).certificate.code, code);
@@ -232,4 +262,30 @@ test('tutor matching end to end', {skip: DB ? false : 'Set DATABASE_URL to run t
   assert.equal((await post(sam.cookie, '/api/tutoring/withdraw', {id: pending[0].id})).status, 404);
   // Signed-out visitors get nothing.
   assert.equal((await fetch(url + '/api/tutoring/tutors')).status, 401); assert.equal((await fetch(url + '/api/tutoring/connections')).status, 401);
+});
+
+import {analyzeHours} from '../server/integrity.mjs';
+test('integrity: the per-student limit, reciprocal tutoring, speed and confirmation patterns', () => {
+  const day = n => `2026-03-${String(n).padStart(2, '0')}`, ms = d => Date.parse(`${d}T12:00:00Z`);
+  const students = {a: {name: 'Ann A.', joinedAt: ms('2025-01-01')}, b: {name: 'Bo B.', joinedAt: ms('2025-01-01')}, c: {name: 'Cy C.', joinedAt: ms('2025-01-01')}, d: {name: 'Di D.', joinedAt: ms('2025-01-01')}};
+  const session = (studentId, i, extra = {}) => ({studentId, date: day(i % 28 + 1), minutes: 60, note: `Worked on topic ${studentId}${i}`, createdAt: ms(day(i % 28 + 1)) + 3600000, decidedAt: ms(day(i % 28 + 1)) + 7200000, ...extra});
+  // 100 hours with one student counts for only 25.
+  const one = analyzeHours({sessions: Array.from({length: 100}, (_, i) => session('a', i)), students});
+  assert.deepEqual([one.rawMinutes, one.countedMinutes, one.eligible, one.students], [6000, 1500, false, 1]);
+  assert.ok(one.flags.some(f => f.code === 'student_cap' && f.severity === 'info'));
+  // Four students at 25 hours each reach 100 counted hours; a slow spread over months raises no high flag.
+  const spread = ['a', 'b', 'c', 'd'].flatMap((id, k) => Array.from({length: 25}, (_, i) => session(id, i, {date: `2026-${String(k * 3 + Math.floor(i / 9) + 1).padStart(2, '0')}-${String(i % 9 + 1).padStart(2, '0')}`, createdAt: ms('2026-12-01') - (k * 100 + i) * 86400000, decidedAt: ms('2026-12-01') + 86400000 - (k * 100 + i) * 86400000})));
+  const ok = analyzeHours({sessions: spread, students});
+  assert.deepEqual([ok.countedMinutes, ok.eligible, ok.students, ok.needsNote], [6000, true, 4, false]);
+  // 100 hours in under a month, confirmations within minutes, and a student who also tutors the tutor are all flagged.
+  const rushed = ['a', 'b', 'c', 'd'].flatMap(id => Array.from({length: 25}, (_, i) => session(id, i, {minutes: 60, decidedAt: ms(day(i % 28 + 1)) + 3600000 + 120000})));
+  const bad = analyzeHours({sessions: rushed, students, reciprocal: ['b']});
+  const codes = Object.fromEntries(bad.flags.map(f => [f.code, f.severity]));
+  assert.equal(codes.fast, 'high'); assert.equal(codes.reciprocal, 'high'); assert.equal(codes.fast_confirm, 'review'); assert.equal(bad.needsNote, true);
+  assert.equal(bad.flags[0].severity, 'high', 'high-priority flags sort first');
+  // Back-dating, same-day batches, repeated notes, uniform lengths and disputes.
+  const odd = analyzeHours({sessions: Array.from({length: 24}, (_, i) => ({studentId: 'abcd'[i % 4], date: day(i + 1), minutes: 60, note: 'Math practice', createdAt: ms('2026-05-01'), decidedAt: ms('2026-05-02')})), students, stats: {total: 30, disputed: 9}});
+  const oddCodes = odd.flags.map(f => f.code);
+  for (const code of ['backdated', 'batch', 'repeated_notes', 'uniform', 'disputes']) assert.ok(oddCodes.includes(code), code);
+  assert.equal(analyzeHours({sessions: [], students}).countedMinutes, 0);
 });

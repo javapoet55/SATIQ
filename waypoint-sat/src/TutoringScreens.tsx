@@ -252,7 +252,7 @@ function Teaching({notify}: {notify: (t: string) => void}) {
   useEffect(() => { if (!connectionId && connections[0]) setConnectionId(connections[0].id); }, [connections, connectionId]);
   const act = async (fn: () => Promise<unknown>, done: string) => { if (busy) return; setBusy(true); setError(''); try { await fn(); notify(done); await load(); } catch (e) { setError(message(e)); } finally { setBusy(false); } };
   const t = data?.asTutor;
-  const confirmed = t?.totals.confirmed ?? 0, pending = t?.totals.pending ?? 0;
+  const confirmed = t?.totals.counted ?? 0, pending = t?.totals.pending ?? 0, overCap = t?.totals.overCap ?? 0;
   const percent = Math.min(100, Math.floor(confirmed / CERTIFICATE_MINUTES * 100));
   const toConfirm = data?.asStudent.filter(e => e.status === 'pending') ?? [];
   const statusPill = (s: string) => s === 'confirmed' ? <Pill tone="good">✓ Confirmed</Pill> : s === 'pending' ? <Pill>Waiting for student</Pill> : <Pill tone="warn">Student disagreed</Pill>;
@@ -270,6 +270,7 @@ function Teaching({notify}: {notify: (t: string) => void}) {
       <section className="card spaced" aria-label="Progress to certificate"><div className="row"><h2 className="solution-title">Progress to your certificate</h2><strong>{formatHours(confirmed)} / 100 hours</strong></div>
         <div className="progress" role="progressbar" aria-label="Confirmed teaching hours" aria-valuemin={0} aria-valuemax={100} aria-valuenow={percent}><span style={{width: `${percent}%`}}/></div>
         <p className="muted small">{t.totals.students} student{t.totals.students === 1 ? '' : 's'} taught{pending ? ` · ${hrs(pending)} waiting for student confirmation` : ''}</p>
+        <p className="muted small">To keep certificates meaningful, up to 25 hours with any one student count. You need at least 4 students to reach 100 hours.{overCap > 0 ? ` ${hrs(overCap)} so far went over that limit and do not count.` : ''}</p>
         {t.certificate ? <p><Pill tone="gold">★ Certificate issued</Pill> <a href={`#verify/${t.certificate.code}`}>View, print or save your certificate</a></p>
           : confirmed >= CERTIFICATE_MINUTES ? <p><Pill tone="good">100 hours reached</Pill> An administrator will review your hours and issue your certificate.</p>
           : <p className="small">{hrs(CERTIFICATE_MINUTES - confirmed)} more confirmed to go. A certificate with an official stamp is issued by an administrator.</p>}</section>

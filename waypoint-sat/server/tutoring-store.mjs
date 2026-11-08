@@ -1,5 +1,6 @@
 import {randomBytes, randomUUID} from 'node:crypto';
-import {CERTIFICATE_MINUTES, MAX_REQUESTS_PER_DAY, MAX_OPEN_REQUESTS, DECLINE_COOLDOWN_DAYS} from '../src/data/tutoring-schema.ts';
+import {CERTIFICATE_MINUTES, MAX_REQUESTS_PER_DAY, MAX_OPEN_REQUESTS, DECLINE_COOLDOWN_DAYS, MAX_SESSION_MINUTES, MAX_WEEKLY_MINUTES, LOG_WINDOW_DAYS} from '../src/data/tutoring-schema.ts';
+import {analyzeHours} from './integrity.mjs';
 
 // Every query that touches tutoring data lives here. Rows come back complete (including private
 // fields such as full names and emails); server/tutoring.mjs decides what each viewer may see.
@@ -61,6 +62,8 @@ export class TutoringStore {
       issued_by TEXT NOT NULL, issued_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       revoked_at TIMESTAMPTZ, revoked_reason TEXT
     )`);
+    await q('ALTER TABLE waypoint_certificates ADD COLUMN IF NOT EXISTS integrity JSONB');
+    await q('ALTER TABLE waypoint_certificates ADD COLUMN IF NOT EXISTS review_note TEXT');
     await q('CREATE INDEX IF NOT EXISTS waypoint_certificates_tutor ON waypoint_certificates (tutor_id, issued_at DESC)');
     await q(`CREATE TABLE IF NOT EXISTS waypoint_reports (
       id UUID PRIMARY KEY,
@@ -219,10 +222,17 @@ export class TutoringStore {
       const day = await client.query(`SELECT ($1::date > (NOW() AT TIME ZONE 'UTC')::date + 1) AS future, ($1::date < ($2::timestamptz AT TIME ZONE 'UTC')::date - 1) AS early`, [date, c.rows[0].responded_at]);
       if (day.rows[0].future) throw fail('date', 'That date is in the future.');
       if (day.rows[0].early) throw fail('date', 'That date is before you connected with this student.');
+      const old = await client.query(`SELECT ($1::date < (NOW() AT TIME ZONE 'UTC')::date - $2::int) AS old`, [date, LOG_WINDOW_DAYS]);
+      if (old.rows[0].old) throw fail('date', `Log sessions within ${LOG_WINDOW_DAYS} days of when they happen.`);
       const dup = await client.query('SELECT 1 FROM waypoint_hours WHERE connection_id = $1 AND session_date = $2 AND minutes = $3 AND note = $4', [connectionId, date, minutes, note]);
       if (dup.rowCount) throw fail('duplicate', 'You already logged this session.', 409);
       const sameDay = await client.query('SELECT COALESCE(SUM(minutes), 0)::int AS m FROM waypoint_hours WHERE tutor_id = $1 AND session_date = $2 AND status <> $3', [tutorId, date, 'disputed']);
       if (sameDay.rows[0].m + minutes > 480) throw fail('daily', 'That would be more than 8 hours of teaching in one day.');
+      const withStudent = await client.query('SELECT COALESCE(SUM(minutes), 0)::int AS m FROM waypoint_hours WHERE connection_id = $1 AND session_date = $2 AND status <> $3', [connectionId, date, 'disputed']);
+      if (withStudent.rows[0].m + minutes > MAX_SESSION_MINUTES) throw fail('studentDay', 'That would be more than 4 hours with one student in a day.');
+      const week = await client.query(`SELECT COALESCE(SUM(minutes) FILTER (WHERE session_date BETWEEN $2::date - 6 AND $2::date), 0)::int AS before, COALESCE(SUM(minutes) FILTER (WHERE session_date BETWEEN $2::date AND $2::date + 6), 0)::int AS after
+        FROM waypoint_hours WHERE tutor_id = $1 AND status <> 'disputed'`, [tutorId, date]);
+      if (Math.max(week.rows[0].before, week.rows[0].after) + minutes > MAX_WEEKLY_MINUTES) throw fail('weekly', 'That would be more than 40 hours of teaching in one week.');
       const waiting = await client.query("SELECT COUNT(*)::int AS n FROM waypoint_hours WHERE tutor_id = $1 AND status = 'pending'", [tutorId]);
       if (waiting.rows[0].n >= 60) throw fail('pending', 'Many sessions are still waiting for confirmation. Ask your students to confirm them first.', 429);
       const id = randomUUID();
@@ -252,31 +262,54 @@ export class TutoringStore {
       FROM waypoint_hours h JOIN waypoint_profiles tp ON tp.user_id = h.tutor_id JOIN waypoint_connections c ON c.id = h.connection_id WHERE h.student_id = $1 ORDER BY h.status = 'pending' DESC, h.session_date DESC LIMIT 200`, [studentId]);
     return rows;
   }
+  // What the tutor sees: raw confirmed time, and the time that counts toward the certificate (after the per-student limit).
   async totals(tutorId) {
-    const {rows} = await this.pool.query(`SELECT COALESCE(SUM(minutes) FILTER (WHERE status = 'confirmed'), 0)::int AS confirmed,
-        COALESCE(SUM(minutes) FILTER (WHERE status = 'pending'), 0)::int AS pending,
-        COUNT(DISTINCT student_id) FILTER (WHERE status = 'confirmed')::int AS students,
+    const {rows} = await this.pool.query(`SELECT COALESCE(SUM(minutes) FILTER (WHERE status = 'pending'), 0)::int AS pending,
         to_char(MIN(session_date) FILTER (WHERE status = 'confirmed'), 'YYYY-MM-DD') AS "firstDate", to_char(MAX(session_date) FILTER (WHERE status = 'confirmed'), 'YYYY-MM-DD') AS "lastDate"
       FROM waypoint_hours WHERE tutor_id = $1`, [tutorId]);
-    return rows[0];
+    const a = (await this.integrityFor([tutorId])).get(tutorId);
+    return {...rows[0], confirmed: a.rawMinutes, counted: a.countedMinutes, students: a.students, overCap: a.rawMinutes - a.countedMinutes};
+  }
+  // Integrity analysis for many tutors at once (one query per table, never one per tutor).
+  async integrityFor(tutorIds, db = this.pool) {
+    const result = new Map(tutorIds.map(id => [id, null]));
+    if (!tutorIds.length) return result;
+    // Sequential: this may run on a transaction client, which cannot run queries in parallel.
+    const sessions = await db.query(`SELECT tutor_id AS "tutorId", student_id AS "studentId", to_char(session_date, 'YYYY-MM-DD') AS date, minutes, note,
+          (EXTRACT(EPOCH FROM created_at) * 1000)::float8 AS "createdAt", (EXTRACT(EPOCH FROM decided_at) * 1000)::float8 AS "decidedAt"
+        FROM waypoint_hours WHERE tutor_id = ANY($1) AND status = 'confirmed'`, [tutorIds]);
+    const stats = await db.query(`SELECT tutor_id AS "tutorId", COUNT(*)::int AS total, COUNT(*) FILTER (WHERE status = 'disputed')::int AS disputed FROM waypoint_hours WHERE tutor_id = ANY($1) GROUP BY tutor_id`, [tutorIds]);
+    const reciprocal = await db.query("SELECT student_id AS \"tutorId\", tutor_id AS \"studentId\" FROM waypoint_connections WHERE student_id = ANY($1) AND status IN ('accepted','ended')", [tutorIds]);
+    const studentIds = [...new Set(sessions.rows.map(r => r.studentId))];
+    const people = studentIds.length ? await db.query(`SELECT p.user_id AS id, p.full_name AS name, (EXTRACT(EPOCH FROM u.created_at) * 1000)::float8 AS "joinedAt" FROM waypoint_profiles p JOIN waypoint_users u ON u.id = p.user_id WHERE p.user_id = ANY($1)`, [studentIds]) : {rows: []};
+    const students = Object.fromEntries(people.rows.map(r => [r.id, {name: r.name, joinedAt: r.joinedAt}]));
+    for (const id of tutorIds) {
+      result.set(id, analyzeHours({
+        sessions: sessions.rows.filter(r => r.tutorId === id), students,
+        reciprocal: reciprocal.rows.filter(r => r.tutorId === id).map(r => r.studentId),
+        stats: stats.rows.find(r => r.tutorId === id) ?? {total: 0, disputed: 0},
+      }));
+    }
+    return result;
   }
 
   // ---- Certificates: issued only by an administrator, only at or above the hour threshold, and checked inside one locked transaction.
-  async issueCertificate(tutorId, issuedBy) {
+  async issueCertificate(tutorId, issuedBy, reviewNote = '') {
     const client = await this.pool.connect();
     try {
       await client.query('BEGIN');
       await client.query('SELECT pg_advisory_xact_lock(hashtext($1))', [`hours:${tutorId}`]);
       const p = await client.query("SELECT full_name FROM waypoint_profiles WHERE user_id = $1 AND 'tutor' = ANY(roles)", [tutorId]);
       if (!p.rowCount) throw fail('tutor', 'That tutor was not found.', 404);
-      const t = await client.query(`SELECT COALESCE(SUM(minutes), 0)::int AS minutes, COUNT(DISTINCT student_id)::int AS students,
-        to_char(MIN(session_date), 'YYYY-MM-DD') AS first, to_char(MAX(session_date), 'YYYY-MM-DD') AS last FROM waypoint_hours WHERE tutor_id = $1 AND status = 'confirmed'`, [tutorId]);
-      const total = t.rows[0];
-      if (total.minutes < CERTIFICATE_MINUTES) throw fail('hours', 'This tutor has not reached 100 confirmed hours yet.', 409);
+      const a = (await this.integrityFor([tutorId], client)).get(tutorId);
+      if (!a.eligible) throw fail('hours', a.rawMinutes >= CERTIFICATE_MINUTES ? 'This tutor has 100 confirmed hours, but not 100 that count: at most 25 hours with any one student count toward a certificate.' : 'This tutor has not reached 100 confirmed hours yet.', 409);
+      if (a.needsNote && reviewNote.trim().length < 10) throw fail('review', 'This tutor has high-priority flags. Write a short note (at least 10 characters) saying what you checked before issuing the certificate.', 409);
+      const t = await client.query("SELECT to_char(MIN(session_date), 'YYYY-MM-DD') AS first, to_char(MAX(session_date), 'YYYY-MM-DD') AS last FROM waypoint_hours WHERE tutor_id = $1 AND status = 'confirmed'", [tutorId]);
+      const total = {minutes: a.countedMinutes, students: a.students, ...t.rows[0]};
       await client.query("UPDATE waypoint_certificates SET revoked_at = NOW(), revoked_reason = 'Replaced by a newer certificate' WHERE tutor_id = $1 AND revoked_at IS NULL", [tutorId]);
       const id = randomUUID(), code = newCertificateCode();
-      await client.query(`INSERT INTO waypoint_certificates (id, code, tutor_id, tutor_name, minutes, students, first_date, last_date, issued_by) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
-        [id, code, tutorId, p.rows[0].full_name, total.minutes, total.students, total.first, total.last, issuedBy]);
+      await client.query(`INSERT INTO waypoint_certificates (id, code, tutor_id, tutor_name, minutes, students, first_date, last_date, issued_by, integrity, review_note) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
+        [id, code, tutorId, p.rows[0].full_name, total.minutes, total.students, total.first, total.last, issuedBy, JSON.stringify({rawMinutes: a.rawMinutes, countedMinutes: a.countedMinutes, flags: a.flags}), reviewNote.trim().slice(0, 500) || null]);
       await client.query('COMMIT');
       return {id, code};
     } catch (error) { await client.query('ROLLBACK').catch(() => {}); throw error; }

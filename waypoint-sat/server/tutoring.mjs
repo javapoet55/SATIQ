@@ -69,9 +69,11 @@ export async function handleTutoring(ctx) {
     if (!isAdmin) throw fail(403, 'Only administrators can manage tutoring.');
     if (route === 'GET /api/admin/tutoring') {
       const [tutors, reports] = await Promise.all([store.tutorsForAdmin(), store.reports('open')]);
+      const integrity = await store.integrityFor(tutors.map(t => t.userId));
       json(200, {
         tutors: tutors.map(t => ({id: t.userId, name: t.fullName, email: t.email, school: t.school, linkedin: t.linkedin, subjects: t.subjects, place: t.city ? `${t.city}, ${t.state}` : null, accepting: t.accepting, reviewed: !!t.reviewedAt,
-          confirmedMinutes: t.confirmedMinutes, pendingMinutes: t.pendingMinutes, students: t.students, eligible: t.confirmedMinutes >= CERTIFICATE_MINUTES,
+          confirmedMinutes: integrity.get(t.userId).rawMinutes, countedMinutes: integrity.get(t.userId).countedMinutes, pendingMinutes: t.pendingMinutes, students: integrity.get(t.userId).students, eligible: integrity.get(t.userId).eligible,
+          flags: integrity.get(t.userId).flags, perStudent: integrity.get(t.userId).perStudent.map(({name, minutes, counted}) => ({name, minutes, counted})), needsNote: integrity.get(t.userId).needsNote,
           certificate: t.certificateId ? {id: t.certificateId, code: t.certificateCode, issuedAt: t.certificateIssuedAt, hours: formatHours(t.certificateMinutes)} : null})),
         reports: reports.map(r => ({id: r.id, reason: r.reason, createdAt: r.createdAt, reporter: `${r.reporterName ?? 'Unknown'} (${r.reporterEmail})`, target: `${r.targetName ?? 'Unknown'} (${r.targetEmail})`})),
       });
@@ -80,7 +82,8 @@ export async function handleTutoring(ctx) {
     const body = await readBody(16 * 1024);
     if (route === 'POST /api/admin/tutoring/certificate') {
       const tutorId = uuid(body?.userId);
-      const {code} = await store.issueCertificate(tutorId, user.email);
+      const reviewNote = typeof body?.reviewNote === 'string' ? body.reviewNote.trim().slice(0, 500) : '';
+      const {code} = await store.issueCertificate(tutorId, user.email, reviewNote);
       const [email, issued] = await Promise.all([store.emailOf(tutorId), store.certificateByCode(code)]);
       if (email) notify(email, 'Your Prep Orbit certificate is ready', emailBody('Your certificate of community teaching is ready.', [`Thank you for teaching ${formatHours(issued.minutes)} hours with Prep Orbit.`, 'You can view, print or save it as a PDF from the link below.'], `${origin}/app/#verify/${code}`, 'View your certificate'));
       json(200, {code}); return true;
