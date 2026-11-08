@@ -17,6 +17,21 @@ Live application: **https://waypoint-web-production-50a5.up.railway.app/**
 - Saved data loads before the study screens open. Failed initial loads show a reconnect screen, rather than replacing existing progress with a blank state. Concurrent saves use revisions; a stale tab cannot overwrite newer progress. Export pending work before choosing **Reload server copy**.
 - The hosted version’s clock still follows the device clock; hosting adds persistence, not a calibrated or secure exam system. The demo remains five minutes with four questions and no SAT score estimate.
 
+### Practice Test: choose a topic and take 25 questions
+
+Open **Practice Test** (`/#test`). Choose Math or Reading & Writing, then one content domain and **Start 25-question test**. The page includes:
+
+- **Math:** Algebra, Advanced Math, Problem-Solving & Data Analysis, Geometry & Trigonometry. Each domain has 25 original questions and a 40-minute practice timer.
+- **Reading & Writing:** Information & Ideas, Craft & Structure, Expression of Ideas, Standard English Conventions. Each has 25 original questions and a 30-minute timer.
+- A bank of **200 original questions** with four choices, answer keys, and worked explanations. Each attempt shuffles the selected domain’s same 25 items; these are authored questions and deterministic numerical templates, not live AI-generated exam items. They are introductory topic practice, not calibrated SAT difficulty or a full adaptive SAT simulation. Topics follow the College Board’s [Math domains](https://satsuite.collegeboard.org/sat/whats-on-the-test/math/types) and [Reading & Writing domains](https://satsuite.collegeboard.org/sat/whats-on-the-test/reading-writing).
+- A saved overall deadline and time spent on each question. The timer continues when navigating away, closing the browser, or reloading. **Pause practice** explicitly freezes it. This uses the device clock, not a secure exam clock. Math/R&W durations are PrepOrbit AI practice settings, not official SAT module durations.
+- Navigation across all 25 questions, independent review flags, a confirmation dialog showing unanswered/marked counts, and automatic submission on expiry. Submission is idempotent; it records all 25 outcomes, including unanswered items, and locks the attempt.
+- Answer Review with all 25 actual choices, worked solutions and saved reflections. Completed topic attempts appear in Dashboard, Weekly Summary, and AI Assistant database context. First attempts remain preserved on retakes; no estimated SAT score is produced.
+
+The original four-question, five-minute demo remains under **Open 4-question quick demo**. Original saved sessions and backups remain compatible. Topic content is in `src/data/test-topics.ts`, `test-questions.ts`, and `test-reading.ts`, separate from the React screen in `src/TopicTests.tsx`.
+
+After deployment, `node --experimental-strip-types tests/live-topic-smoke.mjs HTTPS_ORIGIN` creates a separate QA account and checks two real 25-question PostgreSQL saves, grading, context integration and AI-help blocking. It makes no LLM calls and sends no email; no existing student account is used.
+
 ### AI Assistant: connect GPT
 
 Open **Learning Companion → AI Assistant** (or `/#assistant`). Five editable examples cover weekly weak areas, latest mistakes, a 20-minute study plan, linear equations, and pacing. Choose an example, edit it if desired, then select **Ask PrepOrbit AI**. Examples never send a paid API request by themselves.

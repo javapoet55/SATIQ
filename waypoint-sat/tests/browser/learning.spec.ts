@@ -42,7 +42,7 @@ test('practice → review → reflection → dashboard persists actual activity 
 });
 
 test('demo navigation, flags, pause, reload, submission and locked actual-answer review', async ({page}) => {
-  await page.goto('/#test');
+  await page.goto('/#test'); await page.getByRole('button',{name:'Open 4-question quick demo',exact:false}).click();
   await expect(page.getByRole('radio').first()).toBeDisabled();
   await page.getByRole('button', {name:'Begin demo'}).click();
   await page.getByRole('radio', {name:'B. 6 days', exact:true}).check();
@@ -78,6 +78,7 @@ test('demo navigation, flags, pause, reload, submission and locked actual-answer
   await page.reload();
   await expect(page.getByText('You left this question unanswered.')).toBeVisible();
   await page.getByRole('button', {name:'Practice Test', exact:true}).click();
+  await page.getByRole('button',{name:'Open 4-question quick demo',exact:false}).click();
   await expect(page.getByText('1 of 4 correct', {exact:true})).toBeVisible();
   await page.getByRole('button', {name:'Start a new demo'}).click();
   await expect(page.getByRole('button', {name:'Begin demo'})).toBeVisible();
@@ -86,7 +87,7 @@ test('demo navigation, flags, pause, reload, submission and locked actual-answer
 });
 
 test('running deadline expires across reload and submits exactly once', async ({page}) => {
-  await page.goto('/#test'); await page.getByRole('button', {name:'Begin demo'}).click();
+  await page.goto('/#test'); await page.getByRole('button',{name:'Open 4-question quick demo',exact:false}).click(); await page.getByRole('button', {name:'Begin demo'}).click();
   await page.getByRole('radio', {name:'B. 6 days', exact:true}).check();
   await page.evaluate(key => {const s = JSON.parse(localStorage.getItem(key)!); s.sessions[0].deadlineAt = Date.now() - 1000; localStorage.setItem(key, JSON.stringify(s));}, KEY);
   await page.reload();
@@ -135,7 +136,7 @@ test('all four original questions have correct solutions and per-question notes'
 
 test('live expiry while submission dialog is open locks and submits once', async ({page}) => {
   await page.clock.install({time: new Date('2026-11-07T20:00:00Z')});
-  await page.goto('/#test');
+  await page.goto('/#test'); await page.getByRole('button',{name:'Open 4-question quick demo',exact:false}).click();
   await page.getByRole('button', {name:'Begin demo'}).click();
   await page.getByRole('radio', {name:'B. 6 days', exact:true}).check();
   await page.getByRole('button', {name:'Finish module', exact:true}).click();

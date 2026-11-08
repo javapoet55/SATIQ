@@ -12,6 +12,6 @@ export function Choices({question: q, selected, onSelect, locked = false, reveal
   </label>)}</fieldset>;
 }
 export function Solution({question: q}: {question: Question}) {
-  return <><div className="card"><span className="eyebrow">THE WORKED SOLUTION</span><h2 className="solution-title">{q.section === 'math' ? 'Separate, then solve.' : 'Connect the ideas.'}</h2>{q.steps.map((step, i) => <div className="step" key={i}><b>{i + 1}</b><div><h3>{step[0]}</h3><p className="muted">{step[1]}</p>{step[2] && <div className="equation">{step[2]}</div>}</div></div>)}</div><div className="card spaced strategy"><h3>Strategy for next time</h3><p className="spaced">{q.why}</p></div></>;
+  return <><div className="card"><span className="eyebrow">THE WORKED SOLUTION</span><h2 className="solution-title">{q.id.startsWith('pt-') ? 'Work through the reasoning.' : q.section === 'math' ? 'Separate, then solve.' : 'Connect the ideas.'}</h2>{q.steps.map((step, i) => <div className="step" key={i}><b>{i + 1}</b><div><h3>{step[0]}</h3><p className="muted">{step[1]}</p>{step[2] && <div className="equation">{step[2]}</div>}</div></div>)}</div><div className="card spaced strategy"><h3>Strategy for next time</h3><p className="spaced">{q.why}</p></div></>;
 }
 

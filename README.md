@@ -2,6 +2,8 @@
 
 React + TypeScript SAT preparation application with a local mode and a deployed Railway/PostgreSQL version.
 
+**Practice Test** now offers Math and Reading & Writing topic selection, 25-question timed sets across eight SAT content domains, 200 original questions, per-question timing, review flags, automatic expiry and worked solutions. Open [topic practice](https://waypoint-web-production-50a5.up.railway.app/#test) to begin.
+
 **[Open PrepOrbit AI](https://waypoint-web-production-50a5.up.railway.app/)** · [Daily Plan](https://waypoint-web-production-50a5.up.railway.app/#plan) · [Guided Tutor](https://waypoint-web-production-50a5.up.railway.app/#tutor) · [Mistake Analysis](https://waypoint-web-production-50a5.up.railway.app/#analysis)
 
 The application is in **[`waypoint-sat/`](waypoint-sat/)**. See its **[README](waypoint-sat/README.md)** for setup, learning flows, storage behavior, tests, and Railway deployment instructions.

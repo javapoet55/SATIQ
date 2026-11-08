@@ -103,6 +103,7 @@ test('original studio links open contextual tutor and analysis; timed tests bloc
   await expect(page.getByText('Your answer: A · 4 days',{exact:true})).toBeVisible();
   await page.getByRole('navigation',{name:'Main navigation'}).getByRole('button',{name:'Dashboard',exact:true}).click();
   await page.getByRole('button',{name:'Practice Test',exact:true}).click();
+  await page.getByRole('button',{name:'Open 4-question quick demo',exact:false}).click();
   await page.getByRole('button',{name:'Begin demo'}).click();
   await page.getByRole('button',{name:'Pause demo'}).click();
   await page.getByRole('navigation',{name:'Main navigation'}).getByRole('button',{name:'Daily Plan',exact:true}).click();
