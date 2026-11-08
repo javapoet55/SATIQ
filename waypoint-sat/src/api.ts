@@ -1,12 +1,12 @@
 import {createContext, useContext} from 'react';
 import type {Question} from './data/question-schema';
 
-export interface AppConfig {hosted: boolean; ai: boolean; admin: boolean; desmosKey: string | null}
-export const ConfigContext = createContext<AppConfig>({hosted: false, ai: false, admin: false, desmosKey: null});
+export interface AppConfig {hosted: boolean; ai: boolean; admin: boolean; desmosKey: string | null; tutoring: boolean}
+export const ConfigContext = createContext<AppConfig>({hosted: false, ai: false, admin: false, desmosKey: null, tutoring: false});
 export const useConfig = () => useContext(ConfigContext);
 
 export class ApiError extends Error { constructor(message: string, public status: number) { super(message); } }
-async function request<T>(path: string, body?: unknown, timeoutMs = 90000): Promise<T> {
+export async function request<T>(path: string, body?: unknown, timeoutMs = 90000): Promise<T> {
   let response: Response;
   try {
     response = await fetch(path, body === undefined ? {credentials: 'same-origin', cache: 'no-store', signal: AbortSignal.timeout(timeoutMs)}
@@ -18,8 +18,8 @@ async function request<T>(path: string, body?: unknown, timeoutMs = 90000): Prom
   return data as T;
 }
 // Both responses are validated: an unexpected body (an HTML error page, a proxy) must never break sign-in.
-export const loadConfig = () => request<Partial<{ai: boolean; admin: boolean; desmosKey: string | null}>>('/api/config', undefined, 15000)
-  .then(r => ({ai: r?.ai === true, admin: r?.admin === true, desmosKey: typeof r?.desmosKey === 'string' && r.desmosKey ? r.desmosKey : null}));
+export const loadConfig = () => request<Partial<{ai: boolean; admin: boolean; desmosKey: string | null; tutoring: boolean}>>('/api/config', undefined, 15000)
+  .then(r => ({ai: r?.ai === true, admin: r?.admin === true, desmosKey: typeof r?.desmosKey === 'string' && r.desmosKey ? r.desmosKey : null, tutoring: r?.tutoring === true}));
 export const loadGeneratedQuestions = () => request<{questions?: unknown}>('/api/questions', undefined, 15000).then(r => Array.isArray(r?.questions) ? r.questions as Question[] : []);
 export const askTutor = (body: {questionId: string; selected: unknown; hintLevel: number; history: {role: string; text: string}[]; message: string}) => request<{reply: string}>('/api/ai/tutor', body);
 export const explainMyWork = (body: {questionId: string; lines: string[]}) => request<{explanation: string}>('/api/ai/explain-work', body);

@@ -67,6 +67,15 @@ export class RateLimiter {
 export function createMailer({apiKey = process.env.RESEND_API_KEY, from = process.env.MAIL_FROM || 'PrepOrbit AI <onboarding@resend.dev>'} = {}) {
   return {
     configured: !!apiKey,
+    // Notification emails (tutor requests, session confirmations, certificates). Without a key nothing is sent and nothing personal is logged.
+    async send({to, subject, text, html}) {
+      if (!apiKey) { console.warn(`[email] Not sent (set RESEND_API_KEY): "${subject}".`); return; }
+      const response = await fetch('https://api.resend.com/emails', {
+        method: 'POST', headers: {Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json'},
+        body: JSON.stringify({from, to: [to], subject, text, html}), signal: AbortSignal.timeout(15000),
+      });
+      if (!response.ok) throw new Error(`Email provider returned ${response.status}`);
+    },
     async sendPasswordReset({to, link}) {
       if (!apiKey) {
         console.warn(`[password-reset] Email delivery is not configured (set RESEND_API_KEY). Reset link for ${to}: ${link}`);

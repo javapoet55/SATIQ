@@ -1,11 +1,13 @@
 import pg from 'pg';
 import {randomUUID} from 'node:crypto';
+import {TutoringStore} from './tutoring-store.mjs';
 
 export class PostgresStore {
   constructor(connectionString) {
     if (!connectionString) throw new Error('DATABASE_URL is required.');
     this.pool = new pg.Pool({connectionString, max: 5, connectionTimeoutMillis: 10000, idleTimeoutMillis: 30000});
     this.pool.on('error', () => console.error('Database connection lost; subsequent requests will reconnect.'));
+    this.tutoring = new TutoringStore(this.pool);
   }
   async initialize() {
     await this.pool.query(`CREATE TABLE IF NOT EXISTS waypoint_progress (
@@ -85,6 +87,7 @@ export class PostgresStore {
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       PRIMARY KEY (owner_hash, day, kind)
     )`);
+    await this.tutoring.initialize();
   }
   async health() { await this.pool.query('SELECT 1'); }
   async get(owner, initial) {

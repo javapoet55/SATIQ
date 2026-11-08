@@ -56,7 +56,7 @@ const attempt = (questionId, selected, correct) => ({id: randomUUID(), questionI
 test('config reports AI and admin status per signed-in user', async t => {
   const {signup, get} = await start(t);
   const student = await signup();
-  assert.deepEqual(await (await get(student, '/api/config')).json(), {ai: true, admin: false, desmosKey: null});
+  assert.deepEqual(await (await get(student, '/api/config')).json(), {ai: true, admin: false, desmosKey: null, tutoring: false});
   const boss = await signup('BOSS@example.com');
   assert.equal((await (await get(boss, '/api/config')).json()).admin, true);
   assert.equal((await get('', '/api/config')).status, 401);

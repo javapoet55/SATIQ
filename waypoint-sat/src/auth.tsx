@@ -1,5 +1,6 @@
 import {Brand} from './Brand';
 import React, {useEffect, useRef, useState} from 'react';
+import {GuidelinesAgreement, RolePicker, rolesOf, type RoleChoice} from './TutoringParts';
 
 export type AuthMode = 'signin' | 'signup' | 'forgot' | 'reset';
 export interface AccountUser {email: string}
@@ -28,18 +29,20 @@ export function resetTokenFromHash(): string | null {
 
 const titles: Record<AuthMode, [string, string]> = {
   signin: ['Welcome back.', 'Sign in to pick up where you left off.'],
-  signup: ['Create your study account.', 'Your progress saves to your account, so it follows you to any device.'],
+  signup: ['Join Prep Orbit.', 'Free SAT practice, plus volunteer tutors near you. Your progress follows you to any device.'],
   forgot: ['Forgot your password?', 'Enter your account email. We’ll send a link to choose a new password.'],
   reset: ['Choose a new password.', 'Pick something you haven’t used here before. You’ll be signed in afterwards.'],
 };
 
-export function AuthScreen({initialMode = 'signin', resetToken, onSignedIn}: {initialMode?: AuthMode; resetToken?: string | null; onSignedIn: (user: AccountUser) => void}) {
+export function AuthScreen({initialMode = 'signin', initialRole = 'student', resetToken, onSignedIn}: {initialMode?: AuthMode; initialRole?: RoleChoice; resetToken?: string | null; onSignedIn: (user: AccountUser, role?: RoleChoice) => void}) {
   const [mode, setModeState] = useState<AuthMode>(resetToken ? 'reset' : initialMode);
   const [email, setEmail] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [role, setRole] = useState<RoleChoice>(initialRole);
+  const [guidelines, setGuidelines] = useState(false);
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [show, setShow] = useState(false);
-  const [role, setRole] = useState<'student' | 'tutor'>('student');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
@@ -55,15 +58,19 @@ export function AuthScreen({initialMode = 'signin', resetToken, onSignedIn}: {in
       if (password.length < MIN) { setError(`Use at least ${MIN} characters for your password.`); return; }
       if (password !== confirm) { setError('The two passwords don’t match.'); return; }
     }
+    if (mode === 'signup') {
+      if (fullName.trim().split(/\s+/).filter(Boolean).length < 2) { setError('Enter your first and last name. Others only see your first name and last initial until you connect.'); return; }
+      if (!guidelines) { setError('Please confirm you’re 13 or older and agree to the community guidelines.'); return; }
+    }
     setBusy(true);
     try {
       const result = mode === 'signin' ? await post('/api/auth/signin', {email, password})
-        : mode === 'signup' ? await post('/api/auth/signup', {email, password, role})
+        : mode === 'signup' ? await post('/api/auth/signup', {email, password, fullName: fullName.trim(), roles: rolesOf(role), guidelines})
         : mode === 'forgot' ? await post('/api/auth/forgot', {email})
         : await post('/api/auth/reset', {token: resetToken, password});
       if (!result.ok) { setError(result.data.message || 'Something went wrong. Try again.'); return; }
       if (mode === 'forgot') { setMessage(result.data.message || 'If an account uses that email, a reset link is on its way.'); return; }
-      if (result.data.user) onSignedIn(result.data.user);
+      if (result.data.user) onSignedIn(result.data.user, mode === 'signup' ? role : undefined);
     } catch {
       setError('Could not reach the study server. Check your connection and try again.');
     } finally { setBusy(false); }
@@ -73,17 +80,13 @@ export function AuthScreen({initialMode = 'signin', resetToken, onSignedIn}: {in
   return <main className="auth-page" id="main-content">
     <div className="auth card">
       <Brand/>
-      <div className="eyebrow">SAT STUDIO</div>
+      <div className="eyebrow">{mode === 'signup' ? 'CREATE ACCOUNT' : 'SAT STUDIO'}</div>
       <h1 ref={heading} tabIndex={-1}>{title}</h1>
       <p className="muted">{lead}</p>
       {mode === 'signup' && <p className="small muted auth-note">Already studied in this browser? That progress moves into your new account.</p>}
       <form onSubmit={submit} aria-describedby={error ? 'auth-error' : undefined}>
-        {mode === 'signup' && <fieldset className="auth-role"><legend>I’m signing up as</legend>
-          {(['student', 'tutor'] as const).map(r => <label key={r} className={role === r ? 'selected' : ''}>
-            <input type="radio" name="role" value={r} checked={role === r} onChange={() => setRole(r)}/>
-            <span><strong>{r === 'student' ? 'A student' : 'A tutor'}</strong><small>{r === 'student' ? 'Practice for the SAT' : 'Help students in my community'}</small></span>
-          </label>)}
-        </fieldset>}
+        {mode === 'signup' && <><RolePicker value={role} onChange={setRole} name="signup-role"/>
+          <div className="auth-field"><label htmlFor="auth-name">Full name</label><input id="auth-name" name="name" autoComplete="name" required maxLength={80} value={fullName} onChange={e => setFullName(e.target.value)} aria-describedby="name-help"/><small id="name-help" className="muted">Kept private. Others see only your first name and last initial until you accept a connection.</small></div></>}
         {mode !== 'reset' && <div className="auth-field"><label htmlFor="auth-email">Email</label>
           <input id="auth-email" type="email" name="email" autoComplete="email" inputMode="email" required maxLength={254} value={email} onChange={e => setEmail(e.target.value)}/>
         </div>}
@@ -97,6 +100,7 @@ export function AuthScreen({initialMode = 'signin', resetToken, onSignedIn}: {in
         {needsConfirm && <div className="auth-field"><label htmlFor="auth-confirm">Confirm password</label>
           <input id="auth-confirm" type={show ? 'text' : 'password'} name="confirm" autoComplete="new-password" required maxLength={128} value={confirm} onChange={e => setConfirm(e.target.value)}/>
         </div>}
+        {mode === 'signup' && <GuidelinesAgreement checked={guidelines} onChange={setGuidelines} id="auth-guidelines"/>}
         {error && <p id="auth-error" className="auth-error" role="alert">{error}</p>}
         {message && <p className="auth-message" role="status">{message}</p>}
         <button type="submit" className="primary auth-submit" disabled={busy}>{busy ? 'Please wait…' : button}</button>

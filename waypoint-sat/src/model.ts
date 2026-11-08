@@ -11,7 +11,7 @@ export interface TestRun {
   status: 'active' | 'complete'; startedAt: number; completedAt: number | null;
 }
 export interface PracticeFilter {section: 'math' | 'rw'; skill: string; difficulty: 'Any' | 'Easy' | 'Medium' | 'Hard'; adaptive: boolean}
-export type Route = 'dashboard' | 'practice' | 'test' | 'review' | 'plan' | 'tutor' | 'analysis' | 'adaptive' | 'work' | 'pacing' | 'similar' | 'weekly' | 'handwriting' | 'assistant' | 'admin';
+export type Route = 'dashboard' | 'practice' | 'test' | 'review' | 'plan' | 'tutor' | 'analysis' | 'adaptive' | 'work' | 'pacing' | 'similar' | 'weekly' | 'handwriting' | 'assistant' | 'admin' | 'tutors' | 'connections' | 'teaching' | 'tutorprofile';
 export interface Attempt {
   id: string; questionId: string; selected: Choice; correct: boolean;
   mode: 'practice' | 'test'; sessionId: string | null; flagged: boolean;

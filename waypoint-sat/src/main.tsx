@@ -21,6 +21,10 @@ import {loadServerSnapshot, useServerStore, clearServerCache, SignInRequired, ty
 import {AuthScreen, fetchAccount, signOutRequest, resetTokenFromHash, type AccountUser} from './auth';
 import {ConfigContext, loadConfig, loadGeneratedQuestions, useConfig, type AppConfig} from './api';
 import './auth.css';
+import './tutoring.css';
+import {VerifyPage} from './Certificate';
+import {TutoringProvider, TutoringScreens, TutoringPrompt, useTutoringBadge} from './TutoringScreens';
+import type {RoleChoice} from './TutoringParts';
 
 const NAV: {id: string; label: string; icon: string; routes: Route[]}[] = [
   {id: 'dashboard', label: 'Home', icon: '⌂', routes: ['dashboard']},
@@ -30,9 +34,12 @@ const NAV: {id: string; label: string; icon: string; routes: Route[]}[] = [
   {id: 'plan', label: 'Plan', icon: '◫', routes: ['plan', 'weekly']},
   {id: 'assistant', label: 'Ask AI', icon: '✦', routes: ['assistant']},
 ];
+const TUTOR_NAV = {id: 'tutors', label: 'Tutors', icon: '☺', routes: ['tutors', 'connections', 'teaching', 'tutorprofile'] as Route[]};
 const ADMIN_NAV = {id: 'admin', label: 'Admin', icon: '⚙', routes: ['admin' as Route]};
-const routeLabels: Record<Route, string> = {dashboard: 'Home', practice: 'Practice', tutor: 'Guided Tutor', test: 'Practice Tests', pacing: 'Pacing Coach', review: 'Answer Review', analysis: 'Mistake Reflection', work: 'Explain My Work', handwriting: 'Handwritten Work', plan: 'Daily Plan', weekly: 'Weekly Summary', assistant: 'Ask AI', admin: 'Admin', adaptive: 'Practice', similar: 'Practice'};
+const routeLabels: Record<Route, string> = {dashboard: 'Home', practice: 'Practice', tutor: 'Guided Tutor', test: 'Practice Tests', pacing: 'Pacing Coach', review: 'Answer Review', analysis: 'Mistake Reflection', work: 'Explain My Work', handwriting: 'Handwritten Work', plan: 'Daily Plan', weekly: 'Weekly Summary', assistant: 'Ask AI', admin: 'Admin', tutors: 'Find a Tutor', connections: 'Connections', teaching: 'Teaching Hours', tutorprofile: 'My Tutor Profile', adaptive: 'Practice', similar: 'Practice'};
 const ROUTES = Object.keys(routeLabels) as Route[];
+const TUTOR_ROUTES: Route[] = TUTOR_NAV.routes;
+const verifyCodeFromHash = () => /^#verify\/([A-Za-z0-9]{6,32})$/.exec(location.hash)?.[1] ?? null;
 // Older links to the separate adaptive and similar-question pages now open adaptive practice.
 const getRoute = (): Route => { const r = location.hash.slice(1) as Route; return r === 'adaptive' || r === 'similar' ? 'practice' : ROUTES.includes(r) ? r : 'dashboard'; };
 function download(value: string, name: string) {
@@ -82,6 +89,8 @@ function App({store}: {store: ProgressStore}) {
   const importInput = useRef<HTMLInputElement>(null);
   const [route, setRoute] = useState<Route>(getRoute);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [verifyCode, setVerifyCode] = useState(verifyCodeFromHash);
+  const badge = useTutoringBadge();
   useEffect(() => setMenuOpen(false), [route]);
   const [now, setNow] = useState(Date.now());
   const [notice, setNotice] = useState('');
@@ -96,7 +105,7 @@ function App({store}: {store: ProgressStore}) {
       history.replaceState(null, '', '#practice');
     };
     legacy();
-    const change = () => { legacy(); setRoute(getRoute()); }; window.addEventListener('hashchange', change); return () => window.removeEventListener('hashchange', change);
+    const change = () => { legacy(); setRoute(getRoute()); setVerifyCode(verifyCodeFromHash()); }; window.addEventListener('hashchange', change); return () => window.removeEventListener('hashchange', change);
   }, []);
   useEffect(() => { document.title = `PrepOrbit AI · ${routeLabels[route]}`; document.getElementById('page-title')?.focus({preventScroll: true}); window.scrollTo(0, 0); }, [route]);
   // Clock: when a running module's time is up, submit it and move a multi-module test forward.
@@ -132,28 +141,31 @@ function App({store}: {store: ProgressStore}) {
     }, 1000); return () => clearInterval(timer);
   }, []);
   const test = state.sessions.find(s => s.id === state.activeSessionId);
-  const nav = config.admin ? [...NAV, ADMIN_NAV] : NAV;
+  const nav = [...NAV, ...(config.tutoring ? [TUTOR_NAV] : []), ...(config.admin ? [ADMIN_NAV] : [])];
   const group = nav.find(g => g.routes.includes(route)) ?? NAV[0];
   const openReview = (scope: string) => { setReviewScope(scope); commit(s => ({...s, reviewAttemptId: null})); location.hash = 'review'; };
   const props = {store, now, navigate, notify: setNotice};
   const screen = route === 'dashboard' ? <Dashboard {...props}/> : route === 'practice' ? <Practice {...props}/> : route === 'test' ? <TestScreen {...props} onReview={openReview}/>
     : route === 'review' ? <Review {...props} scope={reviewScope} setScope={setReviewScope}/> : route === 'assistant' ? <AssistantScreen store={store}/>
+    : TUTOR_ROUTES.includes(route) ? (config.tutoring ? <TutoringScreens route={route as 'tutors' | 'connections' | 'teaching' | 'tutorprofile'} notify={setNotice}/> : <Dashboard {...props}/>)
     : route === 'admin' ? (config.admin ? <AdminScreen notify={setNotice}/> : <Dashboard {...props}/>)
     : ['plan', 'tutor', 'analysis'].includes(route) ? <CompanionScreens {...props} route={route as 'plan' | 'tutor' | 'analysis'}/> : <IntelligenceScreens {...props} route={route}/>;
+  if (verifyCode) return <VerifyPage code={verifyCode}/>;
   return <><a className="skip-link" href="#main-content" onClick={e => {e.preventDefault(); document.getElementById('page-title')?.focus();}}>Skip to content</a>
   <div className="shell"><aside className={`app-sidebar ${menuOpen ? 'menu-open' : ''}`}><div className="sidebar-brand-row"><Brand/><button className="menu-toggle" aria-label={menuOpen ? 'Close navigation' : 'Open navigation'} aria-expanded={menuOpen} aria-controls="sidebar-nav" onClick={() => setMenuOpen(!menuOpen)}>☰ Menu</button></div><div className="eyebrow sidebar-subtitle">SAT STUDIO</div>
-    <nav id="sidebar-nav" className="sidebar-nav simple-nav" aria-label="Main navigation">{nav.map(g => <button key={g.id} className={g === group ? 'active' : ''} aria-current={g === group ? 'page' : undefined} onClick={() => {setMenuOpen(false); setNotice(''); navigate(g.routes[0]);}}><span aria-hidden="true">{g.icon}</span><span>{g.label}</span></button>)}</nav>
+    <nav id="sidebar-nav" className="sidebar-nav simple-nav" aria-label="Main navigation">{nav.map(g => <button key={g.id} className={g === group ? 'active' : ''} aria-current={g === group ? 'page' : undefined} onClick={() => {setMenuOpen(false); setNotice(''); navigate(g.routes[0]);}}><span aria-hidden="true">{g.icon}</span><span>{g.label}</span>{g.id === 'tutors' && badge > 0 && <span className="nav-badge" role="img" aria-label={`${badge} waiting`}>{badge}</span>}</button>)}</nav>
     <div className="sidebar-bottom"><div className="profile">{store.account ? <>Signed in as<br/><strong className="account-email">{store.account.email}</strong></> : store.hosted ? 'Personal study profile' : 'Local student · This device'}<br/>PrepOrbit AI</div></div></aside>
   <main id="main-content" className="studio-main"><StudyHeader label={`${group.label.toUpperCase()}${group.routes.length > 1 && routeLabels[route] !== group.label ? ` / ${routeLabels[route].toUpperCase()}` : ''}`} home={route === 'dashboard'} now={now} email={store.account?.email} onSignOut={store.account?.signOut} onOpenAssistant={() => setMenuOpen(false)} assistantOpen={route === 'assistant'}/>
     {group.routes.length > 1 && <nav className="subnav" aria-label={`${group.label} pages`}>{group.routes.map(r => <a key={r} href={`#${r}`} className={r === route ? 'active' : ''} aria-current={r === route ? 'page' : undefined}>{routeLabels[r]}</a>)}</nav>}
     {store.error && <div className="storage-error" role="alert"><strong>Progress is not saved.</strong><p>{store.error}</p><div className="row spaced"><button onClick={store.retry}>Retry saving</button><button onClick={store.exportData}>Export backup</button>{store.sessionEnded ? <button className="primary" onClick={() => location.reload()}>Sign in again</button> : store.conflict ? <button onClick={() => {if (confirm('Load the server copy? Export any pending changes first.')) store.loadServerCopy?.();}}>Reload server copy</button> : <button onClick={() => {if (confirm('Start fresh? This replaces saved progress for this study profile. Export a backup first.')) store.reset();}}>Start fresh</button>}</div></div>}
     {notice && <div className="notice row" role="status"><span>{notice}</span><button aria-label="Dismiss notification" onClick={() => setNotice('')}>×</button></div>}
     {test?.status === 'running' && route !== 'test' && <div className="notice row"><span>Test in progress · {clock(remaining(test, now))} left</span><button onClick={() => navigate('test')}>Return to test</button></div>}
+    {route === 'dashboard' && config.tutoring && <TutoringPrompt/>}
     {screen}
     <footer>Original practice content · Not affiliated with College Board.<br/>{store.hosted ? <>{store.syncStatus}. {store.account ? 'Your account restores this progress on any device.' : ''}</> : 'Progress is stored in this browser on this device.'} <button className="text-button" onClick={store.exportData}>Export progress backup</button>{store.importData && <><button className="text-button" onClick={() => importInput.current?.click()}>Import progress backup</button><input type="file" ref={importInput} accept=".json,application/json" hidden aria-label="Progress backup file" onChange={async e => {const file = e.target.files?.[0]; e.target.value = ''; if (!file) return; try {if (file.size > 1024 * 1024) throw new Error('Backup exceeds the 1 MB limit.'); const raw = await file.text(); parseState(raw); if (confirm('Replace this study profile with the imported backup? A copy of your current progress will download first.')) {store.importData!(raw); setNotice('Backup imported. Wait for “Saved” before closing.');}} catch (error) {setNotice(`Import failed: ${error instanceof Error ? error.message : String(error)}`);}}}/></>}</footer>
   </main></div></>;
 }
-const LOCAL_CONFIG: AppConfig = {hosted: false, ai: false, admin: false, desmosKey: null};
+const LOCAL_CONFIG: AppConfig = {hosted: false, ai: false, admin: false, desmosKey: null, tutoring: false};
 function LocalApp() {return <ConfigContext.Provider value={LOCAL_CONFIG}><App store={useLocalStore()}/></ConfigContext.Provider>;}
 function HostedApp({snapshot, user, config, onSignedOut}: {snapshot: ServerSnapshot; user: AccountUser; config: AppConfig; onSignedOut: () => void}) {
   const store = useServerStore(snapshot);
@@ -161,26 +173,35 @@ function HostedApp({snapshot, user, config, onSignedOut}: {snapshot: ServerSnaps
     if (store.pending?.() && !confirm('Some progress has not reached the database yet. Sign out anyway? Unsaved changes will be lost.')) return;
     await signOutRequest(); clearServerCache(); onSignedOut();
   };
-  return <ConfigContext.Provider value={config}><App store={{...store, account:{email:user.email, signOut:() => {void signOut();}}}}/></ConfigContext.Provider>;
+  return <ConfigContext.Provider value={config}><TutoringProvider enabled={config.tutoring}><App store={{...store, account:{email:user.email, signOut:() => {void signOut();}}}}/></TutoringProvider></ConfigContext.Provider>;
 }
 const root = createRoot(document.getElementById('root')!);
 const loading = (title: string, detail: string) => <div className="bootstrap card"><Brand/><h1>{title}</h1><p className="muted" role="status">{detail}</p></div>;
-function showAuth(mode: 'signin' | 'signup' = 'signin') {
+let signedOutView = false;
+// What a signed-out visitor sees: a certificate check, the sign-in or sign-up form, or the landing page.
+function showSignedOut() {
+  signedOutView = true;
+  const code = verifyCodeFromHash();
+  if (code) { root.render(<VerifyPage key={code} code={code}/>); return; }
   const resetToken = resetTokenFromHash();
-  root.render(<AuthScreen key={resetToken ?? mode} initialMode={mode} resetToken={resetToken} onSignedIn={user => {
-    if (resetTokenFromHash()) history.replaceState(null, '', location.pathname);
+  const hash = location.hash;
+  const mode = resetToken ? 'reset' : hash === '#signup' || hash === '#signup-tutor' ? 'signup' : 'signin';
+  const role: RoleChoice = hash === '#signup-tutor' ? 'tutor' : 'student';
+  root.render(<AuthScreen key={`${resetToken ?? mode}${role}`} initialMode={mode} initialRole={role} resetToken={resetToken} onSignedIn={(user, chosen) => {
+    if (resetTokenFromHash() || ['#signin', '#signup', '#signup-tutor'].includes(location.hash)) history.replaceState(null, '', chosen && chosen !== 'student' ? '#tutorprofile' : location.pathname);
     void openStudy(user);
   }}/>);
 }
 async function openStudy(user: AccountUser) {
+  signedOutView = false;
   root.render(loading('Opening your study space…', 'Restoring your saved progress.'));
   try {
     // Settings and approved AI-generated questions are optional extras: the app still opens without them.
-    const [snapshot, settings, generated] = await Promise.all([loadServerSnapshot(), loadConfig().catch(() => ({ai: false, admin: false, desmosKey: null})), loadGeneratedQuestions().catch(() => [])]);
+    const [snapshot, settings, generated] = await Promise.all([loadServerSnapshot(), loadConfig().catch(() => ({ai: false, admin: false, desmosKey: null, tutoring: false})), loadGeneratedQuestions().catch(() => [])]);
     setGeneratedQuestions(generated);
-    root.render(<HostedApp key={snapshot.profileId} snapshot={snapshot} user={user} config={{hosted: true, ...settings}} onSignedOut={() => {location.hash = ''; showAuth();}}/>);
+    root.render(<HostedApp key={snapshot.profileId} snapshot={snapshot} user={user} config={{hosted: true, ...settings}} onSignedOut={() => {history.replaceState(null, '', location.pathname); showSignedOut();}}/>);
   } catch (error) {
-    if (error instanceof SignInRequired) { showAuth(); return; }
+    if (error instanceof SignInRequired) { showSignedOut(); return; }
     renderReconnect(error);
   }
 }
@@ -189,9 +210,9 @@ function renderReconnect(error: unknown) {
 }
 function startHosted() {
   // A password-reset link always opens the reset form, even if someone is already signed in here.
-  if (resetTokenFromHash()) { showAuth(); return; }
+  if (resetTokenFromHash()) { showSignedOut(); return; }
   root.render(loading('Opening your study space…', 'Checking your account.'));
-  fetchAccount().then(user => user ? openStudy(user) : showAuth()).catch(renderReconnect);
+  fetchAccount().then(user => user ? openStudy(user) : showSignedOut()).catch(renderReconnect);
 }
-window.addEventListener('hashchange', () => { if (import.meta.env.VITE_PERSISTENCE_MODE === 'server' && resetTokenFromHash()) showAuth(); });
+window.addEventListener('hashchange', () => { if (import.meta.env.VITE_PERSISTENCE_MODE === 'server' && (resetTokenFromHash() || signedOutView)) showSignedOut(); });
 if (import.meta.env.VITE_PERSISTENCE_MODE === 'server') startHosted(); else root.render(<LocalApp/>);

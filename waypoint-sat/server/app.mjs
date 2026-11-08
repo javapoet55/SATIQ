@@ -9,6 +9,8 @@ import {createBank} from './bank.mjs';
 import {tutorReply, explainWork, transcribe, coachNote} from './study-ai.mjs';
 import {generateOne, validSpec} from './generator.mjs';
 import {checkWork} from '../src/work-check.ts';
+import {handleTutoring} from './tutoring.mjs';
+import {validateProfile} from '../src/data/tutoring-schema.ts';
 import {QUESTION_ID, SPR_INPUT} from '../src/data/question-schema.ts';
 import {hashPassword, verifyPassword, burnPasswordCheck, newToken, tokenHash, TOKEN, normalizeEmail, passwordProblem, PASSWORD_MAX, SESSION_TTL_MS, RESET_TTL_MS, RateLimiter, createMailer} from './auth.mjs';
 
@@ -18,6 +20,8 @@ const STUDY_ROUTES = new Set(['GET /api/config','GET /api/questions','POST /api/
   'GET /api/admin/questions','POST /api/admin/generate','GET /api/admin/jobs','POST /api/admin/decide','GET /api/admin/users','POST /api/admin/user-role']);
 const ROLES = new Set(['student','tutor']);
 const TOUCH_MS = 5 * 60 * 1000;
+// Tutoring has many endpoints; the handler in tutoring.mjs checks each method and path itself.
+const TUTORING_PATH = /^\/api\/(tutoring\/|verify\/|admin\/tutoring)/;
 const AI_LIMITS = {tutor: 80, explain: 40, handwriting: 15, insight: 12};
 const AUTH_ROUTES = new Set(['GET /api/auth/me','POST /api/auth/signup','POST /api/auth/signin','POST /api/auth/signout','POST /api/auth/forgot','POST /api/auth/reset']);
 const ownerOf = user => `user:${user.id}`;
@@ -44,10 +48,12 @@ async function readBody(req, max = 1024 * 1024) {
   try { return JSON.parse(Buffer.concat(chunks).toString('utf8')); }
   catch { const e = new Error('Invalid JSON request.'); e.status = 400; throw e; }
 }
-export function createApp({database, assistant = createAssistant(), ai = createAI(), bank = createBank(database), adminEmails = process.env.ADMIN_EMAILS ?? '', desmosKey = process.env.DESMOS_API_KEY ?? '', dist = resolve('dist'), production = process.env.NODE_ENV === 'production', appOrigin = process.env.APP_ORIGIN, mailer = createMailer(), limits = {
+export function createApp({database, assistant = createAssistant(), ai = createAI(), bank = createBank(database), adminEmails = process.env.ADMIN_EMAILS ?? '', desmosKey = process.env.DESMOS_API_KEY ?? '', dist = resolve('dist'), production = process.env.NODE_ENV === 'production', appOrigin = process.env.APP_ORIGIN, mailer = createMailer(), tutoring = database.tutoring, limits = {
   ip: new RateLimiter({limit:30, windowMs:15 * 60 * 1000}),
   email: new RateLimiter({limit:10, windowMs:15 * 60 * 1000}),
   reset: new RateLimiter({limit:3, windowMs:60 * 60 * 1000}),
+  verify: new RateLimiter({limit:60, windowMs:15 * 60 * 1000}),
+  search: new RateLimiter({limit:40, windowMs:15 * 60 * 1000}),
 }}) {
   const admins = new Set(adminEmails.split(',').map(e => e.trim().toLowerCase()).filter(Boolean));
   const jobs = new Map();
@@ -64,7 +70,7 @@ export function createApp({database, assistant = createAssistant(), ai = createA
       }
       if (path.startsWith('/api/')) {
         const isAssistant = path === '/api/assistant';
-        if (!(path === '/api/progress' && ['GET','PUT'].includes(req.method)) && !(isAssistant && ['GET','POST'].includes(req.method)) && !AUTH_ROUTES.has(`${req.method} ${path}`) && !STUDY_ROUTES.has(`${req.method} ${path}`)) { json(404, {message:'Unknown endpoint.'}); return; }
+        if (!(path === '/api/progress' && ['GET','PUT'].includes(req.method)) && !(isAssistant && ['GET','POST'].includes(req.method)) && !AUTH_ROUTES.has(`${req.method} ${path}`) && !STUDY_ROUTES.has(`${req.method} ${path}`) && !TUTORING_PATH.test(path)) { json(404, {message:'Unknown endpoint.'}); return; }
         const expectedOrigin = appOrigin || `${req.headers['x-forwarded-proto'] === 'https' ? 'https' : 'http'}://${req.headers.host}`;
         if ((req.headers.origin && req.headers.origin !== expectedOrigin) || req.headers['sec-fetch-site'] === 'cross-site') { json(403, {message:'Cross-site requests are not allowed.'}); return; }
         if (req.method !== 'GET' && (req.headers['x-waypoint-client'] !== '1' || !req.headers['content-type']?.startsWith('application/json'))) { json(403, {message:'A same-origin JSON request is required.'}); return; }
@@ -98,10 +104,15 @@ export function createApp({database, assistant = createAssistant(), ai = createA
             if (!email) { json(400, {message:'Enter a valid email address.'}); return; }
             const problem = passwordProblem(body?.password);
             if (problem) { json(400, {message:problem}); return; }
-            const role = body?.role === undefined ? 'student' : ROLES.has(body.role) ? body.role : null;
+            // New sign-ups say whether they are a student, a tutor or both (roles), with a full name and the guidelines. Older clients send a single role instead.
+            const wantsProfile = body?.roles !== undefined || body?.fullName !== undefined;
+            const profile = wantsProfile ? validateProfile({fullName: body?.fullName, roles: body?.roles, guidelines: body?.guidelines}, false) : null;
+            if (profile && !profile.ok) { json(400, {message:profile.error}); return; }
+            const role = profile ? (profile.value.roles.includes('tutor') ? 'tutor' : 'student') : body?.role === undefined ? 'student' : ROLES.has(body.role) ? body.role : null;
             if (!role) { json(400, {message:'Choose whether you are signing up as a student or a tutor.'}); return; }
             const account = await database.createUser(email, await hashPassword(body.password), role);
             if (!account) { json(409, {message:'An account with this email already exists. Sign in, or reset your password.'}); return; }
+            if (profile && tutoring) await tutoring.saveProfile(account.id, profile.value, null, true).catch(() => console.error('A new profile could not be saved; it can be completed later.'));
             await signIn(account); return;
           }
           if (route === 'POST /api/auth/signin') {
@@ -142,6 +153,9 @@ export function createApp({database, assistant = createAssistant(), ai = createA
             await signIn(account); return;
           }
         }
+        const isAdmin = !!user && admins.has(user.email.toLowerCase());
+        const tutoringContext = () => ({route, path, url: new URL(req.url, 'http://localhost'), user, isAdmin, store: tutoring, mailer, origin: expectedOrigin, json, readBody: max => readBody(req, max), limits, ip});
+        if (path.startsWith('/api/verify/')) { if (!tutoring) { json(503, {message:'Certificates are not available right now.'}); return; } await handleTutoring(tutoringContext()); return; }
         // Progress and assistant history belong to the signed-in account.
         if (!user) { json(401, {message:'Your session ended. Sign in again to keep saving.'}); return; }
         const owner = ownerOf(user);
@@ -150,13 +164,16 @@ export function createApp({database, assistant = createAssistant(), ai = createA
           touched.set(user.id, Date.now()); if (touched.size > 5000) touched.delete(touched.keys().next().value);
           database.touchUser(user.id).catch(() => touched.delete(user.id));
         }
-        const isAdmin = admins.has(user.email.toLowerCase());
         const testRunning = state => state.sessions.some(s => ['running','paused'].includes(s.status)) || !!state.runs?.some(r => r.status === 'active');
         const useAi = async feature => {
           if (!ai.configured) throw aiError(503,'AI help is not connected yet.');
           if (!(await database.takeAiUsage(owner, feature, AI_LIMITS[feature]))) throw aiError(429,'You have reached today’s limit for this AI feature. It resets tomorrow.');
         };
-        if (route === 'GET /api/config') { json(200, {ai: ai.configured, admin: isAdmin, desmosKey: desmosKey || null}); return; }
+        if (path.startsWith('/api/tutoring/') || path.startsWith('/api/admin/tutoring')) {
+          if (!tutoring) { json(503, {message:'Tutor matching is not available right now.'}); return; }
+          await handleTutoring(tutoringContext()); return;
+        }
+        if (route === 'GET /api/config') { json(200, {ai: ai.configured, admin: isAdmin, desmosKey: desmosKey || null, tutoring: !!tutoring}); return; }
         if (route === 'GET /api/questions') { await bank.ensure(); json(200, {questions: bank.generated()}); return; }
         if (route.startsWith('POST /api/ai/')) {
           await bank.ensure();

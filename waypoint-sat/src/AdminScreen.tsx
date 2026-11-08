@@ -3,15 +3,17 @@ import {Intro, AnswerInput, QuestionBody, Solution} from './StudyComponents';
 import {DOMAINS, type Subject} from './data/question-schema';
 import {setGeneratedQuestions} from './data/bank';
 import {AdminUsers} from './AdminUsers';
-import {adminList, adminJobs, adminGenerate, adminDecide, loadGeneratedQuestions, type GeneratedRow, type Job} from './api';
+import {AdminTutoring} from './AdminTutoring';
+import {useConfig, adminList, adminJobs, adminGenerate, adminDecide, loadGeneratedQuestions, type GeneratedRow, type Job} from './api';
 
 const STATUS_LABEL: Record<string, string> = {pending: 'Verified · awaiting review', flagged: 'Needs a careful look', approved: 'Live for students', rejected: 'Rejected'};
 export function AdminScreen({notify}: {notify: (t: string) => void}) {
-  const [view, setView] = useState<'users' | 'questions'>('users');
+  const [view, setView] = useState<'users' | 'tutoring' | 'questions'>('users');
+  const config = useConfig();
   return <>
     <Intro tag="ADMIN" title="Run PrepOrbit.">See who has signed up and how active they are, and grow the question bank.</Intro>
-    <div className="tabs" role="group" aria-label="Admin section">{([['users', 'Users'], ['questions', 'Question bank']] as const).map(([id, label]) => <button key={id} className={view === id ? 'active' : ''} aria-pressed={view === id} onClick={() => setView(id)}>{label}</button>)}</div>
-    {view === 'users' ? <AdminUsers notify={notify}/> : <QuestionAdmin notify={notify}/>}
+    <div className="tabs" role="group" aria-label="Admin section">{([['users', 'Users'], ...(config.tutoring ? [['tutoring', 'Tutoring'] as const] : []), ['questions', 'Question bank']] as const).map(([id, label]) => <button key={id} className={view === id ? 'active' : ''} aria-pressed={view === id} onClick={() => setView(id)}>{label}</button>)}</div>
+    {view === 'users' ? <AdminUsers notify={notify}/> : view === 'tutoring' ? <AdminTutoring notify={notify}/> : <QuestionAdmin notify={notify}/>}
   </>;
 }
 function QuestionAdmin({notify}: {notify: (t: string) => void}) {

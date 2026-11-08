@@ -11,7 +11,7 @@
     "start": "node --experimental-strip-types server/index.mjs",
     "build": "tsc -b && vite build && vite build --config vite.landing.config.ts",
     "preview": "vite preview --host 127.0.0.1",
-    "test": "node --experimental-strip-types --test tests/intelligence.test.ts tests/model.test.ts tests/companion.test.ts tests/server.test.mjs tests/assistant.test.mjs tests/math-tools.test.mjs tests/topic-tests.test.ts tests/bank.test.mjs tests/ai.test.mjs",
+    "test": "node --experimental-strip-types --test tests/intelligence.test.ts tests/model.test.ts tests/companion.test.ts tests/server.test.mjs tests/assistant.test.mjs tests/math-tools.test.mjs tests/topic-tests.test.ts tests/bank.test.mjs tests/ai.test.mjs tests/tutoring.test.mjs",
     "test:e2e": "playwright test",
     "test:hosted": "playwright test --config playwright.hosted.config.ts",
     "test:auth": "playwright test --config playwright.auth.config.ts"
@@ -22,7 +22,8 @@
     "mathjs": "^14.9.1",
     "pg": "^8.23.1",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "zipcodes": "^8.0.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.56.1",
