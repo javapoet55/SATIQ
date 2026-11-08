@@ -26,10 +26,10 @@ function parseCookies(header = '') {
 }
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const MIME = {'.html':'text/html; charset=utf-8', '.js':'text/javascript; charset=utf-8', '.css':'text/css; charset=utf-8', '.json':'application/json', '.svg':'image/svg+xml', '.png':'image/png', '.ico':'image/x-icon'};
-const desmos = process.env.DESMOS_API_KEY ? ' https://www.desmos.com https://*.desmos.com' : '';
 const headers = {
   'X-Content-Type-Options':'nosniff', 'X-Frame-Options':'DENY', 'Referrer-Policy':'same-origin',
-  'Content-Security-Policy': `default-src 'self'; script-src 'self'${desmos}; style-src 'self' 'unsafe-inline'${desmos}; img-src 'self' data: blob:${desmos}; font-src 'self' data:${desmos}; connect-src 'self'${desmos}; frame-ancestors 'none'; base-uri 'self'; form-action 'self'`,
+  // The only third-party content is the Desmos calculator, shown in a frame from desmos.com; no outside scripts run on this site.
+  'Content-Security-Policy': `default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; frame-src https://www.desmos.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'`,
   'Permissions-Policy':'camera=(), microphone=(), geolocation=()',
 };
 async function readBody(req, max = 1024 * 1024) {

@@ -50,10 +50,11 @@ test('every skill is reachable and math renders with KaTeX; calculator and refer
   await expect(page.getByText('Circles · Hard · Typed answer')).toBeVisible();
   await expect(page.locator('.questiontext .katex').first()).toBeVisible();
   await page.getByRole('button', {name: '🖩 Calculator'}).click();
-  await expect(page.getByRole('button', {name: 'Open Desmos calculator ↗'})).toBeVisible();
+  await expect(page.locator('iframe[title="Desmos graphing calculator"]')).toHaveAttribute('src', 'https://www.desmos.com/calculator');
+  await expect(page.getByRole('button', {name: 'Open in a larger window ↗'})).toBeVisible();
   await page.getByRole('button', {name: '📐 Reference'}).click();
   await expect(page.getByText('Pythagorean theorem')).toBeVisible();
-  await expect(page.getByRole('button', {name: 'Open Desmos calculator ↗'})).toHaveCount(0);
+  await expect(page.locator('iframe[title="Desmos graphing calculator"]')).toHaveCount(0);
 });
 test('quick check: answers, flags, pause, reload, submit, then review that test only', async ({page}) => {
   await page.goto('/#test');

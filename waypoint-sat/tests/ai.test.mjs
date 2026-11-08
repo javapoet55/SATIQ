@@ -192,3 +192,11 @@ test('answer-leak detector catches direct statements but allows guidance', () =>
   assert.equal(revealsAnswer('So x = 6.', spr), true);
   assert.equal(revealsAnswer('Now 4x = 24. What next?', spr), false);
 });
+
+test('security policy allows only the desmos.com calculator frame and no outside scripts', async t => {
+  const {url} = await start(t);
+  const csp = (await fetch(url + '/api/health')).headers.get('content-security-policy');
+  assert.match(csp, /frame-src https:\/\/www\.desmos\.com;/);
+  assert.match(csp, /script-src 'self';/);
+  assert.doesNotMatch(csp, /unsafe-eval/);
+});

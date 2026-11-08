@@ -41,7 +41,7 @@ Limits are stored atomically in `waypoint_ai_usage` and reset each UTC day. With
 
 **Question generator (admins only).** Set `ADMIN_EMAILS` (comma-separated) on `waypoint-web`. An admin's **Admin** page generates 1–5 questions per job for a chosen skill, difficulty and format. Each draft must pass: a strict JSON schema, structural validation, the machine math check, a duplicate check, and a **blind solve** by a separate call that never sees the key. Failures are rejected; a blind-solve disagreement is flagged. Nothing reaches students until an admin approves it; approved questions join practice and tests immediately and can be retired later. Stored in `waypoint_questions`.
 
-Optional variables: `OPENAI_MODEL` (default `gpt-5-mini`), `OPENAI_GENERATOR_MODEL` and `OPENAI_VERIFIER_MODEL` (default: `OPENAI_MODEL`), `DESMOS_API_KEY` (embeds the Desmos calculator in the page; without it, a button opens Desmos in a new window).
+Optional variables: `OPENAI_MODEL` (default `gpt-5-mini`), `OPENAI_GENERATOR_MODEL` and `OPENAI_VERIFIER_MODEL` (default: `OPENAI_MODEL`), no key is needed for the calculator: the Desmos graphing calculator is shown in a frame served by desmos.com, so no outside script runs on this site.
 
 ### Practice Test: choose a topic and take 25 questions
 

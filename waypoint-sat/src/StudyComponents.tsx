@@ -1,8 +1,7 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useState} from 'react';
 import type {Question} from './data/question-schema';
 import type {Choice} from './model';
 import {MathText, Passage} from './MathText';
-import {useConfig} from './api';
 
 export function Intro({tag, title, children}: {tag: string; title: string; children: React.ReactNode}) {
   return <div className="intro"><div className="eyebrow">{tag}</div><h1 tabIndex={-1} id="page-title">{title}</h1><p className="muted">{children}</p></div>;
@@ -49,25 +48,13 @@ export function MathTools() {
   return <div className="math-tools"><button aria-pressed={open === 'calc'} onClick={() => setOpen(open === 'calc' ? null : 'calc')}>🖩 Calculator</button><button aria-pressed={open === 'ref'} onClick={() => setOpen(open === 'ref' ? null : 'ref')}>📐 Reference</button>
     {open === 'calc' && <Calculator onClose={() => setOpen(null)}/>}{open === 'ref' && <ReferenceSheet onClose={() => setOpen(null)}/>}</div>;
 }
-declare global { interface Window { Desmos?: {GraphingCalculator: (el: HTMLElement, opts: object) => {destroy: () => void}} } }
+// The calculator runs in a frame served by desmos.com, so its code never runs on this site and the site's
+// script policy stays strict. No API key is needed for this. The pop-up link stays as a backup.
 function Calculator({onClose}: {onClose: () => void}) {
-  const {desmosKey} = useConfig();
-  const host = useRef<HTMLDivElement>(null);
-  const [failed, setFailed] = useState(false);
-  useEffect(() => {
-    if (!desmosKey || !host.current) return;
-    let calc: {destroy: () => void} | undefined; let cancelled = false;
-    const mount = () => { if (!cancelled && host.current && window.Desmos) calc = window.Desmos.GraphingCalculator(host.current, {keypad: true, expressions: true, settingsMenu: false}); };
-    if (window.Desmos) mount();
-    else {
-      const script = document.createElement('script');
-      script.src = `https://www.desmos.com/api/v1.10/calculator.js?apiKey=${encodeURIComponent(desmosKey)}`;
-      script.onload = mount; script.onerror = () => setFailed(true); document.head.appendChild(script);
-    }
-    return () => { cancelled = true; calc?.destroy(); };
-  }, [desmosKey]);
+  const popup = () => window.open('https://www.desmos.com/calculator', 'desmos', 'width=520,height=640');
   return <section className="tool-panel" aria-label="Graphing calculator"><div className="row"><h3>Graphing calculator</h3><button onClick={onClose} aria-label="Close calculator">×</button></div>
-    {desmosKey && !failed ? <div ref={host} className="desmos-host"/> : <div className="tool-fallback"><p>The SAT uses the Desmos graphing calculator. Open it in a separate window and keep this question visible.</p><button className="primary" onClick={() => window.open('https://www.desmos.com/calculator', 'desmos', 'width=520,height=640')}>Open Desmos calculator ↗</button></div>}</section>;
+    <iframe className="desmos-host" title="Desmos graphing calculator" src="https://www.desmos.com/calculator" referrerPolicy="no-referrer" allow="clipboard-write"/>
+    <button className="linkbutton" onClick={popup}>Open in a larger window ↗</button></section>;
 }
 const REFERENCE: [string, string][] = [
   ['Circle', String.raw`A = \pi r^2,\quad C = 2\pi r`], ['Rectangle', String.raw`A = \ell w`], ['Triangle', String.raw`A = \tfrac{1}{2}bh`],
