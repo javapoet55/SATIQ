@@ -22,6 +22,12 @@ const ROLES = new Set(['student','tutor']);
 const TOUCH_MS = 5 * 60 * 1000;
 // Tutoring has many endpoints; the handler in tutoring.mjs checks each method and path itself.
 const TUTORING_PATH = /^\/api\/(tutoring\/|verify\/|admin\/tutoring)/;
+const LEGAL_PAGES = new Set(['/terms', '/privacy', '/safety']);
+// The support address comes from SUPPORT_EMAIL. Without it the pages point people to the in-app report button.
+const contactHtml = () => {
+  const email = (process.env.SUPPORT_EMAIL ?? '').trim();
+  return /^[^\s@<>"']+@[^\s@<>"']+\.[^\s@<>"']+$/.test(email) ? `<a href="mailto:${email}">${email}</a>` : 'use the “Report a problem” button in the app.';
+};
 const AI_LIMITS = {tutor: 80, explain: 40, handwriting: 15, insight: 12};
 const AUTH_ROUTES = new Set(['GET /api/auth/me','POST /api/auth/signup','POST /api/auth/signin','POST /api/auth/signout','POST /api/auth/forgot','POST /api/auth/reset']);
 const ownerOf = user => `user:${user.id}`;
@@ -308,12 +314,13 @@ export function createApp({database, assistant = createAssistant(), ai = createA
       }
       if (!['GET','HEAD'].includes(req.method)) { res.writeHead(405, {Allow:'GET, HEAD'}); res.end(); return; }
       if(path==='/app') {res.writeHead(308,{Location:'/app/','Cache-Control':'no-cache'});res.end();return;}
-      const name = path === '/' ? '/landing/index.html' : path==='/app/' || path==='/app/index.html' ? '/index.html' : decodeURIComponent(path);
+      const name = LEGAL_PAGES.has(path) ? `/landing${path}.html` : path === '/' ? '/landing/index.html' : path==='/app/' || path==='/app/index.html' ? '/index.html' : decodeURIComponent(path);
       let file = resolve(dist, `.${name}`);
       if (!file.startsWith(`${resolve(dist)}${sep}`)) { json(403, {message:'Forbidden path.'}); return; }
       try { if (!(await stat(file)).isFile()) throw new Error(); }
       catch { if (extname(name)) { json(404, {message:'File not found.'}); return; } file = resolve(dist, 'index.html'); }
-      const contents = await readFile(file);
+      let contents = await readFile(file);
+      if (file.endsWith('.html') && contents.includes('{{CONTACT}}')) contents = Buffer.from(contents.toString().replaceAll('{{CONTACT}}', contactHtml()));
       res.writeHead(200, {'Content-Type':MIME[extname(file)] ?? 'application/octet-stream', 'Cache-Control':file.includes(`${sep}assets${sep}`) ? 'public, max-age=31536000, immutable' : 'no-cache'});
       res.end(req.method === 'HEAD' ? undefined : contents);
     } catch (error) {

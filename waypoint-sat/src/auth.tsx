@@ -112,6 +112,6 @@ export function AuthScreen({initialMode = 'signin', initialRole = 'student', res
         {mode === 'reset' && <button type="button" className="text-button" onClick={() => { history.replaceState(null, '', location.pathname); setMode('forgot'); }}>Need a new link?</button>}
       </div>
     </div>
-    <p className="small muted auth-foot">Original practice content · Not affiliated with College Board.</p>
+    <p className="small muted auth-foot">Original practice content · Not affiliated with College Board. <><a href="/terms" target="_blank" rel="noopener">Terms</a> · <a href="/privacy" target="_blank" rel="noopener">Privacy</a> · <a href="/safety" target="_blank" rel="noopener">Safety</a></></p>
   </main>;
 }

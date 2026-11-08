@@ -18,6 +18,7 @@ export function GuidelinesAgreement({checked, onChange, locked, id = 'guidelines
   return <div className="guidelines-box">
     <details><summary>Read the community guidelines</summary><GuidelinesList/></details>
     <label className="check-line" htmlFor={id}><input id={id} type="checkbox" checked={checked} disabled={locked} onChange={e => onChange(e.target.checked)}/><span>I’m 13 or older and I agree to the community guidelines.</span></label>
+    <p className="small muted">By continuing you also agree to the <a href="/terms" target="_blank" rel="noopener">Terms</a> and <a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a>. Under 18? Read the <a href="/safety" target="_blank" rel="noopener">Safety page</a> with a parent or guardian.</p>
   </div>;
 }
 

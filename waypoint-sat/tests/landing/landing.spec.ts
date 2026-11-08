@@ -45,3 +45,20 @@ test('tutor workspace and proposed pricing stay clearly separated from live feat
  await page.getByRole('button',{name:'Close preview',exact:true}).press('Escape');
  await expect(page.getByRole('dialog')).toHaveCount(0);
 });
+for(const [path,heading] of [['terms','Terms of Service'],['privacy','Privacy Policy'],['safety','Safety for students, parents and tutors']] as const)
+test(`/${path} is public, complete and fits every width`,async({page})=>{
+ for(const width of [1440,390,320]){
+  await page.setViewportSize({width,height:800});await page.goto('/'+path);
+  await expect(page.getByRole('heading',{level:1,name:heading})).toBeVisible();
+  await expect(page.locator('body')).not.toContainText('{{CONTACT}}');
+  await expect(page.getByRole('main').getByRole('heading',{level:2}).first()).toBeVisible();
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ }
+ for(const other of ['terms','privacy','safety'])await expect(page.getByRole('navigation',{name:'Legal and safety'}).locator(`a[href="/${other}"]`)).toBeVisible();
+});
+test('legal pages state the key promises and are linked from the homepage',async({page})=>{
+ await page.goto('/terms');await expect(page.getByText('We do not run background checks')).toBeVisible();await expect(page.getByText('do not guarantee admission',{exact:false}).first()).toBeVisible();
+ await page.goto('/privacy');await expect(page.getByText('Alex M.',{exact:false}).first()).toBeVisible();await expect(page.getByText('We do not sell your personal information')).toBeVisible();
+ await page.goto('/safety');await expect(page.getByText('In an emergency, call 911.')).toBeVisible();await expect(page.getByText('we do not run background checks',{exact:false}).first()).toBeVisible();
+ await page.goto('/');for(const name of ['Terms','Privacy','Safety'])await expect(page.locator('footer').getByRole('link',{name,exact:true})).toBeVisible();
+});
