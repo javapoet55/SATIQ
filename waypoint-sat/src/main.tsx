@@ -9,6 +9,7 @@ import './accessibility.css';
 import './companion.css';
 import './navigation.css';
 import './studio.css';
+import './typography.css';
 import {CompanionScreens} from './CompanionScreens';
 import {IntelligenceScreens} from './IntelligenceScreens';
 import {AssistantScreen} from './AssistantScreen';
